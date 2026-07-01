@@ -2,18 +2,12 @@
  * Public API: the `sms` namespace object.
  *
  * Bundles every SMS content builder under a single import surface so call
- * sites read as `sms.createTextNode(...)`, `sms.createLinkMark(...)`, etc.
+ * sites read as `sms.createMessageNode(...)`, `sms.createLinkNode(...)`, etc.
  *
  * @public
  */
 
-import {
-  createContent,
-  createHardbreakNode,
-  createParagraphNode,
-  createTextNode,
-} from './nodes.js'
-import { createLinkMark } from './marks.js'
+import { createContent, createLinkNode, createMessageNode, createUnsubscribeNodes } from './nodes.js'
 import {
   createCustomFieldPlaceholder,
   createDatePlaceholder,
@@ -32,14 +26,11 @@ import {
  * import { sms, createSmsDocument } from '@rule/rcml';
  *
  * const content = sms.createContent({
- *   paragraphs: [
- *     sms.createParagraphNode({
- *       content: [
- *         sms.createTextNode({ text: 'Hi ' }),
- *         sms.createSubscriberPlaceholder({ field: 'FirstName' }),
- *         sms.createTextNode({ text: '!' }),
- *       ],
- *     }),
+ *   nodes: [
+ *     sms.createMessageNode({ text: 'Hi ' }),
+ *     sms.createSubscriberPlaceholder({ field: 'FirstName' }),
+ *     sms.createMessageNode({ text: '!\n' }),
+ *     sms.createLinkNode({ url: 'https://example.com', track: true, shorten: true }),
  *   ],
  * });
  *
@@ -50,12 +41,9 @@ import {
 export const sms = {
   // Nodes
   createContent,
-  createParagraphNode,
-  createTextNode,
-  createHardbreakNode,
-
-  // Marks
-  createLinkMark,
+  createMessageNode,
+  createLinkNode,
+  createUnsubscribeNodes,
 
   // Placeholders — generic + per-type convenience builders
   createPlaceholderNode,

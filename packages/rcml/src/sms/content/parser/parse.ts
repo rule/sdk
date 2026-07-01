@@ -2,12 +2,12 @@
  * Internal: SMS RFM (SMS Rule Flavor Markdown) string → SmsContentJson conversion.
  *
  * SMS RFM is a markdown-directive-based format:
- *   - `:link[text]{href="..." track="true|false" shorten="true|false"}` → text node with link mark
- *   - `::placeholder{type="..." original="..." name="..." value="..." max-length="..."}` → placeholder node
+ *   - `:link[text]{href="..." track="true|false" shorten="true|false"}` → link node
+ *   - `::placeholder{type="..." original="..." name="..." value="..."}` → placeholder node
  *   - `[Type:Name]` → shorthand placeholder (backward-compatible, converted to `::placeholder{...}` before parsing)
- *   - `\\\n` (backslash + newline) or bare `\n` within a paragraph → hardbreak node
- *   - `\n\n` (double newline) → paragraph boundary
- *   - Everything else → text node
+ *   - `\\\n` (backslash + newline) or bare `\n` within a paragraph → embedded `\n` in message text
+ *   - `\n\n` (double newline) → paragraph boundary, becomes `\n` in message text
+ *   - Everything else → message node text
  *
  * @internal
  */
@@ -22,13 +22,10 @@ import { RcmlValidationError } from '../../../email/content/parser/parse.js'
 import { smsRfmConfig } from '../flavors/sms-rfm.js'
 import type {
   SmsContentJson,
-  SmsHardbreakNode,
-  SmsInlineNode,
-  SmsParagraphNode,
+  SmsLinkNode,
   SmsPlaceholderNode,
   SmsPlaceholderType,
-  SmsTextNode,
-  SmsLinkMark,
+  SmsTopLevelNode,
 } from '../json-validator/types.js'
 
 // ─── Step 1: [Type:Name] shorthand expansion ──────────────────────────────────
@@ -59,7 +56,7 @@ function expandPlaceholderShorthand(input: string): string {
     const escapedFull = full.replace(/:/g, COLON_ESCAPE)
     const escapedName = name.replace(/:/g, COLON_ESCAPE)
 
-    return `::placeholder{type="${rawType}" original="${escapedFull}" name="${escapedName}" value="" max-length=""}`
+    return `::placeholder{type="${rawType}" original="${escapedFull}" name="${escapedName}" value=""}`
   })
 }
 
@@ -82,50 +79,55 @@ function normalizeHardbreaks(input: string): string {
 
 // ─── Step 3: MDAST → SmsContentJson conversion ───────────────────────────────
 
+interface ConvertCtx {
+  nodes: SmsTopLevelNode[]
+  buffer: string
+}
+
+function flushBuffer(ctx: ConvertCtx): void {
+  if (ctx.buffer.length > 0) {
+    ctx.nodes.push({ type: 'message', text: ctx.buffer })
+    ctx.buffer = ''
+  }
+}
+
 /** @internal */
 function convertDoc(ast: Root): SmsContentJson {
-  const paragraphs: SmsParagraphNode[] = []
+  const ctx: ConvertCtx = { nodes: [], buffer: '' }
 
-  for (const block of ast.children) {
+  for (let i = 0; i < ast.children.length; i++) {
+    const block = ast.children[i]!
+
+    // Paragraph boundaries become a single \n in the message text stream
+    if (i > 0) {
+      ctx.buffer += '\n'
+    }
+
     if (block.type === 'paragraph') {
-      paragraphs.push(convertParagraph(block as Paragraph))
+      for (const child of (block as Paragraph).children) {
+        convertInlineNode(child, ctx)
+      }
     } else if (block.type === 'leafDirective') {
       // A ::placeholder{...} that ended up at block level (not tokenized by
-      // preprocessMarkdown because it was the only thing on its line). Wrap it in a paragraph.
+      // preprocessMarkdown because it was the only thing on its line)
       const d = block as unknown as LeafDirective
 
       if (d.name === 'placeholder') {
-        const node = convertLeafPlaceholder((d.attributes ?? {}) as Record<string, string | null | undefined>)
-
-        paragraphs.push({ type: 'paragraph', content: [node] })
+        flushBuffer(ctx)
+        ctx.nodes.push(convertLeafPlaceholder((d.attributes ?? {}) as Record<string, string | null | undefined>))
       }
     }
   }
 
-  if (paragraphs.length === 0) {
-    return { type: 'doc', content: [{ type: 'paragraph' }] }
-  }
-
-  return { type: 'doc', content: paragraphs }
-}
-
-/** @internal */
-function convertParagraph(node: Paragraph): SmsParagraphNode {
-  const content = node.children.flatMap((child) => convertInlineNode(child, []))
-
-  if (content.length === 0) {
-    return { type: 'paragraph' }
-  }
-
-  return { type: 'paragraph', content }
+  flushBuffer(ctx)
+  return { type: 'sms', content: ctx.nodes }
 }
 
 /**
- * Convert a single MDAST phrasing content node to SMS inline node(s).
- * `inheritedMarks` carries any link mark from an enclosing `:link` directive.
+ * Convert a single MDAST phrasing content node, mutating `ctx` in place.
  * @internal
  */
-function convertInlineNode(node: PhrasingContent, inheritedMarks: SmsLinkMark[]): SmsInlineNode[] {
+function convertInlineNode(node: PhrasingContent, ctx: ConvertCtx): void {
   const type = node.type as string
 
   switch (type) {
@@ -133,61 +135,59 @@ function convertInlineNode(node: PhrasingContent, inheritedMarks: SmsLinkMark[])
       const textNode = node as unknown as { type: string; value: string }
 
       if (textNode.value.includes(ATOM_TOKEN_DELIMITER)) {
-        return expandAtomTokens(textNode.value, inheritedMarks)
+        expandAtomTokens(textNode.value, ctx)
+      } else if (textNode.value.length > 0) {
+        ctx.buffer += textNode.value
       }
 
-      if (textNode.value.length > 0) {
-        return [makeTextNode(textNode.value, inheritedMarks)]
-      }
-
-      return []
+      break
     }
 
-    case 'break':
-      return [{ type: 'hardbreak', attrs: { isInline: false } } satisfies SmsHardbreakNode]
+    case 'break': {
+      ctx.buffer += '\n'
+      break
+    }
 
     case 'textDirective': {
       const d = node as unknown as TextDirective
 
       if (d.name === 'link') {
-        return convertLinkDirective(d)
+        flushBuffer(ctx)
+        ctx.nodes.push(convertLinkDirective(d))
       }
 
-      return []
+      break
     }
 
     case 'leafDirective': {
       const d = node as unknown as LeafDirective
 
       if (d.name === 'placeholder') {
-        return [convertLeafPlaceholder((d.attributes ?? {}) as Record<string, string | null | undefined>)]
+        flushBuffer(ctx)
+        ctx.nodes.push(convertLeafPlaceholder((d.attributes ?? {}) as Record<string, string | null | undefined>))
       }
 
-      return []
+      break
     }
-
-    default:
-      return []
   }
 }
 
 /**
- * Convert a `:link[...]{href track shorten}` textDirective into a sequence of
- * SMS inline nodes, each carrying the link mark.
+ * Convert a `:link[...]{href track shorten}` textDirective into an `SmsLinkNode`.
+ * The `href` attribute is used as the link text — in SMS, links are shown as URLs.
  * @internal
  */
-function convertLinkDirective(node: TextDirective): SmsInlineNode[] {
+function convertLinkDirective(node: TextDirective): SmsLinkNode {
   const raw = (node.attributes ?? {}) as Record<string, string | null | undefined>
-  const mark: SmsLinkMark = {
+
+  return {
     type: 'link',
+    text: raw['href'] ?? '',
     attrs: {
-      href: raw['href'] ?? '',
       track: raw['track'] !== 'false',
       shorten: raw['shorten'] !== 'false',
     },
   }
-
-  return node.children.flatMap((child) => convertInlineNode(child as PhrasingContent, [mark]))
 }
 
 /** @internal */
@@ -201,36 +201,33 @@ function convertLeafPlaceholder(raw: Record<string, string | null | undefined>):
   // Decode COLON_ESCAPE back to ':' for values that went through expandPlaceholderShorthand
   const decodeColons = (s: string): string => s.replace(new RegExp(COLON_ESCAPE, 'g'), ':')
 
-  return {
+  const node: SmsPlaceholderNode = {
     type: 'placeholder',
     attrs: {
       type: (raw['type'] ?? 'Subscriber') as SmsPlaceholderType,
-      name: decodeColons(raw['name'] ?? ''),
       original: decodeColons(raw['original'] ?? ''),
+      name: decodeColons(raw['name'] ?? ''),
       value: coerceAttrValue(raw['value']),
-      'max-length': get('max-length') ?? null,
     },
-  } satisfies SmsPlaceholderNode
-}
-
-/** @internal */
-function makeTextNode(text: string, marks: SmsLinkMark[]): SmsTextNode {
-  if (marks.length > 0) {
-    return { type: 'text', text, marks }
   }
 
-  return { type: 'text', text }
+  const maxLength = get('max-length')
+
+  if (maxLength !== undefined) {
+    node.attrs['max-length'] = maxLength
+  }
+
+  return node
 }
 
 // ─── PUA atom token expansion ─────────────────────────────────────────────────
 
 /**
  * Expand PUA-tokenized inline atoms (produced by `preprocessMarkdown`) inside
- * a plain text string, producing a mix of SmsTextNode and SmsPlaceholderNode values.
+ * a plain text string, appending text to the buffer and flushing for placeholders.
  * @internal
  */
-function expandAtomTokens(text: string, inheritedMarks: SmsLinkMark[]): SmsInlineNode[] {
-  const result: SmsInlineNode[] = []
+function expandAtomTokens(text: string, ctx: ConvertCtx): void {
   const parts = text.split(ATOM_TOKEN_DELIMITER)
 
   for (let i = 0; i < parts.length; i++) {
@@ -238,10 +235,10 @@ function expandAtomTokens(text: string, inheritedMarks: SmsLinkMark[]): SmsInlin
 
     if (i % 2 === 0) {
       if (part.length > 0) {
-        result.push(makeTextNode(part, inheritedMarks))
+        ctx.buffer += part
       }
     } else {
-      // Token: "nameATOM_TOKEN_SEPARATORrawAttrs"
+      // Token: "name{ATOM_TOKEN_SEPARATOR}rawAttrs"
       const sepIdx = part.indexOf(ATOM_TOKEN_SEPARATOR)
       const name = sepIdx >= 0 ? part.slice(0, sepIdx) : part
       const attrsStr = sepIdx >= 0 ? part.slice(sepIdx + 1) : ''
@@ -249,12 +246,11 @@ function expandAtomTokens(text: string, inheritedMarks: SmsLinkMark[]): SmsInlin
       if (name === 'placeholder') {
         const rawAttrs = parseTokenAttrs(attrsStr)
 
-        result.push(convertLeafPlaceholder(rawAttrs))
+        flushBuffer(ctx)
+        ctx.nodes.push(convertLeafPlaceholder(rawAttrs))
       }
     }
   }
-
-  return result
 }
 
 /** Parse `key="val"` pairs from a PUA token attr string. @internal */
@@ -297,9 +293,9 @@ function coerceAttrValue(raw: string | null | undefined): string | number | null
  *
  * Accepts both:
  * - `:link[text]{href track shorten}` directive syntax
- * - `::placeholder{type original name value max-length}` directive syntax
+ * - `::placeholder{type original name value}` directive syntax
  * - `[Type:Name]` shorthand (backward-compatible)
- * - Bare `\n` within a paragraph (backward-compatible; treated as hardbreak)
+ * - Bare `\n` within a paragraph (backward-compatible; becomes `\n` in message text)
  * - `\\\n` (backslash + newline; standard markdown hard break)
  *
  * Throws {@link RcmlValidationError} if the input contains unsupported constructs.
@@ -308,7 +304,7 @@ function coerceAttrValue(raw: string | null | undefined): string | number | null
  */
 export function parseSmsRfm(input: string): SmsContentJson {
   if (input === '') {
-    return { type: 'doc', content: [{ type: 'paragraph' }] }
+    return { type: 'sms', content: [] }
   }
 
   // Step 1: expand [Type:Name] shorthand to ::placeholder{...} directive syntax

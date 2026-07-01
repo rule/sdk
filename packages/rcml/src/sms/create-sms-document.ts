@@ -48,8 +48,8 @@ export interface CreateSmsDocumentOptions {
  * // From a pre-built content JSON document
  * const doc2 = createSmsDocument({
  *   content: {
- *     type: 'doc',
- *     content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Hello!' }] }],
+ *     type: 'sms',
+ *     content: [{ type: 'message', text: 'Hello!' }],
  *   },
  * });
  *

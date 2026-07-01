@@ -1,141 +1,39 @@
 /**
  * Internal: SmsContentJson → SMS RFM (SMS Rule Flavor Markdown) string conversion.
  *
- * - Text nodes without marks → verbatim text.
- * - Text/placeholder nodes with a link mark → wrapped in `:link[...]{href track shorten}`.
- * - Placeholder nodes with a resolved value or max-length → `::placeholder{...}` directive form.
- * - Placeholder nodes with null value and null max-length → compact `[Type:Name]` via `original`.
- * - Hardbreaks → `\\\n` (remark hard-break syntax).
- * - Paragraphs → joined with `\n\n`.
+ * - `message` nodes → verbatim text (embedded `\n` preserved as-is).
+ * - `link` nodes → `:link[url]{href="url" track="..." shorten="..."}` directive.
+ * - `placeholder` nodes with a resolved value or max-length → `::placeholder{...}` directive.
+ * - `placeholder` nodes with null value and no max-length → compact `[Type:Name]` via `original`.
+ * - Nodes are concatenated with no separator — whitespace and newlines live in `message` text.
  *
  * @internal
  */
 
-import type { SmsContentJson, SmsInlineNode, SmsParagraphNode, SmsLinkMark } from '../json-validator/types.js'
+import type { SmsContentJson, SmsLinkNode, SmsPlaceholderNode } from '../json-validator/types.js'
 
-// ─── Link mark helpers ────────────────────────────────────────────────────────
+// ─── Individual node serializers ──────────────────────────────────────────────
 
-function linkMarksEqual(a: SmsLinkMark, b: SmsLinkMark): boolean {
-  return a.attrs.href === b.attrs.href && a.attrs.track === b.attrs.track && a.attrs.shorten === b.attrs.shorten
+function serializeLinkNode(node: SmsLinkNode): string {
+  const { text, attrs } = node
+
+  return `:link[${text}]{href="${text}" track="${String(attrs.track)}" shorten="${String(attrs.shorten)}"}`
 }
 
-function renderLinkAttrs(mark: SmsLinkMark): string {
-  return `href="${mark.attrs.href}" track="${String(mark.attrs.track)}" shorten="${String(mark.attrs.shorten)}"`
-}
+function serializePlaceholderNode(node: SmsPlaceholderNode): string {
+  const { type, original, name, value } = node.attrs
+  const maxLen = node.attrs['max-length']
 
-// ─── Paragraph serializer ─────────────────────────────────────────────────────
+  if (value !== null || (maxLen != null && maxLen !== null)) {
+    const parts = [`type="${type}"`, `original="${original}"`, `name="${name}"`]
 
-/** Serialize one paragraph's inline children to SMS RFM. @internal */
-function serializeParagraph(para: SmsParagraphNode): string {
-  if (!para.content || para.content.length === 0) return ''
+    if (value !== null) parts.push(`value="${value}"`)
+    if (maxLen != null && maxLen !== null) parts.push(`max-length="${maxLen}"`)
 
-  return serializeInlineSequence(para.content)
-}
-
-// ─── Inline sequence serializer ───────────────────────────────────────────────
-
-/**
- * Serialize a sequence of inline nodes.
- *
- * When all nodes in the sequence share the same single link mark, they are
- * grouped under a single `:link[...]{...}` wrapper — this mirrors the email
- * module's approach and avoids multiple adjacent directives for the same link.
- * @internal
- */
-function serializeInlineSequence(nodes: SmsInlineNode[]): string {
-  if (nodes.length === 0) return ''
-
-  // Check if every node in the sequence carries an identical link mark
-  const sharedMark = findSharedLinkMark(nodes)
-
-  if (sharedMark) {
-    const stripped = nodes.map((n) => {
-      if (n.type === 'text') {
-        const newMarks = (n.marks ?? []).filter((m) => !linkMarksEqual(m, sharedMark))
-
-        return newMarks.length > 0 ? { ...n, marks: newMarks } : { type: 'text' as const, text: n.text }
-      }
-
-      if (n.type === 'placeholder') {
-        return n
-      }
-
-      return n
-    })
-
-    return `:link[${serializeInlineSequence(stripped)}]{${renderLinkAttrs(sharedMark)}}`
+    return `::placeholder{${parts.join(' ')}}`
   }
 
-  return nodes.map(serializeSingleNode).join('')
-}
-
-/**
- * Find the first link mark that is present on every node in the sequence.
- * Only text and placeholder nodes can carry link marks.
- * Hardbreak nodes break the run — return undefined if any are present.
- * @internal
- */
-function findSharedLinkMark(nodes: SmsInlineNode[]): SmsLinkMark | undefined {
-  if (nodes.length === 0) return undefined
-
-  const first = nodes[0]
-
-  // Hardbreaks don't carry marks; if first node is a hardbreak, no shared mark
-  if (first === undefined || first.type === 'hardbreak') return undefined
-
-  const firstMarks = first.type === 'text' ? (first.marks ?? []) : []
-
-  for (const candidate of firstMarks) {
-    const onEveryNode = nodes.every((n) => {
-      if (n.type === 'hardbreak') return false
-      if (n.type === 'text') return (n.marks ?? []).some((m) => linkMarksEqual(m, candidate))
-
-      // placeholder: no marks — would break the shared mark assumption
-      return false
-    })
-
-    if (onEveryNode) return candidate
-  }
-
-  return undefined
-}
-
-// ─── Single node serializer ───────────────────────────────────────────────────
-
-/** Serialize a single inline node to its SMS RFM text fragment. @internal */
-function serializeSingleNode(node: SmsInlineNode): string {
-  switch (node.type) {
-    case 'text': {
-      const linkMark = node.marks?.find((m) => m.type === 'link')
-
-      if (linkMark) {
-        return `:link[${node.text}]{${renderLinkAttrs(linkMark)}}`
-      }
-
-      return node.text
-    }
-
-    case 'hardbreak':
-      return '\n'
-
-    case 'placeholder': {
-      const { value, 'max-length': maxLen, type, original, name } = node.attrs
-
-      if (value !== null || maxLen !== null) {
-        const parts = [`type="${type}"`, `original="${original}"`, `name="${name}"`]
-
-        if (value !== null) parts.push(`value="${value}"`)
-        if (maxLen !== null) parts.push(`max-length="${maxLen}"`)
-
-        return `::placeholder{${parts.join(' ')}}`
-      }
-
-      return original
-    }
-
-    default:
-      return ''
-  }
+  return original
 }
 
 // ─── Public entry point ───────────────────────────────────────────────────────
@@ -146,5 +44,18 @@ function serializeSingleNode(node: SmsInlineNode): string {
  * @internal — called by the public `jsonToSmsRfm` wrapper.
  */
 export function serializeSmsJson(json: SmsContentJson): string {
-  return json.content.map(serializeParagraph).join('\n\n')
+  return json.content
+    .map((node) => {
+      switch (node.type) {
+        case 'message':
+          return node.text
+        case 'link':
+          return serializeLinkNode(node)
+        case 'placeholder':
+          return serializePlaceholderNode(node)
+        default:
+          return ''
+      }
+    })
+    .join('')
 }

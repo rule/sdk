@@ -12,41 +12,34 @@ see [Building programmatically](../building-programmatically).
 
 ## What SMS RFM contains
 
-An SMS RFM string is built from four constructs:
+An SMS RFM string is built from three constructs:
 
-1. **Paragraphs** — separated by blank lines.
-2. **Hard breaks** — forced line breaks inside a paragraph.
-3. **Placeholders** — dynamic values substituted at send time.
-4. **Links** — text that becomes a hyperlink with tracking and shortening flags.
+1. **Message text** — plain text including any embedded line breaks.
+2. **Placeholders** — dynamic values substituted at send time.
+3. **Links** — hyperlinks with tracking and shortening flags.
 
-That is the entire format. Plain text written between these constructs becomes
-text nodes verbatim.
+That is the entire format. Plain text written between placeholders and links
+becomes `message` nodes in `SmsContentJson`.
 
-## Paragraphs
+## Message text
 
-A paragraph is a block of text on consecutive lines. A blank line ends one
-paragraph and starts the next:
-
-```
-First paragraph.
-
-Second paragraph.
-```
-
-See [`paragraph`](../content/nodes/paragraph) for the node reference.
-
-## Hard breaks
-
-A hard break is a line break that stays inside the same paragraph. Write a
-backslash at the end of a line, or two trailing spaces, to insert one:
+Any text that is not a placeholder or link directive becomes a `message` node.
+Line breaks — whether single (`\n`) or multiple (`\n\n`) — are preserved inside
+the `text` field of the resulting `message` node. There is no separate line-break
+construct; line breaks are just characters in the text.
 
 ```
-First line\
-Second line — same paragraph
+First line
+Second line
 ```
 
-See [`hardbreak`](../content/nodes/hardbreak) for the node reference and the
-distinction between hard breaks and paragraph boundaries.
+Compiles to:
+
+```json
+{ "type": "sms", "content": [{ "type": "message", "text": "First line\nSecond line" }] }
+```
+
+See [`message`](../content/nodes/message) for the node reference.
 
 ## Placeholders
 
@@ -66,10 +59,10 @@ Six token types are available: `Subscriber`, `User`, `CustomField`, `Date`,
 
 Plain-text `[Type:Name]` tokens belong inside the `original` attribute of a
 `::placeholder{…}` directive (as shown above) or inside a URL value such as
-`href="[Link:Unsubscribe]"`. The parser does also accept a bare `[Type:Name]`
-token as a backward-compatible shorthand and produces an equivalent
-placeholder node from it, but the `::placeholder{…}` directive is the
-recommended form for body content because it carries the full `name` /
+the `text` of a `:link` directive. The parser does also accept a bare
+`[Type:Name]` token as a backward-compatible shorthand and produces an
+equivalent placeholder node from it, but the `::placeholder{…}` directive is
+the recommended form for body content because it carries the full `name` /
 `value` / `max-length` attributes the editor expects.
 
 See [`placeholder`](../content/nodes/placeholder) for the full attribute table,
@@ -77,45 +70,41 @@ the catalogue of all six token types, and per-token examples.
 
 ## Links
 
-A link wraps a span of text in a hyperlink. The `:link[…]{…}` directive provides
-the destination URL, a tracking flag, and a URL-shortening flag:
+A link is a top-level node in `SmsContentJson`. The `:link[…]{…}` directive
+provides the destination URL, a tracking flag, and a URL-shortening flag:
 
 ```
-Click :link[here]{href="https://example.com" track="true" shorten="true"} to track your order.
+Click :link[https://example.com/track]{href="https://example.com/track" track="true" shorten="true"} to track your order.
 ```
 
-Inside `href` a plain-text `[Link:…]` token is the right form for
-system-managed URLs:
+The URL in the brackets (`[…]`) and in `href` should be the same — `text`
+carries the URL as both the destination and the display value.
 
-```
-:link[Unsubscribe]{href="[Link:Unsubscribe]" track="false" shorten="false"}
-```
+Any text around the link directive becomes adjacent `message` nodes. In the
+example above, `"Click "` becomes one `message` node, then the link node, then
+`" to track your order."` becomes another.
 
-See the [link mark](../content/marks/link) page for the full attribute reference.
+See [`link`](../content/nodes/link) for the full attribute reference.
 
 ## A complete example
 
-A short marketing message exercising all four constructs:
+A short marketing message exercising all three constructs:
 
 ```
-Hi ::placeholder{type="Subscriber" original="[Subscriber:FirstName]" name="First name"},\
+Hi ::placeholder{type="Subscriber" original="[Subscriber:FirstName]" name="First name"},
 your order ::placeholder{type="CustomField" original="[CustomField:Order.Id]" name="Order.Id"} has shipped.
 
-Track it here: :link[track shipment]{href="https://example.com/track/[CustomField:Order.Id]" track="true" shorten="true"}
-
-Reply STOP to unsubscribe.
+Track it: :link[https://example.com/track]{href="https://example.com/track" track="true" shorten="true"}
 ```
 
-This compiles to a three-paragraph `SmsContentJson` document — a greeting with a
-hard break and two placeholders, a tracking link, and a footer — exactly the
+This compiles to a flat `SmsContentJson` sequence — alternating `message` and
+`placeholder` nodes, with one `link` node for the tracking URL — exactly the
 shape described on the [SMS document](./sms-document) page.
 
 ## Related
 
-- [`paragraph`](../content/nodes/paragraph) — paragraph node reference
-- [`hardbreak`](../content/nodes/hardbreak) — hard break node reference
-- [`text`](../content/nodes/text) — text node reference
+- [`message`](../content/nodes/message) — message node reference
 - [`placeholder`](../content/nodes/placeholder) — placeholder node reference and token catalogue
-- [link mark](../content/marks/link) — link mark reference
+- [`link`](../content/nodes/link) — link node reference
 - [SMS document](./sms-document) — the document model SMS RFM compiles to
 - [Building programmatically](../building-programmatically) — `smsRfmToJson` / `jsonToSmsRfm` and the rest of the API

@@ -17,19 +17,14 @@ describe('validateSmsJson()', () => {
     expect(() => validateSmsJson(doc)).not.toThrow()
   })
 
-  it('accepts a text node with link mark', () => {
+  it('accepts a link node', () => {
     const doc = {
-      type: 'doc',
+      type: 'sms',
       content: [
         {
-          type: 'paragraph',
-          content: [
-            {
-              type: 'text',
-              text: 'click',
-              marks: [{ type: 'link', attrs: { href: 'https://example.com', track: true, shorten: false } }],
-            },
-          ],
+          type: 'link',
+          text: 'https://example.com',
+          attrs: { track: true, shorten: false },
         },
       ],
     }
@@ -41,10 +36,10 @@ describe('validateSmsJson()', () => {
     expect(() => validateSmsJson({ content: [] })).toThrow(SmsContentParseError)
   })
 
-  it('rejects an unknown inline node type', () => {
+  it('rejects unknown node type', () => {
     const doc = {
-      type: 'doc',
-      content: [{ type: 'paragraph', content: [{ type: 'align', attrs: { value: 'left' }, content: [] }] }],
+      type: 'sms',
+      content: [{ type: 'paragraph', content: [] }],
     }
 
     expect(() => validateSmsJson(doc)).toThrow(SmsContentParseError)
@@ -52,23 +47,17 @@ describe('validateSmsJson()', () => {
 
   it('rejects extra properties on placeholder attrs', () => {
     const doc = {
-      type: 'doc',
+      type: 'sms',
       content: [
         {
-          type: 'paragraph',
-          content: [
-            {
-              type: 'placeholder',
-              attrs: {
-                type: 'Subscriber',
-                name: 'FirstName',
-                original: '[Subscriber:FirstName]',
-                value: null,
-                'max-length': null,
-                extra: 'oops',
-              },
-            },
-          ],
+          type: 'placeholder',
+          attrs: {
+            type: 'Subscriber',
+            name: 'FirstName',
+            original: '[Subscriber:FirstName]',
+            value: null,
+            extra: 'oops',
+          },
         },
       ],
     }
@@ -76,15 +65,13 @@ describe('validateSmsJson()', () => {
     expect(() => validateSmsJson(doc)).toThrow(SmsContentParseError)
   })
 
-  it('rejects font mark (email-only)', () => {
+  it('rejects old doc/paragraph format', () => {
     const doc = {
       type: 'doc',
       content: [
         {
           type: 'paragraph',
-          content: [
-            { type: 'text', text: 'bold', marks: [{ type: 'font', attrs: { 'font-weight': 'bold' } }] },
-          ],
+          content: [{ type: 'text', text: 'hello' }],
         },
       ],
     }
@@ -108,5 +95,42 @@ describe('safeParseSmsJson()', () => {
     if (!result.success) {
       expect(result.errors.length).toBeGreaterThan(0)
     }
+  })
+})
+
+describe('validateSmsJson() — is-unsubscribe', () => {
+  it('accepts a placeholder with is-unsubscribe: true', () => {
+    const doc = {
+      type: 'sms',
+      content: [
+        {
+          type: 'placeholder',
+          attrs: {
+            type: 'Link',
+            name: 'Unsubscribe',
+            original: '[Link:Unsubscribe]',
+            value: null,
+            'is-unsubscribe': true,
+          },
+        },
+      ],
+    }
+
+    expect(() => validateSmsJson(doc)).not.toThrow()
+  })
+
+  it('accepts a message node with is-unsubscribe: true', () => {
+    const doc = {
+      type: 'sms',
+      content: [
+        {
+          type: 'message',
+          text: '[Subscriber:unsubscribe_text]',
+          attrs: { 'is-unsubscribe': true },
+        },
+      ],
+    }
+
+    expect(() => validateSmsJson(doc)).not.toThrow()
   })
 })

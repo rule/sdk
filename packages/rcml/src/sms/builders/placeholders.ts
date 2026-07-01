@@ -70,16 +70,21 @@ export interface CreateSmsPlaceholderNodeOptions {
 export function createPlaceholderNode(
   opts: CreateSmsPlaceholderNodeOptions,
 ): SmsPlaceholderNode {
-  return {
+  const node: SmsPlaceholderNode = {
     type: 'placeholder',
     attrs: {
       type: opts.type,
       name: opts.name,
       original: opts.original,
       value: opts.value ?? null,
-      'max-length': opts.maxLength ?? null,
     },
   }
+
+  if (opts.maxLength !== undefined) {
+    node.attrs['max-length'] = opts.maxLength
+  }
+
+  return node
 }
 
 // ─── Subscriber ───────────────────────────────────────────────────────────────
@@ -107,8 +112,7 @@ export interface CreateSmsSubscriberPlaceholderOptions {
  * ```ts
  * sms.createSubscriberPlaceholder({ field: 'FirstName' })
  * // → { type: 'placeholder', attrs: { type: 'Subscriber',
- * //     original: '[Subscriber:FirstName]', name: 'FirstName',
- * //     value: null, 'max-length': null } }
+ * //     original: '[Subscriber:FirstName]', name: 'FirstName', value: null } }
  * ```
  * @public
  */
@@ -195,7 +199,7 @@ export function createCustomFieldPlaceholder(
     type: 'CustomField',
     original: `[CustomField:${fullName}${truncSuffix}]`,
     name: fullName,
-    maxLength: opts.maxLength !== undefined ? String(opts.maxLength) : null,
+    maxLength: opts.maxLength !== undefined ? String(opts.maxLength) : undefined,
   })
 }
 
@@ -338,7 +342,7 @@ export function createRemoteContentPlaceholder(
 
 /**
  * The five system-managed link types that can be inserted as a `Link`
- * placeholder or as the `href` of a link mark.
+ * placeholder or as the `text` of a `link` node (see `createLinkNode`).
  *
  * @public
  */
@@ -357,11 +361,10 @@ export interface CreateSmsLinkPlaceholderOptions {
 
 /**
  * Build a `Link` placeholder node — inserts a system-managed link URL as
- * plain text in the message body. Use this when you want the raw URL
- * visible in the message.
+ * plain text in the message body.
  *
- * To produce a clickable link instead, use {@link createLinkMark} with
- * `href: '[Link:Unsubscribe]'` (or another system link) on a text node.
+ * To produce a clickable hyperlink instead, use {@link createLinkNode} with
+ * the system link URL as `url`.
  *
  * Produces `original = '[Link:<link>]'` and `name = '<link>'`.
  *

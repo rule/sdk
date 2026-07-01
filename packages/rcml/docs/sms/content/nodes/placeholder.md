@@ -12,17 +12,17 @@ system-managed link.
 | `name` | Yes | string | Human-readable display label shown in the editor chip. |
 | `original` | Yes | string | The backend token substituted at send time. |
 | `value` | Yes | string \| number \| null | Resolved preview value shown in the editor, or `null` when not yet resolved. |
-| `max-length` | Yes | string \| null | Maximum character length (truncates and appends `…`), or `null` for no limit. |
+| `max-length` | No | string \| null | Maximum character length (truncates and appends `…`). Omit when no limit is needed. |
 
 Allowed `type` values: `"CustomField"` | `"Subscriber"` | `"User"` | `"Date"` | `"RemoteContent"` | `"Link"`
 
 ## Children
 
-None (inline atom, leaf node).
+None (leaf node).
 
 ## Parent nodes
 
-- [`paragraph`](./paragraph)
+- [`sms`](./sms)
 
 ## Available in
 
@@ -62,11 +62,11 @@ Plain-text `[Type:Name]` tokens — `[Subscriber:FirstName]`,
 1. As the value of the `original` attribute on a placeholder node — the value
    appears verbatim inside the `::placeholder{…}` directive in SMS RFM and on
    `attrs.original` in JSON.
-2. As a URL value or part of a URL value — typically the `href` of a link
-   mark, or the URL passed to a `RemoteContent` placeholder.
+2. As a URL value or part of a URL value — typically the `text` of a
+   [`link`](./link) node, or the URL passed to a `RemoteContent` placeholder.
 
 ```
-:link[Unsubscribe]{href="[Link:Unsubscribe]" track="false" shorten="false"}
+:link[https://example.com]{href="https://example.com" track="false" shorten="false"}
 ```
 
 A bare `[Type:Name]` token is **not the recommended form** for placeholders
@@ -105,8 +105,7 @@ Inserts a standard subscriber profile field.
     "type": "Subscriber",
     "name": "First name",
     "original": "[Subscriber:FirstName]",
-    "value": null,
-    "max-length": null
+    "value": null
   }
 }
 ```
@@ -146,8 +145,7 @@ Inserts a field from the sender's Rule.io account profile.
     "type": "User",
     "name": "Company name",
     "original": "[User:CompanyName]",
-    "value": null,
-    "max-length": null
+    "value": null
   }
 }
 ```
@@ -175,8 +173,7 @@ truncate the value to N characters and append `…`.
     "type": "CustomField",
     "name": "Order.Total",
     "original": "[CustomField:Order.Total]",
-    "value": null,
-    "max-length": null
+    "value": null
   }
 }
 ```
@@ -238,8 +235,7 @@ Supported values: `Y-m-d`, `d.m.Y`, `m-d-Y`, `m/d/Y`, `d/m/Y`.
     "type": "Date",
     "name": "Offer expires",
     "original": "[Date:tomorrow::d.m.Y]",
-    "value": null,
-    "max-length": null
+    "value": null
   }
 }
 ```
@@ -267,8 +263,7 @@ always `"RemoteContent"`. The URL may contain nested `[CustomField:…]`,
     "type": "RemoteContent",
     "name": "RemoteContent",
     "original": "[RemoteContent:https://api.example.com/promo]",
-    "value": null,
-    "max-length": null
+    "value": null
   }
 }
 ```
@@ -282,8 +277,7 @@ With nested tokens in the URL:
     "type": "RemoteContent",
     "name": "RemoteContent",
     "original": "[RemoteContent:https://api.example.com/offer?id=[CustomField:Order.Id]&email=[Subscriber:email]]",
-    "value": null,
-    "max-length": null
+    "value": null
   }
 }
 ```
@@ -319,8 +313,7 @@ URL visible in the message body rather than as linked text.
     "type": "Link",
     "name": "Unsubscribe",
     "original": "[Link:Unsubscribe]",
-    "value": null,
-    "max-length": null
+    "value": null
   }
 }
 ```
@@ -331,18 +324,18 @@ URL visible in the message body rather than as linked text.
 Reply STOP or unsubscribe here: ::placeholder{type="Link" original="[Link:Unsubscribe]" name="Unsubscribe"}
 ```
 
-### Link tokens in link marks
+### Link tokens in link nodes
 
-A `[Link:…]` token is the correct form for the `href` attribute of a
-[`link` mark](../marks/link) — that is the second of the two valid locations
+A `[Link:…]` token is a valid value for the `text` field of a
+[`link`](./link) node — that is the second of the two valid locations
 for plain-text tokens described above:
 
 ```
-Reply STOP or unsubscribe: :link[click here]{href="[Link:Unsubscribe]" track="true" shorten="false"}
+:link[https://example.com/unsubscribe]{href="[Link:Unsubscribe]" track="true" shorten="false"}
 ```
 
 Use the `::placeholder{…}` form when you want the URL rendered as plain text in the
-message body; use the link mark form when you want trackable linked text.
+message body; use the [`link` node](./link) form when you want trackable linked text.
 
 ---
 

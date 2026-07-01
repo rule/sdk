@@ -17,18 +17,15 @@ takes no attributes.
 ## Content
 
 The element body is an SMS RFM string. During XML parsing, the body is converted
-to an `SmsContentJson` ProseMirror document. In the JSON representation, the
-`content` field holds the parsed `SmsContentJson` directly.
+to an `SmsContentJson` document. In the JSON representation, the `content` field
+holds the parsed `SmsContentJson` directly.
 
 Content type: `sms-rfm-content` — see
 [`smsRfmSpec.flavors['sms-rfm-content']`](/api/rcml/src/variables/smsRfmSpec).
 
-Valid block nodes: [`paragraph`](../content/nodes/paragraph)
-
-Valid inline nodes inside paragraphs: [`text`](../content/nodes/text),
-[`placeholder`](../content/nodes/placeholder), [`hardbreak`](../content/nodes/hardbreak)
-
-Valid marks on text nodes: [`link`](../content/marks/link)
+Valid top-level nodes: [`message`](../content/nodes/message),
+[`link`](../content/nodes/link),
+[`placeholder`](../content/nodes/placeholder)
 
 ## Children
 
@@ -51,25 +48,19 @@ None — `rc-sms` is the document root.
   "tagName": "rc-sms",
   "attributes": {},
   "content": {
-    "type": "doc",
+    "type": "sms",
     "content": [
+      { "type": "message", "text": "Hi " },
       {
-        "type": "paragraph",
-        "content": [
-          { "type": "text", "text": "Hi " },
-          {
-            "type": "placeholder",
-            "attrs": {
-              "type": "Subscriber",
-              "name": "First name",
-              "original": "[Subscriber:FirstName]",
-              "value": null,
-              "max-length": null
-            }
-          },
-          { "type": "text", "text": ", your order has shipped!" }
-        ]
-      }
+        "type": "placeholder",
+        "attrs": {
+          "type": "Subscriber",
+          "name": "First name",
+          "original": "[Subscriber:FirstName]",
+          "value": null
+        }
+      },
+      { "type": "message", "text": ", your order has shipped!" }
     ]
   }
 }
@@ -86,6 +77,7 @@ the full walkthrough.
 
 - [SMS document](../concepts/sms-document) — `SmsDocument` and `SmsContentJson` types
 - [SMS RFM](../concepts/sms-rfm) — SMS RFM syntax reference
+- [`message`](../content/nodes/message) — message node reference
+- [`link`](../content/nodes/link) — link node reference
 - [`placeholder`](../content/nodes/placeholder) — placeholder node and all token types
-- [link mark](../content/marks/link) — link mark reference
 - [Building programmatically](../building-programmatically) — full document construction walkthrough

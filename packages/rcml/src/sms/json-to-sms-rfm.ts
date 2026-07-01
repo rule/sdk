@@ -8,14 +8,13 @@ import type { SmsContentJson } from './content/json-validator/types.js'
 /**
  * Convert an {@link SmsContentJson} document back to an SMS RFM string.
  *
- * Reverse of {@link smsRfmToJson}. The conversion is lossless:
- * - Text nodes with a link mark → `:link[text]{href="..." track="..." shorten="..."}`
- * - Placeholder nodes with a resolved value or max-length → `::placeholder{...}` directive form
- * - Placeholder nodes with null value and null max-length → compact `[Type:Name]` form
- * - Hardbreaks → `\` at line end
- * - Paragraphs → separated by `\n\n`
+ * Reverse of {@link smsRfmToJson}. Serialization rules:
+ * - `message` nodes → text verbatim (embedded `\n` stays as-is)
+ * - `link` nodes → `:link[url]{href="url" track="..." shorten="..."}`
+ * - `placeholder` nodes with a resolved value or `max-length` → `::placeholder{...}` directive form
+ * - `placeholder` nodes with null value and absent/null `max-length` → compact `[Type:Name]` form
  *
- * @param json - Typed SMS content JSON (`{ type: 'doc', content: [...] }`).
+ * @param json - Typed SMS content JSON (`{ type: 'sms', content: [...] }`).
  * @returns SMS RFM string.
  *
  * @example

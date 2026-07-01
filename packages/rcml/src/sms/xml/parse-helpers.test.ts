@@ -25,9 +25,7 @@ describe('convertXmlToSms()', () => {
     expect(result.success).toBe(true)
 
     if (result.success) {
-      const para = result.data.content.content[0]!
-
-      expect(para.content?.some((n) => n.type === 'placeholder')).toBe(true)
+      expect(result.data.content.content.some((n) => n.type === 'placeholder')).toBe(true)
     }
   })
 

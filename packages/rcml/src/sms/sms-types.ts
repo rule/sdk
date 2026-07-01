@@ -9,7 +9,7 @@
  * {
  *   tagName: 'rc-sms',
  *   attributes: {},
- *   content: { type: 'doc', content: [...] }
+ *   content: { type: 'sms', content: [...] }
  * }
  * ```
  *

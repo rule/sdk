@@ -14,13 +14,10 @@ export type {
   SmsContentValidationError,
   SmsContentSafeParseResult,
   SmsPlaceholderType,
-  SmsParagraphNode,
-  SmsInlineNode,
-  SmsTextNode,
-  SmsHardbreakNode,
+  SmsMessageNode,
+  SmsLinkNode,
   SmsPlaceholderNode,
-  SmsMark,
-  SmsLinkMark,
+  SmsTopLevelNode,
 } from './validate-sms-json.js'
 
 export {
@@ -59,17 +56,16 @@ export type {
   SmsDocumentBuildIssue,
 } from './builders/index.js'
 
-// Content-JSON builder namespace — the public import surface for SMS node and
-// mark builders. Access via `sms.createTextNode(...)`, etc.
+// Content-JSON builder namespace — the public import surface for SMS node builders.
+// Access via `sms.createMessageNode(...)`, `sms.createLinkNode(...)`, etc.
 export { sms } from './builders/index.js'
 // Option-type names are re-exported for use in caller code that wants to
 // declare typed wrappers around builders. Function names are intentionally
 // not re-exported flat — use the `sms.` namespace.
 export type {
   CreateSmsContentOptions,
-  CreateSmsParagraphNodeOptions,
-  CreateSmsTextNodeOptions,
-  CreateSmsLinkMarkOptions,
+  CreateSmsMessageNodeOptions,
+  CreateSmsLinkNodeOptions,
   CreateSmsPlaceholderNodeOptions,
   CreateSmsSubscriberPlaceholderOptions,
   CreateSmsUserPlaceholderOptions,

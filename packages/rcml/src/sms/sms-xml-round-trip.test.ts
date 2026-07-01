@@ -41,7 +41,7 @@ const ROUND_TRIP_DOCS: ReadonlyArray<{ name: string; doc: SmsDocument }> = [
     },
   },
   {
-    name: 'hardbreak within paragraph',
+    name: 'newline within message',
     doc: {
       tagName: 'rc-sms',
       attributes: {},
@@ -66,12 +66,6 @@ const ROUND_TRIP_DOCS: ReadonlyArray<{ name: string; doc: SmsDocument }> = [
     },
   },
 ]
-
-// Documents with link marks are exercised separately under
-// `describe('XML round-trip — link marks', …)` below — not because the
-// round-trip is lossy (it isn't; the SMS RFM serializer emits a `:link`
-// directive that the parser reads back into the same mark) but to keep
-// the link-mark assertion focused on its own table.
 
 describe('smsToXml → xmlToSms round-trip', () => {
   for (const { name, doc } of ROUND_TRIP_DOCS) {
@@ -106,24 +100,19 @@ describe('xmlToSms → smsToXml (string → JSON → string) idempotence', () =>
   })
 })
 
-describe('XML round-trip — link marks', () => {
-  it('link marks survive the XML round-trip via :link directive syntax', () => {
+describe('XML round-trip — link nodes', () => {
+  it('link nodes survive the XML round-trip via :link directive syntax', () => {
     const docWithLink: SmsDocument = {
       tagName: 'rc-sms',
       attributes: {},
       content: {
-        type: 'doc',
+        type: 'sms',
         content: [
+          { type: 'message', text: 'Hello ' },
           {
-            type: 'paragraph',
-            content: [
-              { type: 'text', text: 'Hello ' },
-              {
-                type: 'text',
-                text: 'click here',
-                marks: [{ type: 'link', attrs: { href: 'https://example.com', track: true, shorten: false } }],
-              },
-            ],
+            type: 'link',
+            text: 'https://example.com',
+            attrs: { track: true, shorten: false },
           },
         ],
       },
@@ -132,7 +121,7 @@ describe('XML round-trip — link marks', () => {
     const xml = smsToXml(docWithLink)
     const restored = xmlToSms(xml)
 
-    // Link marks are preserved via :link[...]{...} directive serialization.
+    // Link nodes are preserved via :link[...]{...} directive serialization.
     expect(restored.content).toEqual(docWithLink.content)
   })
 })

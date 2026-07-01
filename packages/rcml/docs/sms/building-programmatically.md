@@ -12,8 +12,8 @@ representation.
 
 1. As the value of the `original` attribute on a `placeholder` node, whether
    the node is written as `::placeholder{…}` in SMS RFM or as JSON.
-2. Inside a URL value or part of a URL value — typically the `href` of a link
-   mark or the URL given to `RemoteContent`.
+2. Inside a URL value or part of a URL value — typically the `text` of a
+   [`link`](./content/nodes/link) node or the URL given to `RemoteContent`.
 
 They are **not the recommended form** for body content. The parser does
 accept a bare `[Type:Name]` token as a backward-compatible shorthand —
@@ -68,19 +68,12 @@ const json = smsRfmToJson(
   'Hi ::placeholder{type="Subscriber" original="[Subscriber:FirstName]" name="First name"}!\nYour order is ready.'
 );
 // {
-//   type: 'doc',
+//   type: 'sms',
 //   content: [
-//     {
-//       type: 'paragraph',
-//       content: [
-//         { type: 'text', text: 'Hi ' },
-//         { type: 'placeholder', attrs: { type: 'Subscriber', original: '[Subscriber:FirstName]',
-//             name: 'First name', value: null, 'max-length': null } },
-//         { type: 'text', text: '!' },
-//         { type: 'hardbreak', attrs: { isInline: false } },
-//         { type: 'text', text: 'Your order is ready.' },
-//       ],
-//     },
+//     { type: 'message', text: 'Hi ' },
+//     { type: 'placeholder', attrs: { type: 'Subscriber', original: '[Subscriber:FirstName]',
+//         name: 'First name', value: null } },
+//     { type: 'message', text: '!\nYour order is ready.' },
 //   ],
 // }
 
@@ -89,32 +82,31 @@ const rfm = jsonToSmsRfm(json);
 // → 'Hi [Subscriber:FirstName]!\nYour order is ready.'
 ```
 
-The `\n` in the SMS RFM string becomes a `hardbreak` node — a forced line
-break within the same paragraph. A blank line (`\n\n`) would produce a new
-`paragraph` node instead.
+Both `\n` and `\n\n` in the SMS RFM string produce `\n` characters in the
+resulting `message` node text. Line breaks are just characters — there are no
+separate break nodes.
 
 ### Serializer output
 
 Notice the asymmetry between input and output: the recommended *input* form
 for a placeholder is the `::placeholder{…}` directive, but `jsonToSmsRfm`
 *emits* the compact `[Type:Name]` form when both `value` and `max-length` are
-null. This is a serializer optimization for compact output, not a suggestion
-about how to write SMS RFM by hand. The parser accepts both forms; consumers
-that re-parse the serializer's output get back the same `SmsContentJson` tree
-either way.
+absent or null. This is a serializer optimization for compact output, not a
+suggestion about how to write SMS RFM by hand. The parser accepts both forms;
+consumers that re-parse the serializer's output get back the same
+`SmsContentJson` tree either way.
 
 ## Builders
 
 The `sms` namespace exposes typed factory functions that return correctly
-shaped `SmsContentJson` nodes and marks. Use builders when the document is
-composed from variables — a custom-field group held in code, a date offset
-that needs to be computed, a URL that depends on an environment.
+shaped `SmsContentJson` nodes. Use builders when the document is composed from
+variables — a custom-field group held in code, a date offset that needs to be
+computed, a URL that depends on an environment.
 
 Builders give full type checking, no string concatenation, and no exposure to
-wire-format details (`'max-length'` kebab key, `original` token format,
-`isInline: false` flag). They perform no validation themselves; the
-TypeScript types catch shape errors and `createSmsDocument` validates the
-assembled document at the boundary.
+wire-format details (`'max-length'` kebab key, `original` token format). They
+perform no validation themselves; the TypeScript types catch shape errors and
+`createSmsDocument` validates the assembled document at the boundary.
 
 A small worked example:
 
@@ -122,14 +114,10 @@ A small worked example:
 import { sms, createSmsDocument } from '@rule/rcml';
 
 const content = sms.createContent({
-  paragraphs: [
-    sms.createParagraphNode({
-      content: [
-        sms.createTextNode({ text: 'Hi ' }),
-        sms.createSubscriberPlaceholder({ field: 'FirstName' }),
-        sms.createTextNode({ text: '!' }),
-      ],
-    }),
+  nodes: [
+    sms.createMessageNode({ text: 'Hi ' }),
+    sms.createSubscriberPlaceholder({ field: 'FirstName' }),
+    sms.createMessageNode({ text: '!' }),
   ],
 });
 
@@ -137,134 +125,110 @@ const doc = createSmsDocument({ content });
 ```
 
 The remainder of this section is the builder reference. Read the
-[`placeholder`](./content/nodes/placeholder), [`text`](./content/nodes/text),
-[`paragraph`](./content/nodes/paragraph),
-[`hardbreak`](./content/nodes/hardbreak), and
-[link mark](./content/marks/link) reference pages for the JSON shapes each
-builder produces.
+[`message`](./content/nodes/message), [`link`](./content/nodes/link), and
+[`placeholder`](./content/nodes/placeholder) reference pages for the JSON shapes
+each builder produces.
 
 ### Document and node builders
 
 #### `sms.createContent`
 
-Wraps one or more paragraph nodes in a root `doc` node — the shape of
+Wraps top-level nodes in a root `sms` node — the shape of
 [`SmsContentJson`](./concepts/sms-document).
 
 ```typescript
-function createContent(opts: { paragraphs: SmsParagraphNode[] }): SmsContentJson;
+function createContent(opts: { nodes: SmsTopLevelNode[] }): SmsContentJson;
 ```
 
 ```typescript
 const content = sms.createContent({
-  paragraphs: [
-    sms.createParagraphNode({ content: [sms.createTextNode({ text: 'Hello' })] }),
-  ],
+  nodes: [sms.createMessageNode({ text: 'Hello' })],
 });
-// → { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Hello' }] }] }
+// → { type: 'sms', content: [{ type: 'message', text: 'Hello' }] }
 ```
 
-#### `sms.createParagraphNode`
+#### `sms.createMessageNode`
 
-Builds a paragraph from a sequence of inline nodes. Pass an empty array (or
-omit the option) for an empty paragraph; the result will have no `content`
-field, as the schema expects.
-
-```typescript
-function createParagraphNode(opts?: { content?: SmsInlineNode[] }): SmsParagraphNode;
-```
+Builds a message node with arbitrary text. Embedded `\n` characters produce
+line breaks in the sent message.
 
 ```typescript
-sms.createParagraphNode({
-  content: [
-    sms.createTextNode({ text: 'Hi ' }),
-    sms.createSubscriberPlaceholder({ field: 'FirstName' }),
-    sms.createTextNode({ text: '!' }),
-  ],
-});
-
-sms.createParagraphNode();
-// → { type: 'paragraph' }
-```
-
-#### `sms.createTextNode`
-
-Builds a leaf text node, optionally with a [link mark](./content/marks/link)
-applied. When no marks are supplied (or an empty array is passed), the
-returned node has no `marks` field — never `marks: []`.
-
-```typescript
-function createTextNode(opts: { text: string; marks?: SmsMark[] }): SmsTextNode;
+function createMessageNode(opts: { text: string }): SmsMessageNode;
 ```
 
 ```typescript
-sms.createTextNode({ text: 'Hello, world' });
-// → { type: 'text', text: 'Hello, world' }
+sms.createMessageNode({ text: 'Hello, world' });
+// → { type: 'message', text: 'Hello, world' }
 
-sms.createTextNode({
-  text: 'click here',
-  marks: [sms.createLinkMark({
-    href: 'https://example.com',
-    track: true,
-    shorten: false,
-  })],
-});
+sms.createMessageNode({ text: 'Line one\nLine two' });
+// → { type: 'message', text: 'Line one\nLine two' }
 ```
 
-#### `sms.createHardbreakNode`
+#### `sms.createLinkNode`
 
-Builds a hard line break that stays inside the current paragraph. Takes no
-options — the parser produces `isInline: false`, and the builder matches that
-shape.
+Builds a link node with a destination URL and tracking/shortening flags.
 
 ```typescript
-function createHardbreakNode(): SmsHardbreakNode;
-```
-
-```typescript
-sms.createHardbreakNode();
-// → { type: 'hardbreak', attrs: { isInline: false } }
-```
-
-### Mark builders
-
-#### `sms.createLinkMark`
-
-Builds a `link` mark with destination URL, click-tracking flag, and
-URL-shortening flag. Apply it via the `marks` field of a text node.
-
-```typescript
-function createLinkMark(opts: {
-  href: string;
+function createLinkNode(opts: {
+  url: string;
   track: boolean;
   shorten: boolean;
-}): SmsLinkMark;
+}): SmsLinkNode;
 ```
 
 ```typescript
-sms.createLinkMark({
-  href: 'https://example.com/orders/[CustomField:Order.Id]',
+sms.createLinkNode({
+  url: 'https://example.com/orders/123',
   track: true,
   shorten: true,
 });
-// → { type: 'link', attrs: { href: '…', track: true, shorten: true } }
+// → { type: 'link', text: 'https://example.com/orders/123', attrs: { track: true, shorten: true } }
 ```
 
-The `href` is one of the two valid locations for plain-text tokens. It
-accepts `[Link:Unsubscribe]`, `[CustomField:…]`, and other tokens — the Rule
-platform resolves them at send time.
+#### `sms.createUnsubscribeNodes`
 
-The same link in SMS RFM string form uses the `:link[…]{…}` directive:
+Produces the two-node unsubscribe footer as a spreadable tuple: a localised
+stop-word message followed by the system unsubscribe link placeholder.
 
 ```typescript
-const doc = createSmsDocument({
-  content:
-    'View your order: :link[track shipment]{href="https://example.com/orders/[CustomField:Order.Id]" track="true" shorten="true"}',
+function createUnsubscribeNodes(): [SmsMessageNode, SmsPlaceholderNode];
+```
+
+Spread the result directly into a `createContent({ nodes })` call:
+
+```typescript
+sms.createContent({
+  nodes: [
+    sms.createMessageNode({ text: 'Your order has shipped.' }),
+    ...sms.createUnsubscribeNodes(),
+  ],
 });
 ```
 
-The link mark's `track` and `shorten` flags are booleans in `SmsContentJson`.
-In the SMS RFM directive form they appear as the strings `"true"` /
-`"false"`; the parser converts them.
+JSON equivalent of the two nodes produced:
+
+```json
+[
+  {
+    "type": "message",
+    "text": "[Subscriber:unsubscribe_text]",
+    "attrs": { "is-unsubscribe": true }
+  },
+  {
+    "type": "placeholder",
+    "attrs": {
+      "type": "Link",
+      "name": "Unsubscribe",
+      "original": "[Link:Unsubscribe]",
+      "value": null,
+      "is-unsubscribe": true
+    }
+  }
+]
+```
+
+The `is-unsubscribe` marker signals to the Rule platform that the block is the
+opt-out footer. When present, the platform does not append its own footer.
 
 ### Placeholder builders
 
@@ -399,8 +363,8 @@ Inserts a system-managed link URL as plain text in the message body — Rule's
 unsubscribe URL, web-browser-view URL, and similar. The `link` argument is a
 closed enum of the five available link types.
 
-To produce clickable text instead, use `sms.createLinkMark` with the same
-`[Link:…]` token as the `href`.
+To produce a clickable link instead, use `sms.createLinkNode` with the
+system-link URL as `url`.
 
 ```typescript
 type SmsSystemLinkType =
@@ -522,44 +486,25 @@ if (!validated.success) {
 
 ## Putting it together
 
-A complete order-shipped SMS built with builders only — three paragraphs, two
-placeholders, one link mark, one hardbreak, one system-link placeholder:
+A complete order-shipped SMS built with builders only — message nodes,
+placeholders, a link node, and a system-link placeholder:
 
 ```typescript
 import { sms, createSmsDocument } from '@rule/rcml';
 
 const content = sms.createContent({
-  paragraphs: [
-    sms.createParagraphNode({
-      content: [
-        sms.createTextNode({ text: 'Hi ' }),
-        sms.createSubscriberPlaceholder({ field: 'FirstName' }),
-        sms.createTextNode({ text: ',' }),
-        sms.createHardbreakNode(),
-        sms.createTextNode({ text: 'your order ' }),
-        sms.createCustomFieldPlaceholder({ group: 'Order', name: 'Id' }),
-        sms.createTextNode({ text: ' has shipped.' }),
-      ],
+  nodes: [
+    sms.createMessageNode({ text: 'Hi ' }),
+    sms.createSubscriberPlaceholder({ field: 'FirstName' }),
+    sms.createMessageNode({ text: ',\nyour order ' }),
+    sms.createCustomFieldPlaceholder({ group: 'Order', name: 'Id' }),
+    sms.createMessageNode({ text: ' has shipped.\nTrack it: ' }),
+    sms.createLinkNode({
+      url: 'https://example.com/orders/[CustomField:Order.Id]',
+      track: true,
+      shorten: true,
     }),
-    sms.createParagraphNode({
-      content: [
-        sms.createTextNode({ text: 'Track it: ' }),
-        sms.createTextNode({
-          text: 'click here',
-          marks: [sms.createLinkMark({
-            href: 'https://example.com/orders/[CustomField:Order.Id]',
-            track: true,
-            shorten: true,
-          })],
-        }),
-      ],
-    }),
-    sms.createParagraphNode({
-      content: [
-        sms.createTextNode({ text: 'Reply STOP: ' }),
-        sms.createLinkPlaceholder({ link: 'Unsubscribe' }),
-      ],
-    }),
+    ...sms.createUnsubscribeNodes(),
   ],
 });
 
@@ -570,8 +515,9 @@ const doc = createSmsDocument({ content });
 
 - [SMS document](./concepts/sms-document) — `SmsDocument` and `SmsContentJson` types
 - [SMS RFM](./concepts/sms-rfm) — SMS RFM source format
+- [`message`](./content/nodes/message) — message node reference
+- [`link`](./content/nodes/link) — link node reference
 - [`placeholder`](./content/nodes/placeholder) — placeholder node attribute reference
-- [link mark](./content/marks/link) — link mark attribute reference
 - [Validation](./validation) — error types and codes
 - [Building with LLM](./building-with-llm) — spec-driven generation workflow
 - [`createSmsDocument`](/api/rcml/src/functions/createSmsDocument) — API reference

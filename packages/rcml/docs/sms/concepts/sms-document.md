@@ -26,47 +26,58 @@ render and for the Rule platform to substitute placeholders into at send time.
 
 ## The `SmsContentJson` tree
 
-`SmsContentJson` is a tree-shaped document model — the same shape the Rule editor
-uses internally — that describes the message body as a sequence of paragraphs,
-each containing a mixture of text, placeholders, and hard breaks.
+`SmsContentJson` is a flat document model — the same shape the Rule editor uses
+internally — that describes the message body as a linear sequence of top-level
+nodes.
 
 Storing content as `SmsContentJson` means a template can be loaded directly into
 the Rule editor for human editing and saved back without an intermediate
 conversion step.
 
-The top of the tree is always a `doc` node:
+The top of the tree is always an `sms` node:
 
 ```typescript
 type SmsContentJson = {
-  type: 'doc';
-  content: SmsParagraphNode[];
+  type: 'sms';
+  content: SmsTopLevelNode[];
 };
 ```
 
-Each paragraph holds a sequence of inline nodes:
+The `content` array holds a flat sequence of nodes — there are no intermediate
+block wrappers. Three node types are valid at the top level:
 
 ```typescript
-type SmsParagraphNode = {
-  type: 'paragraph';
-  content?: SmsInlineNode[];
-};
-
-type SmsInlineNode = SmsTextNode | SmsPlaceholderNode | SmsHardbreakNode;
+type SmsTopLevelNode = SmsMessageNode | SmsLinkNode | SmsPlaceholderNode;
 ```
 
-## Inline node types
+## Node types
 
-Three inline node types exist, and one mark may be applied to text nodes.
+### Message
 
-### Text
-
-A run of plain text, optionally carrying a [link mark](../content/marks/link):
+A run of plain text. Line breaks within the message are embedded directly as
+`\n` characters in the `text` field — there are no separate line-break nodes.
 
 ```typescript
-type SmsTextNode = {
-  type: 'text';
-  text: string;               // non-empty
-  marks?: SmsLinkMark[];      // omit when no marks are applied
+type SmsMessageNode = {
+  type: 'message';
+  text: string;
+};
+```
+
+### Link
+
+A hyperlink with click-tracking and URL-shortening controls. The `text` field
+holds the destination URL, which the Rule platform renders as a clickable link
+when the message is sent.
+
+```typescript
+type SmsLinkNode = {
+  type: 'link';
+  text: string;               // destination URL
+  attrs: {
+    track: boolean;           // enable click-through tracking
+    shorten: boolean;         // shorten the URL before sending
+  };
 };
 ```
 
@@ -84,7 +95,7 @@ type SmsPlaceholderNode = {
     name: string;             // human-readable label shown in the editor
     original: string;         // backend token, e.g. '[Subscriber:FirstName]'
     value: string | number | null;  // resolved preview value, or null
-    'max-length': string | null;    // truncation limit, or null
+    'max-length'?: string | null;   // truncation limit; omit when no limit
   };
 };
 ```
@@ -92,69 +103,32 @@ type SmsPlaceholderNode = {
 The full token catalogue with examples for each `type` value lives in
 [Placeholders](../content/nodes/placeholder).
 
-### Hardbreak
-
-A forced line break that stays inside the current paragraph (rather than starting
-a new one):
-
-```typescript
-type SmsHardbreakNode = {
-  type: 'hardbreak';
-  attrs: {
-    isInline: boolean;
-  };
-};
-```
-
-### Link mark
-
-The one mark that can be applied to a text node — turns the text run into a
-hyperlink with click-tracking and URL-shortening controls:
-
-```typescript
-type SmsLinkMark = {
-  type: 'link';
-  attrs: {
-    href: string;             // destination URL
-    track: boolean;           // enable click-through tracking
-    shorten: boolean;         // shorten the URL before sending
-  };
-};
-```
-
-The full attribute reference is on the [link mark page](../content/marks/link).
-
 ## A complete example
 
-Putting it together — a two-paragraph greeting with a placeholder and a hard break:
+A two-message greeting with a placeholder, a line break inside a message node,
+and a link:
 
 ```typescript
 const content: SmsContentJson = {
-  type: 'doc',
+  type: 'sms',
   content: [
+    { type: 'message', text: 'Hi ' },
     {
-      type: 'paragraph',
-      content: [
-        { type: 'text', text: 'Hi ' },
-        {
-          type: 'placeholder',
-          attrs: {
-            type: 'Subscriber',
-            name: 'First name',
-            original: '[Subscriber:FirstName]',
-            value: null,
-            'max-length': null,
-          },
-        },
-        { type: 'text', text: ',' },
-        { type: 'hardbreak', attrs: { isInline: false } },
-        { type: 'text', text: 'your order has shipped.' },
-      ],
+      type: 'placeholder',
+      attrs: {
+        type: 'Subscriber',
+        name: 'First name',
+        original: '[Subscriber:FirstName]',
+        value: null,
+      },
     },
+    { type: 'message', text: ',\nyour order has shipped.\n' },
     {
-      type: 'paragraph',
-      content: [{ type: 'text', text: 'Reply STOP to unsubscribe.' }],
+      type: 'link',
+      text: 'https://example.com/track',
+      attrs: { track: true, shorten: true },
     },
+    { type: 'message', text: '\nReply STOP to unsubscribe.' },
   ],
 };
 ```
@@ -163,5 +137,8 @@ const content: SmsContentJson = {
 
 - [SMS RFM](./sms-rfm) — the source format that compiles to `SmsContentJson`
 - [Building programmatically](../building-programmatically) — `createSmsDocument` and the format converters
-- [SMS RFM Content](../content/nodes/doc) — per-node attribute tables and examples
+- [`sms`](../content/nodes/sms) — root node reference
+- [`message`](../content/nodes/message) — message node reference
+- [`link`](../content/nodes/link) — link node reference
+- [`placeholder`](../content/nodes/placeholder) — placeholder node reference and token catalogue
 - [Validation](../validation) — validating an `SmsDocument` before submission
