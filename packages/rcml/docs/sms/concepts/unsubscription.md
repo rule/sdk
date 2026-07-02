@@ -1,22 +1,27 @@
 # Unsubscription
 
 Regulatory requirements in most jurisdictions mandate that every commercial SMS
-message includes an unsubscribe mechanism. The Rule platform enforces this: if a
-template does not contain the unsubscribe footer, the platform appends one
-automatically.
+message includes an unsubscribe mechanism. Include the footer in every marketing
+message. Transactional messages — order confirmations, delivery notifications,
+one-time passwords — do not require it.
 
-## Footer structure
+## XML
 
-The footer consists of exactly **two adjacent nodes** at the end of the message:
+In an SMS RFM string or inside `<rc-sms>` XML, write the footer as the
+`::unsubscribe` leaf directive:
 
-1. An `SmsMessageNode` containing the localised opt-out phrase —
-   `[Subscriber:unsubscribe_text]` — which the platform resolves to the
-   language-appropriate stop word at send time (e.g. "STOP" or "Unsubscribe").
-2. An `SmsPlaceholderNode` for `[Link:Unsubscribe]` — the personalised
-   unsubscribe URL.
+```xml
+<rc-sms>Your order has shipped!
+::unsubscribe</rc-sms>
+```
 
-Both nodes carry `attrs: { 'is-unsubscribe': true }`. This marker tells the Rule
-platform that the footer is already present, so it does not append a duplicate.
+## JSON
+
+The footer is two adjacent nodes at the end of the `content` array. The first
+renders the localised opt-out phrase — the platform resolves
+`[Subscriber:unsubscribe_text]` to the language-appropriate stop word at send
+time (e.g. "STOP" or "Unsubscribe"). The second is the personalised unsubscribe
+link.
 
 ```json
 [
@@ -31,31 +36,17 @@ platform that the footer is already present, so it does not append a duplicate.
       "type": "Link",
       "name": "Unsubscribe",
       "original": "[Link:Unsubscribe]",
-      "value": null,
+      "value": "Unsubscribe",
       "is-unsubscribe": true
     }
   }
 ]
 ```
 
-## XML / RFM form
+## Programmatic
 
-In an SMS RFM string or inside `<rc-sms>` XML, write the footer as the
-`::unsubscribe` leaf directive:
-
-```xml
-<rc-sms>Your order has shipped!
-::unsubscribe</rc-sms>
-```
-
-The parser expands `::unsubscribe` into the two JSON nodes shown above.
-The serialiser (`jsonToSmsRfm`) collapses them back to `::unsubscribe` on
-the way out, so the round-trip is lossless.
-
-## Adding the footer
-
-Use `sms.createUnsubscribeNodes()`. It returns a two-element tuple — spread it
-at the end of the `nodes` array passed to `sms.createContent`:
+Use `sms.createUnsubscribeNodes()` and spread it at the end of the `nodes`
+array passed to `sms.createContent`:
 
 ```typescript
 import { sms, createSmsDocument } from '@rule/rcml';
@@ -69,10 +60,6 @@ const doc = createSmsDocument({
   }),
 });
 ```
-
-`createUnsubscribeNodes()` is the only SDK path that produces the
-`is-unsubscribe` marker. Do not construct these nodes by hand — the exact shape
-is an implementation detail and may change.
 
 ## Related
 
