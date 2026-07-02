@@ -59,22 +59,15 @@ Plain-text `[Type:Name]` tokens — `[Subscriber:email]`,
 `[CustomField:Order.Total]`, `[Link:Unsubscribe]`, and so on — are valid in
 **exactly two places**:
 
-1. As the value of the `original` attribute on a placeholder node — the value
-   appears verbatim inside the `::placeholder{…}` directive in SMS RFM and on
-   `attrs.original` in JSON.
-2. As a URL value or part of a URL value — typically the `text` of a
-   [`link`](./link) node, or the URL passed to a `RemoteContent` placeholder.
+1. As the value of the `original` attribute on a placeholder node — appears
+   verbatim inside `::placeholder{…}` in SMS RFM and on `attrs.original` in JSON.
+2. As a URL value — typically the `text` of a [`link`](./link) node, or the
+   URL passed to a `RemoteContent` placeholder.
 
-```
-:link[https://example.com]{track="false" shorten="false"}
-```
-
-A bare `[Type:Name]` token is **not the recommended form** for placeholders
-in body content. The parser does accept it as a backward-compatible
-shorthand and produces an equivalent placeholder node, but it carries
-neither a `name` nor a `value` nor a `max-length` — the editor relies on
-those, so authoring through the `::placeholder{…}` directive keeps the
-template editor-friendly.
+The parser also accepts a bare `[Type:Name]` token as a shorthand for a
+placeholder in body content, and produces an equivalent node. The serializer
+(`jsonToSmsRfm`) always emits the full `::placeholder{…}` directive form —
+the shorthand is parse-only.
 
 ---
 

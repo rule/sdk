@@ -15,12 +15,11 @@ representation.
 2. Inside a URL value or part of a URL value — typically the `text` of a
    [`link`](./content/nodes/link) node or the URL given to `RemoteContent`.
 
-They are **not the recommended form** for body content. The parser does
-accept a bare `[Type:Name]` token as a backward-compatible shorthand —
-but the resulting placeholder node has no `name` / `value` / `max-length`
-attributes, which the editor relies on. To insert a dynamic value as text
-in the message, use the `::placeholder{…}` directive in SMS RFM, or one
-of the `sms` builder functions described below.
+The parser accepts a bare `[Type:Name]` token in body content as a
+shorthand for a placeholder node. The serializer always emits the full
+`::placeholder{…}` form — the shorthand is parse-only. To insert a dynamic
+value, use the `::placeholder{…}` directive in SMS RFM, or one of the `sms`
+builder functions described below.
 
 ## Quick start
 
@@ -78,22 +77,12 @@ const json = smsRfmToJson(
 
 // JSON → SMS RFM
 const rfm = jsonToSmsRfm(json);
-// → 'Your order is ready.\nAccount: [Subscriber:email]'
+// → 'Your order is ready.\nAccount: ::placeholder{type="Subscriber" original="[Subscriber:email]" name="Email"}'
 ```
 
 Both `\n` and `\n\n` in the SMS RFM string produce `\n` characters in the
 resulting `message` node text. Line breaks are just characters — there are no
 separate break nodes.
-
-### Serializer output
-
-Notice the asymmetry between input and output: the recommended *input* form
-for a placeholder is the `::placeholder{…}` directive, but `jsonToSmsRfm`
-*emits* the compact `[Type:Name]` form when both `value` and `max-length` are
-absent or null. This is a serializer optimization for compact output, not a
-suggestion about how to write SMS RFM by hand. The parser accepts both forms;
-consumers that re-parse the serializer's output get back the same
-`SmsContentJson` tree either way.
 
 ## Builders
 
@@ -433,11 +422,8 @@ const doc = createSmsDocument({
     '\nAccount: ::placeholder{type="Subscriber" original="[Subscriber:email]" name="Email"}',
 });
 
-// Serialize to XML. The XML body uses the compact [Type:Name] form
-// (the same serializer-output behaviour described under "Serializer output"
-// above).
 const xml = smsToXml(doc, { pretty: true });
-// → '<rc-sms>Your total is [CustomField:Order.Total].\nAccount: [Subscriber:email]</rc-sms>'
+// → '<rc-sms>Your total is ::placeholder{type="CustomField" original="[CustomField:Order.Total]" name="Order.Total"}.\nAccount: ::placeholder{type="Subscriber" original="[Subscriber:email]" name="Email"}</rc-sms>'
 
 // Parse back to SmsDocument
 const restored = xmlToSms(xml);
