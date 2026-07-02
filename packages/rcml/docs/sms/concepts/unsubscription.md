@@ -36,7 +36,7 @@ like: `Unsubscribe? i.rule.io/RzpmFP`
       "type": "Link",
       "name": "Unsubscribe",
       "original": "[Link:Unsubscribe]",
-      "value": "Unsubscribe",
+      "value": null,
       "is-unsubscribe": true
     }
   }

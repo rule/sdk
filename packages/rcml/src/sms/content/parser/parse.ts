@@ -51,16 +51,87 @@ function tokenizeUnsubscribeDirective(input: string): string {
   return input.replace(UNSUBSCRIBE_DIRECTIVE_RE, token)
 }
 
-// ─── Step 1: [Type:Name] shorthand expansion ──────────────────────────────────
+// ─── Step 1a: protect :link[…] labels from shorthand expansion ───────────────
+
+/**
+ * PUA characters used to escape `[` and `]` inside `:link[…]` labels so that
+ * `expandPlaceholderShorthand` does not rewrite `[CustomField:Name]` tokens
+ * embedded in a URL, and remark does not interpret them as directives.
+ * Decoded back to literal brackets in `convertLinkDirective`.
+ */
+const BRACKET_OPEN_ESCAPE = ''
+const BRACKET_CLOSE_ESCAPE = ''
+
+/**
+ * Escape every `[` and `]` inside `:link[…]` label content with PUA chars so that
+ * `[CustomField:Name]` tokens embedded in link URLs are not rewritten by
+ * `expandPlaceholderShorthand` and are not misinterpreted as markdown directives.
+ *
+ * Uses a depth-tracking scan: after the opening `:link[`, every `[` increments
+ * depth and every `]` decrements it. The outer `]` (depth reaches 0) is kept
+ * as-is; all inner brackets are replaced with the PUA escapes.
+ *
+ * `convertLinkDirective` decodes them back to literal brackets.
+ * @internal
+ */
+function escapeLinkLabelBrackets(input: string): string {
+  const result: string[] = []
+  let i = 0
+
+  while (i < input.length) {
+    const linkStart = input.indexOf(':link[', i)
+
+    if (linkStart === -1) {
+      result.push(input.slice(i))
+      break
+    }
+
+    result.push(input.slice(i, linkStart + 6)) // up to and including ':link['
+    i = linkStart + 6
+
+    let depth = 1
+
+    while (i < input.length) {
+      const ch = input[i]!
+
+      if (ch === '[') {
+        depth++
+        result.push(BRACKET_OPEN_ESCAPE)
+        i++
+      } else if (ch === ']') {
+        depth--
+
+        if (depth === 0) {
+          result.push(']') // outer closing bracket — keep unescaped for remark
+          i++
+          break
+        } else {
+          result.push(BRACKET_CLOSE_ESCAPE)
+          i++
+        }
+      } else if (ch === ':') {
+        // Escape colons so remark does not interpret partial segments (e.g. `CustomField:Order`)
+        // as text directives. Decoded back to `:` in convertLinkDirective.
+        result.push(COLON_ESCAPE)
+        i++
+      } else {
+        result.push(ch)
+        i++
+      }
+    }
+  }
+
+  return result.join('')
+}
+// ─── Step 1b: [Type:Name] shorthand expansion ─────────────────────────────────
 
 /**
  * Matches `[Type:Name]` shorthand placeholders for the known SMS placeholder types only,
  * and only when NOT preceded by `="` (inside a directive attribute value).
  *
- * Restricting to known types prevents `[https://...]` URLs inside `:link[...]{}` brackets
- * from being erroneously expanded. The negative lookbehind for `="` prevents
- * `[CustomField:Name]` tokens inside `original="..."` attribute values from being
- * expanded a second time.
+ * The negative lookbehind for `="` prevents `[CustomField:Name]` tokens inside
+ * `original="..."` attribute values from being expanded a second time.
+ * `:link[…]` label content is protected separately by `escapeLinkLabelBrackets`.
  */
 const SHORTHAND_PLACEHOLDER_RE = /(?<!=")(\[(CustomField|Subscriber|User|RemoteContent|Date|Link):([^\]]+)\])/g
 
@@ -212,9 +283,13 @@ function convertLinkDirective(node: TextDirective): SmsLinkNode {
   const raw = (node.attributes ?? {}) as Record<string, string | null | undefined>
 
   // Read URL from the label (first child text node), fall back to href.
+  // Decode PUA-escaped brackets back to [ and ] (introduced by escapeLinkLabelBrackets).
   const labelText = node.children
     .map((c) => ('value' in c ? (c as { value: string }).value : ''))
     .join('')
+    .replace(new RegExp(BRACKET_OPEN_ESCAPE, 'g'), '[')
+    .replace(new RegExp(BRACKET_CLOSE_ESCAPE, 'g'), ']')
+    .replace(new RegExp(COLON_ESCAPE, 'g'), ':')
   const url = labelText || raw['href'] || ''
 
   return {
@@ -371,8 +446,11 @@ export function parseSmsRfm(input: string): SmsContentJson {
   // that may precede it is not converted to a markdown hard-break escape.
   const unsubscribeTokenized = tokenizeUnsubscribeDirective(input)
 
-  // Step 1: expand [Type:Name] shorthand to ::placeholder{...} directive syntax
-  const expanded = expandPlaceholderShorthand(unsubscribeTokenized)
+  // Step 1a: escape brackets inside :link[…] labels so their content is not rewritten by shorthand expansion.
+  const linkLabelsEscaped = escapeLinkLabelBrackets(unsubscribeTokenized)
+
+  // Step 1b: expand [Type:Name] shorthand to ::placeholder{...} directive syntax
+  const expanded = expandPlaceholderShorthand(linkLabelsEscaped)
 
   // Step 2: convert bare \n to \\\n so remark produces break nodes (preserves \n\n boundaries)
   const hardbreaksNormalized = normalizeHardbreaks(expanded)

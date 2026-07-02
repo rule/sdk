@@ -141,6 +141,17 @@ describe('smsRfmToJson() — link directive', () => {
       attrs: { track: false, shorten: false },
     })
   })
+
+  it('preserves [Type:Name] tokens inside :link URL without expanding them to placeholders', () => {
+    const doc = smsRfmToJson(':link[https://example.com/[CustomField:Order.Id]]{track="true" shorten="true"}')
+
+    expect(doc.content).toHaveLength(1)
+    expect(doc.content[0]).toMatchObject({
+      type: 'link',
+      text: 'https://example.com/[CustomField:Order.Id]',
+      attrs: { track: true, shorten: true },
+    })
+  })
 })
 
 describe('smsRfmToJson() — ::placeholder directive', () => {

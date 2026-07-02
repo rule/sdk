@@ -17,9 +17,9 @@ export interface CreateSmsDocumentOptions {
    * The SMS message body.
    *
    * Accepts either:
-   * - A **string** in SMS RFM (SMS Rule Flavor Markdown) — placeholders use `[Type:Name]`
-   *   syntax (e.g. `[Subscriber:email]`), single `\n` becomes a hard break,
-   *   and double `\n\n` starts a new paragraph.
+   * - A **string** in SMS RFM (SMS Rule Flavor Markdown) — use `::placeholder{…}` for
+   *   dynamic values, `:link[url]{…}` for links, and `::unsubscribe` for the footer.
+   *   Both `\n` and `\n\n` are preserved as `\n` characters inside `message` node text.
    * - A pre-built {@link SmsContentJson} document — validated on the way in.
    */
   content: string | SmsContentJson

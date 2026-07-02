@@ -43,7 +43,7 @@ export const smsContentJsonSchema = {
         attrs: {
           type: 'object',
           properties: {
-            'is-unsubscribe': { type: 'boolean' },
+            'is-unsubscribe': { const: true },
           },
           required: ['is-unsubscribe'],
           additionalProperties: false,

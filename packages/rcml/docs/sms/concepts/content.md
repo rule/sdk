@@ -107,10 +107,12 @@ Each placeholder category has a typed convenience builder:
 ```typescript
 sms.createSubscriberPlaceholder({ field: 'email' })
 sms.createCustomFieldPlaceholder({ group: 'Order', name: 'Total' })
-sms.createLinkPlaceholder({ link: 'Unsubscribe' })
+sms.createDatePlaceholder({ source: 'tomorrow', format: 'Y-m-d' })
 ```
 
-For types not covered by a convenience builder, use the generic builder:
+For the `Link` type (unsubscribe footer), use `sms.createUnsubscribeNodes()` — see
+[Unsubscription](./unsubscription). For types not covered by a convenience builder, use
+the generic builder:
 
 ```typescript
 sms.createPlaceholderNode({ type: 'Date', original: '[Date:tomorrow::d.m.Y]', name: 'tomorrow' })

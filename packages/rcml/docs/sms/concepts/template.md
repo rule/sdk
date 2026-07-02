@@ -58,7 +58,7 @@ The `content` field is an `SmsContentJson` — a flat sequence of nodes; see
           "type": "Link",
           "original": "[Link:Unsubscribe]",
           "name": "Unsubscribe",
-          "value": "Unsubscribe",
+          "value": null,
           "is-unsubscribe": true
         }
       }
