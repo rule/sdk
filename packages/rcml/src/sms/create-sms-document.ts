@@ -83,7 +83,6 @@ export function createSmsDocument(options: CreateSmsDocumentOptions): SmsDocumen
 
   return {
     tagName: 'rc-sms',
-    attributes: {},
     content,
   }
 }

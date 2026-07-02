@@ -29,18 +29,6 @@ export function validateSmsStructure(input: unknown): SmsDocumentBuildIssue[] {
     })
   }
 
-  if (
-    typeof node['attributes'] !== 'object' ||
-    node['attributes'] === null ||
-    Object.keys(node['attributes'] as object).length !== 0
-  ) {
-    issues.push({
-      code: SmsDocumentBuildErrorCodes.STRUCTURE_INVALID,
-      path: 'attributes',
-      message: 'attributes must be an empty object.',
-    })
-  }
-
   if (node['content'] === undefined || node['content'] === null) {
     issues.push({
       code: SmsDocumentBuildErrorCodes.CONTENT_REQUIRED,

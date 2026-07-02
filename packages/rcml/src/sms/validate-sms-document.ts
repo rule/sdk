@@ -2,7 +2,7 @@
  * Public API: SMS document validator.
  *
  * Runs two passes:
- *   1. Structural check — tagName, attributes shape.
+ *   1. Structural check — tagName.
  *   2. Content JSON validation — `content` field against the SMS content schema.
  */
 

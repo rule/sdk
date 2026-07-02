@@ -13,7 +13,7 @@ describe('convertXmlToSms()', () => {
 
     if (result.success) {
       expect(result.data.tagName).toBe('rc-sms')
-      expect(result.data.attributes).toEqual({})
+      expect('attributes' in result.data).toBe(false)
     }
   })
 

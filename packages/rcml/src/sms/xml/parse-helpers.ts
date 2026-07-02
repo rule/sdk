@@ -120,7 +120,7 @@ export function convertXmlToSms(
     }
   }
 
-  const doc: SmsDocument = { tagName: 'rc-sms', attributes: {}, content }
+  const doc: SmsDocument = { tagName: 'rc-sms', content }
 
   if (id !== undefined) {
     doc.id = id

@@ -22,17 +22,7 @@ describe('validateSmsDocument()', () => {
   })
 
   it('rejects wrong tagName', () => {
-    const doc = { tagName: 'rc-email' as 'rc-sms', attributes: {} as never, content: smsRfmToJson('') }
-
-    expect(() => validateSmsDocument(doc)).toThrow(SmsDocumentValidationError)
-  })
-
-  it('rejects non-empty attributes', () => {
-    const doc = {
-      tagName: 'rc-sms' as const,
-      attributes: { foo: 'bar' } as never,
-      content: smsRfmToJson(''),
-    }
+    const doc = { tagName: 'rc-email' as 'rc-sms', content: smsRfmToJson('') }
 
     expect(() => validateSmsDocument(doc)).toThrow(SmsDocumentValidationError)
   })
@@ -40,7 +30,6 @@ describe('validateSmsDocument()', () => {
   it('rejects invalid content JSON', () => {
     const doc = {
       tagName: 'rc-sms' as const,
-      attributes: {} as never,
       content: { type: 'wrong' } as never,
     }
 
@@ -57,7 +46,7 @@ describe('safeValidateSmsDocument()', () => {
   })
 
   it('returns failure with STRUCTURE_INVALID for wrong tagName', () => {
-    const doc = { tagName: 'rc-sms' as const, attributes: {} as never, content: smsRfmToJson('') }
+    const doc = { tagName: 'rc-sms' as const, content: smsRfmToJson('') }
     const broken = { ...doc, tagName: 'nope' as 'rc-sms' }
     const result = safeValidateSmsDocument(broken)
 
@@ -71,7 +60,6 @@ describe('safeValidateSmsDocument()', () => {
   it('returns failure with CONTENT_INVALID for bad content', () => {
     const doc = {
       tagName: 'rc-sms' as const,
-      attributes: {} as never,
       content: { type: 'bad' } as never,
     }
     const result = safeValidateSmsDocument(doc)

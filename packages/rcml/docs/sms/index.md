@@ -28,7 +28,6 @@ import type { SmsDocument } from '@rule/rcml';
 
 const doc: SmsDocument = {
   tagName: 'rc-sms',
-  attributes: {},
   content: {
     type: 'sms',
     content: [

@@ -59,7 +59,6 @@ smsSpec.tags['rc-sms']
 // {
 //   description: 'Root element of an SMS document…',
 //   content: { type: 'sms-rfm-content' },
-//   attributes: {},
 // }
 
 // Cross-reference with smsRfmSpec using the content type key:
@@ -139,7 +138,7 @@ const doc = createSmsDocument({ content: rfmString });
 
 // 3. Or use the safe variant to inspect errors without a try/catch:
 const content = smsRfmToJson(rfmString);
-const result = safeValidateSmsDocument({ tagName: 'rc-sms', attributes: {}, content });
+const result = safeValidateSmsDocument({ tagName: 'rc-sms', content });
 
 if (!result.success) {
   // Feed result.errors back to the LLM for correction

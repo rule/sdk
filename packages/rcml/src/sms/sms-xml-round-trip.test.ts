@@ -13,7 +13,6 @@ const ROUND_TRIP_DOCS: ReadonlyArray<{ name: string; doc: SmsDocument }> = [
     name: 'minimal empty document',
     doc: {
       tagName: 'rc-sms',
-      attributes: {},
       content: smsRfmToJson(''),
     },
   },
@@ -21,7 +20,6 @@ const ROUND_TRIP_DOCS: ReadonlyArray<{ name: string; doc: SmsDocument }> = [
     name: 'plain text content',
     doc: {
       tagName: 'rc-sms',
-      attributes: {},
       content: smsRfmToJson('Your order has shipped!'),
     },
   },
@@ -29,7 +27,6 @@ const ROUND_TRIP_DOCS: ReadonlyArray<{ name: string; doc: SmsDocument }> = [
     name: 'subscriber placeholder',
     doc: {
       tagName: 'rc-sms',
-      attributes: {},
       content: smsRfmToJson('Hi [Subscriber:FirstName], your order is ready.'),
     },
   },
@@ -37,7 +34,6 @@ const ROUND_TRIP_DOCS: ReadonlyArray<{ name: string; doc: SmsDocument }> = [
     name: 'multiple placeholder types',
     doc: {
       tagName: 'rc-sms',
-      attributes: {},
       content: smsRfmToJson('Hello [Subscriber:FirstName], total: [CustomField:Order.Total]. [Link:Unsubscribe]'),
     },
   },
@@ -45,7 +41,6 @@ const ROUND_TRIP_DOCS: ReadonlyArray<{ name: string; doc: SmsDocument }> = [
     name: 'newline within message',
     doc: {
       tagName: 'rc-sms',
-      attributes: {},
       content: smsRfmToJson('Line one\nLine two\nLine three'),
     },
   },
@@ -53,7 +48,6 @@ const ROUND_TRIP_DOCS: ReadonlyArray<{ name: string; doc: SmsDocument }> = [
     name: 'multi-paragraph document',
     doc: {
       tagName: 'rc-sms',
-      attributes: {},
       content: smsRfmToJson('Para one\n\nPara two\n\nPara three'),
     },
   },
@@ -62,7 +56,6 @@ const ROUND_TRIP_DOCS: ReadonlyArray<{ name: string; doc: SmsDocument }> = [
     doc: {
       id: 'abc-123',
       tagName: 'rc-sms',
-      attributes: {},
       content: smsRfmToJson('Hello [Subscriber:FirstName]'),
     },
   },
@@ -91,7 +84,7 @@ describe('xmlToSms → smsToXml (string → JSON → string) idempotence', () =>
 
   it('stable over multiple round-trips', () => {
     const original = smsRfmToJson('Hi [Subscriber:FirstName]!\nYour total: [CustomField:Order.Total].')
-    const doc: SmsDocument = { tagName: 'rc-sms', attributes: {}, content: original }
+    const doc: SmsDocument = { tagName: 'rc-sms', content: original }
     const xml1 = smsToXml(doc)
     const doc2 = xmlToSms(xml1)
     const xml2 = smsToXml(doc2)
@@ -131,7 +124,6 @@ describe('XML round-trip — ::unsubscribe directive', () => {
   it('document built with createUnsubscribeNodes round-trips through XML', () => {
     const doc: SmsDocument = {
       tagName: 'rc-sms',
-      attributes: {},
       content: {
         type: 'sms',
         content: [
@@ -151,7 +143,6 @@ describe('XML round-trip — link nodes', () => {
   it('link nodes survive the XML round-trip via :link directive syntax', () => {
     const docWithLink: SmsDocument = {
       tagName: 'rc-sms',
-      attributes: {},
       content: {
         type: 'sms',
         content: [
