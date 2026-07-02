@@ -43,9 +43,10 @@ JSON node types (`message`, `link`, `placeholder`), each with a full attribute t
 Includes the exact attribute names, types, required flags, and allowed values for each.
 Cross-references `smsPlaceholderSpec` for placeholder `type` values.
 
-**`smsPlaceholderSpec`** — the six token types valid in SMS: `CustomField`, `Subscriber`,
-`User`, `Date`, `RemoteContent`, and `Link`. Each entry has the exact token syntax,
-parameter descriptions, allowed values, and examples.
+**`smsPlaceholderSpec`** — the five user-authored token types valid in SMS: `CustomField`,
+`Subscriber`, `User`, `Date`, and `RemoteContent`. Each entry has the exact token syntax,
+parameter descriptions, allowed values, and examples. The `Link` type is system-only —
+generated exclusively by `::unsubscribe` / `createUnsubscribeNodes()`, not user-authored.
 
 ## Tag structure
 
@@ -92,9 +93,9 @@ smsRfmSpec.nodes['link'].attrs
 //   shorten: { type: 'boolean', required: true,  description: '…' },
 // }
 
-// Allowed placeholder types:
+// User-authored placeholder types (Link is system-only via ::unsubscribe):
 smsRfmSpec.nodes['placeholder'].attrs?.['type'].allowedValues
-// → ['CustomField', 'Subscriber', 'User', 'RemoteContent', 'Date', 'Link']
+// → ['CustomField', 'Subscriber', 'User', 'RemoteContent', 'Date']
 ```
 
 Note that the link node's `track` and `shorten` flags are typed as **booleans**
@@ -103,25 +104,22 @@ in `SmsContentJson` — make sure the LLM emits `true`/`false`, not the strings
 
 ## Placeholders
 
-`smsPlaceholderSpec.tokens` contains one entry per token type valid in SMS:
+`smsPlaceholderSpec.tokens` contains one entry per user-authored token type valid in SMS:
 
 ```typescript
 import { smsPlaceholderSpec } from '@rule/rcml';
 
 Object.keys(smsPlaceholderSpec.tokens)
-// → ['CustomField', 'Subscriber', 'User', 'Date', 'RemoteContent', 'Link']
+// → ['CustomField', 'Subscriber', 'User', 'Date', 'RemoteContent']
 
 // Subscriber field syntax and examples:
 smsPlaceholderSpec.tokens['Subscriber']
 // { syntax: '[Subscriber:<field>]', examples: ['[Subscriber:email]', ...], ... }
-
-// System-managed link types:
-smsPlaceholderSpec.tokens['Link'].params?.['type'].allowedValues
-// → ['Optin', 'Unsubscribe', 'WebBrowser', 'ShareLink', 'Signup']
 ```
 
-Use `[Link:Unsubscribe]`, `[Link:WebBrowser]`, etc. as the `text` of a `link` node
-or as a standalone `[Link:…]` placeholder in the message text.
+`Link` is not in `smsPlaceholderSpec.tokens` because it is system-only — always produced
+by the `::unsubscribe` directive, never authored directly. Direct LLMs to use `::unsubscribe`
+for the required footer rather than `[Link:Unsubscribe]` or any `[Link:…]` token.
 
 ## Generation workflow
 

@@ -32,12 +32,18 @@ import type {
 // ─── Step 0: ::unsubscribe tokenization ────────────────────────────────────
 
 /**
- * Matches `::unsubscribe` anywhere in the input, with optional surrounding whitespace.
+ * Matches `::unsubscribe` (with no attribute block, or an explicitly empty `{}`)
+ * anywhere in the input.
+ *
+ * Uses a negative lookahead to avoid tokenizing `::unsubscribe{foo="bar"}` — a
+ * directive with a non-empty attribute block is left for remark to parse and reject,
+ * rather than silently dropping the attribute block as literal text.
+ *
  * Must run BEFORE `normalizeHardbreaks` so that the newline preceding the directive
  * is not converted to a markdown hard-break escape (`\\\n`), which would leave a stray
  * backslash in the preceding message text.
  */
-const UNSUBSCRIBE_DIRECTIVE_RE = /::unsubscribe(?:\s*\{\s*\})?/g
+const UNSUBSCRIBE_DIRECTIVE_RE = /::unsubscribe(?:\s*\{\s*\})?(?!\s*\{)/g
 
 /**
  * Replace `::unsubscribe` occurrences with a PUA token so that `normalizeHardbreaks`
