@@ -80,18 +80,32 @@ export const smsContentJsonSchema = {
         type: { const: 'placeholder' },
         attrs: {
           type: 'object',
-          properties: {
-            type: {
-              enum: ['CustomField', 'Subscriber', 'User', 'RemoteContent', 'Date', 'Link'],
+          oneOf: [
+            {
+              // Normal placeholder: CustomField, Subscriber, User, RemoteContent, Date
+              properties: {
+                type: { enum: ['CustomField', 'Subscriber', 'User', 'RemoteContent', 'Date'] },
+                original: { type: 'string' },
+                name: { type: 'string' },
+                value: { type: ['string', 'number', 'null'] },
+                'max-length': { type: ['string', 'null'] },
+              },
+              required: ['type', 'original', 'name', 'value'],
+              additionalProperties: false,
             },
-            original: { type: 'string' },
-            name: { type: 'string' },
-            value: { type: ['string', 'number', 'null'] },
-            'max-length': { type: ['string', 'null'] },
-            'is-unsubscribe': { type: 'boolean' },
-          },
-          required: ['type', 'original', 'name', 'value'],
-          additionalProperties: false,
+            {
+              // Unsubscribe placeholder: type Link, is-unsubscribe: true required
+              properties: {
+                type: { const: 'Link' },
+                original: { type: 'string' },
+                name: { type: 'string' },
+                value: { type: ['string', 'number', 'null'] },
+                'is-unsubscribe': { const: true },
+              },
+              required: ['type', 'original', 'name', 'value', 'is-unsubscribe'],
+              additionalProperties: false,
+            },
+          ],
         },
       },
       required: ['type', 'attrs'],

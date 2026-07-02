@@ -11,10 +11,12 @@ describe('validateSmsJson()', () => {
     expect(() => validateSmsJson(smsRfmToJson('Hello [Subscriber:FirstName]'))).not.toThrow()
   })
 
-  it('accepts a placeholder with Link type', () => {
+  it('rejects a Link placeholder without is-unsubscribe (shorthand parse-only path)', () => {
+    // [Link:Unsubscribe] shorthand produces a Link placeholder without is-unsubscribe: true.
+    // The validator should reject it — Link type is only valid via ::unsubscribe.
     const doc = smsRfmToJson('[Link:Unsubscribe]')
 
-    expect(() => validateSmsJson(doc)).not.toThrow()
+    expect(() => validateSmsJson(doc)).toThrow(SmsContentParseError)
   })
 
   it('accepts a tracked+shortened link node', () => {

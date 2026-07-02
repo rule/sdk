@@ -157,15 +157,15 @@ const NODE_META: Record<string, SmsRfmNodeSpec> = {
         required: true,
         description:
           'The backend token category. Each value corresponds to a token in `smsPlaceholderSpec.tokens`.',
-        allowedValues: ['CustomField', 'Subscriber', 'User', 'RemoteContent', 'Date', 'Link'],
-        examples: ['Subscriber', 'CustomField', 'Link'],
+        allowedValues: ['CustomField', 'Subscriber', 'User', 'RemoteContent', 'Date'],
+        examples: ['Subscriber', 'CustomField', 'Date'],
       },
       original: {
         type: 'string',
         required: true,
         description:
           'The backend token string substituted by the renderer at send time. Must conform to the syntax for the given `type` — see `smsPlaceholderSpec.tokens[type]` for the exact pattern.',
-        examples: ['[Subscriber:email]', '[CustomField:Order.Total]', '[Link:Unsubscribe]'],
+        examples: ['[Subscriber:email]', '[CustomField:Order.Total]', '[Date:tomorrow::Y-m-d]'],
       },
       name: {
         type: 'string',
@@ -232,11 +232,11 @@ function buildSmsRfmSpec(): SmsRfmSpec {
  *
  * // Which placeholder types are allowed?
  * smsRfmSpec.nodes['placeholder'].attrs?.['type'].allowedValues
- * // → ['CustomField', 'Subscriber', 'User', 'RemoteContent', 'Date', 'Link']
+ * // → ['CustomField', 'Subscriber', 'User', 'RemoteContent', 'Date']
  *
  * // Cross-reference token syntax:
- * smsPlaceholderSpec.tokens['Link'].examples
- * // → ['[Link:Unsubscribe]', '[Link:WebBrowser]', '[Link:Optin]']
+ * smsPlaceholderSpec.tokens['Subscriber'].syntax
+ * // → '[Subscriber:<field>]'
  * ```
  * @public
  */

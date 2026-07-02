@@ -58,8 +58,7 @@ describe('sms namespace through createSmsDocument', () => {
         sms.createCustomFieldPlaceholder({ group: 'Order', name: 'Id' }),
         sms.createMessageNode({ text: ' has shipped.\n' }),
         sms.createLinkNode({ url: 'https://example.com/orders/[CustomField:Order.Id]', track: true, shorten: true }),
-        sms.createMessageNode({ text: '\nReply STOP: ' }),
-        sms.createLinkPlaceholder({ link: 'Unsubscribe' }),
+        ...sms.createUnsubscribeNodes(),
       ],
     })
 
@@ -75,7 +74,7 @@ describe('sms namespace through createSmsDocument', () => {
 
     expect(rfm).toContain('[Subscriber:FirstName]')
     expect(rfm).toContain('[CustomField:Order.Id]')
-    expect(rfm).toContain('[Link:Unsubscribe]')
+    expect(rfm).toContain('::unsubscribe')
     expect(rfm).toContain(':link[https://example.com/orders/[CustomField:Order.Id]]{track="true" shorten="true"}')
   })
 })

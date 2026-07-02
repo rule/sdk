@@ -61,7 +61,7 @@ that as the string value `"null"`. To assign a non-null value, quote it
 
 | Attribute | Required? | Notes |
 |-----------|-----------|-------|
-| `type` | Yes | One of the six placeholder types. |
+| `type` | Yes | One of the five placeholder types. |
 | `original` | Yes | Backend `[Type:Name]` token. |
 | `name` | Yes | Editor display label. |
 | `value` | No | Omit when null. To set a preview value, quote the string (e.g. `value="Jane"`). |
@@ -334,7 +334,7 @@ import { smsPlaceholderSpec } from '@rule/rcml';
 
 // All SMS-valid token types
 Object.keys(smsPlaceholderSpec.tokens)
-// → ['CustomField', 'Subscriber', 'User', 'Date', 'RemoteContent', 'Link']
+// → ['CustomField', 'Subscriber', 'User', 'Date', 'RemoteContent']
 
 // Token syntax and examples
 smsPlaceholderSpec.tokens['Subscriber'].syntax
