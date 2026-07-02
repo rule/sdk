@@ -71,9 +71,12 @@ sms.createLinkNode({ url: 'https://example.com/orders/123', track: true, shorten
 ## Placeholder
 
 A dynamic value the Rule platform substitutes at send time — a subscriber
-field, custom field, date, remote content, or system-managed link URL. See
-[`placeholder`](../content/nodes/placeholder) for all token types and their
-attributes.
+field, custom field, date, remote content, or system-managed link URL.
+
+The full list of supported placeholder types and their token syntax lives on
+the [**`placeholder` node reference**](../content/nodes/placeholder). The
+examples below show the most common type (`Subscriber`); consult that page for
+`CustomField`, `User`, `Date`, `RemoteContent`, and `Link` tokens.
 
 **XML**
 
