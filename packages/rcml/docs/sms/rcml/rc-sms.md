@@ -10,9 +10,7 @@ no wrapping root element, no head, no body.
 |-----------|----------|------|-------------|
 | `id` | Yes | UUID string | Document identifier. Required in JSON — always include a UUID (e.g. `"550e8400-e29b-41d4-a716-446655440000"`). In XML, `id` may be omitted and the parser generates one automatically. |
 
-The element's JSON shape uses `attributes: {}` — `id` lives at the top
-level of `SmsDocument`, not inside `attributes`. Other than `id`, `rc-sms`
-takes no attributes.
+`id` lives at the top level of `SmsDocument`.
 
 ## Content
 
@@ -43,8 +41,6 @@ interface SmsDocument {
   id?: string;
   /** Always `'rc-sms'`. */
   tagName: 'rc-sms';
-  /** Reserved for future element attributes. Always `{}`. */
-  attributes: Record<string, never>;
   /** The parsed message content. */
   content: SmsContentJson;
 }
@@ -54,7 +50,6 @@ interface SmsDocument {
 |-------|------|-------------|
 | `id` | `string` (UUID) | Document identifier. Required in JSON — always provide a UUID. In XML, may be omitted; the parser generates one. |
 | `tagName` | `'rc-sms'` | Element discriminator. Always `'rc-sms'`. |
-| `attributes` | `{}` | Reserved; always an empty object. |
 | `content` | `SmsContentJson` | The parsed message content. See [Content](../concepts/content) for the content model. |
 
 ## XML
@@ -70,7 +65,6 @@ Account: ::placeholder{type="Subscriber" original="[Subscriber:email]" name="Ema
 {
   "id": "550e8400-e29b-41d4-a716-446655440000",
   "tagName": "rc-sms",
-  "attributes": {},
   "content": {
     "type": "sms",
     "content": [
