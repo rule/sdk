@@ -1,8 +1,7 @@
 # `placeholder`
 
 An inline atom that is replaced at render time with a dynamic value — a subscriber
-field, custom field value, user attribute, remote content, formatted date, or
-system-managed link.
+field, custom field value, user attribute, remote content, or formatted date.
 
 ## Attributes
 
@@ -14,7 +13,7 @@ system-managed link.
 | `value` | Yes | string \| number \| null | Resolved preview value shown in the editor, or `null` when not yet resolved. |
 | `max-length` | No | string \| null | Maximum character length (truncates and appends `…`). Omit when no limit is needed. |
 
-Allowed `type` values: `"CustomField"` | `"Subscriber"` | `"User"` | `"Date"` | `"RemoteContent"` | `"Link"`
+Allowed `type` values: `"CustomField"` | `"Subscriber"` | `"User"` | `"Date"` | `"RemoteContent"`
 
 ## Children
 
@@ -326,62 +325,6 @@ sms.createRemoteContentPlaceholder({ url: 'https://api.example.com/offer?id=[Cus
 
 ---
 
-## Link
-
-Inserts a system-managed link URL — Rule's pre-defined system links such as the
-unsubscribe URL or the web-browser-view URL. Use this token when you want the raw
-URL visible in the message body rather than as linked text.
-
-| `original` token | Link type |
-|-----------------|-----------|
-| `[Link:Unsubscribe]` | Unsubscribe link |
-| `[Link:WebBrowser]` | View in web browser |
-| `[Link:Optin]` | Opt-in confirmation |
-| `[Link:ShareLink]` | Social share link |
-| `[Link:Signup]` | Sign-up link |
-
-**JSON:**
-
-```json
-{
-  "type": "placeholder",
-  "attrs": {
-    "type": "Link",
-    "name": "Unsubscribe",
-    "original": "[Link:Unsubscribe]",
-    "value": null
-  }
-}
-```
-
-**SMS RFM:**
-
-```
-Reply STOP or unsubscribe here: ::placeholder{type="Link" original="[Link:Unsubscribe]" name="Unsubscribe"}
-```
-
-**Programmatic:**
-
-```typescript
-sms.createLinkPlaceholder({ link: 'Unsubscribe' })
-sms.createLinkPlaceholder({ link: 'WebBrowser' })
-```
-
-### Link tokens in link nodes
-
-A `[Link:…]` token is a valid value for the `text` field of a
-[`link`](./link) node — that is the second of the two valid locations
-for plain-text tokens described above:
-
-```
-:link[[Link:Unsubscribe]]{track="true" shorten="false"}
-```
-
-Use the `::placeholder{…}` form when you want the URL rendered as plain text in the
-message body; use the [`link` node](./link) form when you want trackable linked text.
-
----
-
 ## Machine-readable token catalog
 
 The complete token reference is available as `smsPlaceholderSpec`:
@@ -396,12 +339,9 @@ Object.keys(smsPlaceholderSpec.tokens)
 // Token syntax and examples
 smsPlaceholderSpec.tokens['Subscriber'].syntax
 // '[Subscriber:<field>]'
-
-smsPlaceholderSpec.tokens['Link'].params?.['type'].allowedValues
-// → ['Optin', 'Unsubscribe', 'WebBrowser', 'ShareLink', 'Signup']
 ```
 
-`smsPlaceholderSpec` exposes the six token types available in SMS RFM, each with
+`smsPlaceholderSpec` exposes the token types available in SMS RFM, each with
 its full token syntax, parameter schema, allowed values, and examples — useful as
 machine-readable input to LLM-driven generation. See
 [Building with LLM](../../building-with-llm) for that workflow.

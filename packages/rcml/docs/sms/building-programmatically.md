@@ -114,7 +114,7 @@ Builder signatures and examples for each node type live on the node reference pa
 
 - [`message`](./content/nodes/message) — `sms.createMessageNode`
 - [`link`](./content/nodes/link) — `sms.createLinkNode`
-- [`placeholder`](./content/nodes/placeholder) — `sms.createSubscriberPlaceholder`, `sms.createCustomFieldPlaceholder`, `sms.createDatePlaceholder`, `sms.createRemoteContentPlaceholder`, `sms.createLinkPlaceholder`, `sms.createPlaceholderNode`
+- [`placeholder`](./content/nodes/placeholder) — `sms.createSubscriberPlaceholder`, `sms.createCustomFieldPlaceholder`, `sms.createDatePlaceholder`, `sms.createRemoteContentPlaceholder`, `sms.createPlaceholderNode`
 
 ### `sms.createContent`
 
