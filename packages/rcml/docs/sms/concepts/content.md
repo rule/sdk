@@ -76,7 +76,9 @@ field, custom field, date, remote content, or system-managed link URL.
 The full list of supported placeholder types and their token syntax lives on
 the [**`placeholder` node reference**](../content/nodes/placeholder). The
 examples below show the most common type (`Subscriber`); consult that page for
-`CustomField`, `User`, `Date`, `RemoteContent`, and `Link` tokens.
+`CustomField`, `User`, `Date`, and `RemoteContent` tokens. The `Link` type is
+system-only — use `::unsubscribe` or `sms.createUnsubscribeNodes()` instead of
+authoring a `Link` placeholder directly.
 
 **XML**
 

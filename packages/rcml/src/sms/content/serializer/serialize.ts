@@ -52,13 +52,18 @@ export function serializeSmsJson(json: SmsContentJson): string {
     // Detect the canonical two-node unsubscribe footer and emit ::unsubscribe.
     // Match only the exact pair produced by createUnsubscribeNodes / ::unsubscribe parser:
     //   message { text: '[Subscriber:unsubscribe_text]', attrs: { 'is-unsubscribe': true } }
-    //   placeholder { attrs: { type: 'Link', 'is-unsubscribe': true } }
+    //   placeholder { type: 'Link', original: '[Link:Unsubscribe]', name: 'Unsubscribe', value: null, 'is-unsubscribe': true }
+    // All fields are checked to avoid lossy collapse of any other valid JSON that
+    // happens to have is-unsubscribe: true but different original/name/value.
     if (
       node.type === 'message' &&
       node.text === '[Subscriber:unsubscribe_text]' &&
       node.attrs?.['is-unsubscribe'] === true &&
       next?.type === 'placeholder' &&
       next.attrs.type === 'Link' &&
+      next.attrs.original === '[Link:Unsubscribe]' &&
+      next.attrs.name === 'Unsubscribe' &&
+      next.attrs.value === null &&
       next.attrs['is-unsubscribe'] === true
     ) {
       parts.push('::unsubscribe')

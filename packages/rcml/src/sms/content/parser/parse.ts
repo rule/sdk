@@ -33,17 +33,16 @@ import type {
 
 /**
  * Matches `::unsubscribe` (with no attribute block, or an explicitly empty `{}`)
- * anywhere in the input.
- *
- * Uses a negative lookahead to avoid tokenizing `::unsubscribe{foo="bar"}` — a
- * directive with a non-empty attribute block is left for remark to parse and reject,
- * rather than silently dropping the attribute block as literal text.
+ * and not followed by a directive-name character (`[a-zA-Z0-9_-]`) or a non-empty
+ * attribute block. This prevents matching substrings like `::unsubscribeFoo`
+ * (typo/unknown directive) or `::unsubscribe{foo="bar"}` (invalid attributes),
+ * both of which are left for remark to parse and reject.
  *
  * Must run BEFORE `normalizeHardbreaks` so that the newline preceding the directive
  * is not converted to a markdown hard-break escape (`\\\n`), which would leave a stray
  * backslash in the preceding message text.
  */
-const UNSUBSCRIBE_DIRECTIVE_RE = /::unsubscribe(?:\s*\{\s*\})?(?!\s*\{)/g
+const UNSUBSCRIBE_DIRECTIVE_RE = /::unsubscribe(?:\s*\{\s*\})?(?![a-zA-Z0-9_-])(?!\s*\{)/g
 
 /**
  * Replace `::unsubscribe` occurrences with a PUA token so that `normalizeHardbreaks`

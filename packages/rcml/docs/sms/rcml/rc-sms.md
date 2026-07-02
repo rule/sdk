@@ -8,7 +8,7 @@ no wrapping root element, no head, no body.
 
 | Attribute | Required | Type | Description |
 |-----------|----------|------|-------------|
-| `id` | Yes | UUID string | Document identifier. Required in JSON — always include a UUID (e.g. `"550e8400-e29b-41d4-a716-446655440000"`). In XML, `id` may be omitted and the parser generates one automatically. |
+| `id` | No | UUID string | Document identifier. Optional in both XML and JSON. When present it is preserved as-is; when absent, `id` is not set on the resulting `SmsDocument`. |
 
 `id` lives at the top level of `SmsDocument`.
 
@@ -37,7 +37,7 @@ None — `rc-sms` is the document root.
 
 ```typescript
 interface SmsDocument {
-  /** Document identifier — a UUID. Required in JSON; generated automatically from XML when absent. */
+  /** Document identifier — a UUID. Optional; preserved when present, omitted when absent. */
   id?: string;
   /** Always `'rc-sms'`. */
   tagName: 'rc-sms';
@@ -48,7 +48,7 @@ interface SmsDocument {
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `id` | `string` (UUID) | Document identifier. Required in JSON — always provide a UUID. In XML, may be omitted; the parser generates one. |
+| `id` | `string` (UUID) | Document identifier. Optional. When present, preserved as-is. When absent, not set on the resulting `SmsDocument`. |
 | `tagName` | `'rc-sms'` | Element discriminator. Always `'rc-sms'`. |
 | `content` | `SmsContentJson` | The parsed message content. See [Content](../concepts/content) for the content model. |
 
