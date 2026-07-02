@@ -295,12 +295,11 @@ export const guideSidebar: DefaultTheme.SidebarItem[] = [
             text: 'SMS RCML',
             collapsed: false,
             items: [
-              { text: 'Overview', link: '/packages/rcml/sms/rcml/' },
               { text: 'rc-sms', link: '/packages/rcml/sms/rcml/rc-sms' },
             ],
           },
           {
-            text: 'Node reference',
+            text: 'SMS RFM',
             collapsed: true,
             items: [
               { text: 'sms', link: '/packages/rcml/sms/content/nodes/sms' },
