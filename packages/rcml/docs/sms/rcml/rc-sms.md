@@ -8,7 +8,7 @@ no wrapping root element, no head, no body.
 
 | Attribute | Required | Type | Description |
 |-----------|----------|------|-------------|
-| `id` | No | string | Optional node identifier (typically a UUID). Set on `SmsDocument.id` and round-tripped through `smsToXml` / `xmlToSms` as the `id="…"` XML attribute. The Rule editor uses this when persisting drafts. |
+| `id` | Yes | UUID string | Document identifier. Required in JSON — always include a UUID (e.g. `"550e8400-e29b-41d4-a716-446655440000"`). In XML, `id` may be omitted and the parser generates one automatically. |
 
 The element's JSON shape uses `attributes: {}` — `id` lives at the top
 level of `SmsDocument`, not inside `attributes`. Other than `id`, `rc-sms`
@@ -39,23 +39,23 @@ None — `rc-sms` is the document root.
 
 ```typescript
 interface SmsDocument {
+  /** Document identifier — a UUID. Required in JSON; generated automatically from XML when absent. */
+  id?: string;
   /** Always `'rc-sms'`. */
   tagName: 'rc-sms';
   /** Reserved for future element attributes. Always `{}`. */
   attributes: Record<string, never>;
   /** The parsed message content. */
   content: SmsContentJson;
-  /** Optional document identifier (UUID). Round-tripped through XML as `id="…"`. */
-  id?: string;
 }
 ```
 
 | Field | Type | Description |
 |-------|------|-------------|
+| `id` | `string` (UUID) | Document identifier. Required in JSON — always provide a UUID. In XML, may be omitted; the parser generates one. |
 | `tagName` | `'rc-sms'` | Element discriminator. Always `'rc-sms'`. |
 | `attributes` | `{}` | Reserved; always an empty object. |
 | `content` | `SmsContentJson` | The parsed message content. See [Content](../concepts/content) for the content model. |
-| `id` | `string` (optional) | Document identifier. The Rule editor sets this when persisting drafts. |
 
 ## XML
 
@@ -68,6 +68,7 @@ Account: ::placeholder{type="Subscriber" original="[Subscriber:email]" name="Ema
 
 ```json
 {
+  "id": "550e8400-e29b-41d4-a716-446655440000",
   "tagName": "rc-sms",
   "attributes": {},
   "content": {
