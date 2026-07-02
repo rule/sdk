@@ -241,7 +241,11 @@ describe('createRemoteContentPlaceholder', () => {
   })
 })
 
-describe('createLinkPlaceholder', () => {
+describe('createLinkPlaceholder (internal)', () => {
+  // createLinkPlaceholder is internal — it creates a Link placeholder without
+  // is-unsubscribe: true, which means the output fails validateSmsJson.
+  // The public API for the unsubscribe footer is createUnsubscribeNodes().
+
   const linkTypes = [
     'Optin',
     'Unsubscribe',
@@ -250,7 +254,7 @@ describe('createLinkPlaceholder', () => {
     'Signup',
   ] as const
 
-  it.each(linkTypes)('builds a [Link:%s] node', (link) => {
+  it.each(linkTypes)('builds a raw [Link:%s] node (no is-unsubscribe)', (link) => {
     expect(createLinkPlaceholder({ link })).toEqual<SmsPlaceholderNode>({
       type: 'placeholder',
       attrs: {
@@ -260,12 +264,5 @@ describe('createLinkPlaceholder', () => {
         value: null,
       },
     })
-  })
-
-  it('matches parser output shape exactly', () => {
-    const built = createLinkPlaceholder({ link: 'Unsubscribe' })
-    const parsed = smsRfmToJson('[Link:Unsubscribe]').content[0]
-
-    expect(parsed).toEqual(built)
   })
 })

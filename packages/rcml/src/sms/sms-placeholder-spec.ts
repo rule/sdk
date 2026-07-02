@@ -33,8 +33,11 @@ export type SmsPlaceholderTokenType = (typeof SMS_TOKEN_TYPES)[number]
 /**
  * Machine-readable placeholder spec for SMS — a filtered view of
  * {@link placeholderSpec} containing only the five token types valid in
- * user-authored SMS messages. Excluded: `Link` (system-only, produced by
- * `::unsubscribe`), `LoopValue`, `RandomString`, `Dispatcher`, `PromoCode`.
+ * user-authored SMS messages.
+ *
+ * Excluded: `Link` (system-only — produced internally by the `::unsubscribe`
+ * directive; never authored directly), `LoopValue`, `RandomString`,
+ * `Dispatcher`, `PromoCode`.
  *
  * @example
  * ```ts

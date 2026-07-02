@@ -156,7 +156,9 @@ const NODE_META: Record<string, SmsRfmNodeSpec> = {
         type: 'enum',
         required: true,
         description:
-          'The backend token category. Each value corresponds to a token in `smsPlaceholderSpec.tokens`.',
+          'The backend token category. Each value corresponds to a token in `smsPlaceholderSpec.tokens`. ' +
+          'The `Link` type exists in the JSON model but is system-only — it is produced exclusively by ' +
+          'the `::unsubscribe` directive and must not be authored directly.',
         allowedValues: ['CustomField', 'Subscriber', 'User', 'RemoteContent', 'Date'],
         examples: ['Subscriber', 'CustomField', 'Date'],
       },

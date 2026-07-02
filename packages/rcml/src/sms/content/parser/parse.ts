@@ -2,7 +2,7 @@
  * Internal: SMS RFM (SMS Rule Flavor Markdown) string → SmsContentJson conversion.
  *
  * SMS RFM is a markdown-directive-based format:
- *   - `:link[url]{track="true|false" shorten="true|false"}` → link node (`href` accepted but ignored for backward compat)
+ *   - `:link[url]{track="true|false" shorten="true|false"}` → link node (canonical form; `href` attribute accepted but ignored for backward compat)
  *   - `::placeholder{type="..." original="..." name="..." value="..."}` → placeholder node
  *   - `[Type:Name]` → shorthand placeholder (backward-compatible, converted to `::placeholder{...}` before parsing)
  *   - `\\\n` (backslash + newline) or bare `\n` within a paragraph → embedded `\n` in message text
@@ -351,7 +351,7 @@ function coerceAttrValue(raw: string | null | undefined): string | number | null
  * Parse an SMS RFM string into an {@link SmsContentJson} document.
  *
  * Accepts both:
- * - `:link[text]{href track shorten}` directive syntax
+ * - `:link[url]{track shorten}` directive syntax (`href` accepted for backward compat)
  * - `::placeholder{type original name value}` directive syntax
  * - `[Type:Name]` shorthand (backward-compatible)
  * - Bare `\n` within a paragraph (backward-compatible; becomes `\n` in message text)

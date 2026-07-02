@@ -11,7 +11,6 @@ import { createContent, createLinkNode, createMessageNode, createUnsubscribeNode
 import {
   createCustomFieldPlaceholder,
   createDatePlaceholder,
-  createLinkPlaceholder,
   createPlaceholderNode,
   createRemoteContentPlaceholder,
   createSubscriberPlaceholder,
@@ -52,5 +51,4 @@ export const sms = {
   createCustomFieldPlaceholder,
   createDatePlaceholder,
   createRemoteContentPlaceholder,
-  createLinkPlaceholder,
 } as const

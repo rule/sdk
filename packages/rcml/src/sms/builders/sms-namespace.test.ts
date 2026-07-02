@@ -4,7 +4,6 @@ import { createContent, createLinkNode, createMessageNode, createUnsubscribeNode
 import {
   createCustomFieldPlaceholder,
   createDatePlaceholder,
-  createLinkPlaceholder,
   createPlaceholderNode,
   createRemoteContentPlaceholder,
   createSubscriberPlaceholder,
@@ -28,7 +27,6 @@ describe('sms namespace identity', () => {
     expect(sms.createCustomFieldPlaceholder).toBe(createCustomFieldPlaceholder)
     expect(sms.createDatePlaceholder).toBe(createDatePlaceholder)
     expect(sms.createRemoteContentPlaceholder).toBe(createRemoteContentPlaceholder)
-    expect(sms.createLinkPlaceholder).toBe(createLinkPlaceholder)
   })
 
   it('exposes exactly the documented set of keys (no orphan exports)', () => {
@@ -37,7 +35,6 @@ describe('sms namespace identity', () => {
       'createCustomFieldPlaceholder',
       'createDatePlaceholder',
       'createLinkNode',
-      'createLinkPlaceholder',
       'createMessageNode',
       'createPlaceholderNode',
       'createRemoteContentPlaceholder',

@@ -337,13 +337,12 @@ export function createRemoteContentPlaceholder(
   })
 }
 
-// ─── Link (system-managed link URL) ───────────────────────────────────────────
+// ─── Link (system-managed link URL — internal) ────────────────────────────────
 
 /**
- * The five system-managed link types that can be inserted as a `Link`
- * placeholder or as the `text` of a `link` node (see `createLinkNode`).
+ * The system-managed link types used internally in `Link` placeholder nodes.
  *
- * @public
+ * @internal
  */
 export type SmsSystemLinkType =
   | 'Optin'
@@ -352,27 +351,19 @@ export type SmsSystemLinkType =
   | 'ShareLink'
   | 'Signup'
 
-/** Options for {@link createLinkPlaceholder}. @public */
+/** @internal */
 export interface CreateSmsLinkPlaceholderOptions {
-  /** Which system-managed link to insert. */
   link: SmsSystemLinkType
 }
 
 /**
- * Build a `Link` placeholder node — inserts a system-managed link URL as
- * plain text in the message body.
+ * Build a raw `Link` placeholder node.
  *
- * To produce a clickable hyperlink instead, use {@link createLinkNode} with
- * the system link URL as `url`.
+ * **Do not use directly** — this produces a node without `is-unsubscribe: true`
+ * which will fail `validateSmsJson`. For the unsubscribe footer, use
+ * {@link createUnsubscribeNodes} instead.
  *
- * Produces `original = '[Link:<link>]'` and `name = '<link>'`.
- *
- * @example
- * ```ts
- * sms.createLinkPlaceholder({ link: 'Unsubscribe' })
- * // original: '[Link:Unsubscribe]', name: 'Unsubscribe'
- * ```
- * @public
+ * @internal
  */
 export function createLinkPlaceholder(
   opts: CreateSmsLinkPlaceholderOptions,

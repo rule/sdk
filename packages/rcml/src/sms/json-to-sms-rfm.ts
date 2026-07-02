@@ -10,9 +10,9 @@ import type { SmsContentJson } from './content/json-validator/types.js'
  *
  * Reverse of {@link smsRfmToJson}. Serialization rules:
  * - `message` nodes → text verbatim (embedded `\n` stays as-is)
- * - `link` nodes → `:link[url]{href="url" track="..." shorten="..."}`
- * - `placeholder` nodes with a resolved value or `max-length` → `::placeholder{...}` directive form
- * - `placeholder` nodes with null value and absent/null `max-length` → compact `[Type:Name]` form
+ * - `link` nodes → `:link[url]{track="..." shorten="..."}`
+ * - `placeholder` nodes → `::placeholder{type="..." original="..." name="..." ...}` directive form
+ * - the two-node unsubscribe footer (`is-unsubscribe: true` on both) → `::unsubscribe`
  *
  * @param json - Typed SMS content JSON (`{ type: 'sms', content: [...] }`).
  * @returns SMS RFM string.
@@ -21,7 +21,7 @@ import type { SmsContentJson } from './content/json-validator/types.js'
  * ```ts
  * const json = smsRfmToJson('Account: [Subscriber:email]')
  * const rfm = jsonToSmsRfm(json)
- * // rfm === 'Account: [Subscriber:email]'
+ * // rfm === 'Account: ::placeholder{type="Subscriber" original="[Subscriber:email]" name="email"}'
  * ```
  * @public
  */

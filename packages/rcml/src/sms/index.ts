@@ -72,10 +72,8 @@ export type {
   CreateSmsCustomFieldPlaceholderOptions,
   CreateSmsDatePlaceholderOptions,
   CreateSmsRemoteContentPlaceholderOptions,
-  CreateSmsLinkPlaceholderOptions,
   SmsDateFormat,
   SmsDateSource,
-  SmsSystemLinkType,
 } from './builders/index.js'
 
 export { SmsTagNamesEnum, SMS_SCHEMA_SPEC } from './schema/index.js'

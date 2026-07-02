@@ -77,14 +77,8 @@ describe('jsonToSmsRfm — placeholders', () => {
     expect(roundTripped).toEqual(original)
   })
 
-  it('round-trips a Link placeholder', () => {
-    const { original, roundTripped } = rt('[Link:Unsubscribe]')
-
-    expect(roundTripped).toEqual(original)
-  })
-
   it('round-trips all placeholder types in one message', () => {
-    const input = '[Subscriber:FirstName] [CustomField:Order.Total] [User:CompanyName] [Link:WebBrowser]'
+    const input = '[Subscriber:FirstName] [CustomField:Order.Total] [User:CompanyName]'
     const { original, roundTripped } = rt(input)
 
     expect(roundTripped).toEqual(original)
@@ -134,7 +128,7 @@ describe('jsonToSmsRfm — combined constructs', () => {
   })
 
   it('round-trips multi-paragraph with placeholders', () => {
-    const input = 'Hello [Subscriber:FirstName],\n\nYour order [CustomField:Order.Id] is ready.\n\nClick [Link:WebBrowser] to view it.'
+    const input = 'Hello [Subscriber:FirstName],\n\nYour order [CustomField:Order.Id] is ready.\n\nSent by [User:CompanyName].'
     const { original, roundTripped } = rt(input)
 
     expect(roundTripped).toEqual(original)
@@ -178,6 +172,36 @@ describe('sms-rfm-json round-trip — :link directive', () => {
     const { original, roundTripped } = rt(input)
 
     expect(roundTripped).toEqual(original)
+  })
+})
+
+// ─── ::unsubscribe directive round-trips ─────────────────────────────────────
+
+describe('sms-rfm-json round-trip — ::unsubscribe directive', () => {
+  it('round-trips ::unsubscribe standalone', () => {
+    const { original, roundTripped } = rt('::unsubscribe')
+
+    expect(roundTripped).toEqual(original)
+  })
+
+  it('serializes ::unsubscribe back as ::unsubscribe (not the two-node pair)', () => {
+    const rfm = jsonToSmsRfm(smsRfmToJson('::unsubscribe'))
+
+    expect(rfm).toBe('::unsubscribe')
+  })
+
+  it('round-trips a full message with unsubscribe footer', () => {
+    const { original, roundTripped } = rt('Your order has shipped.\n::unsubscribe')
+
+    expect(roundTripped).toEqual(original)
+  })
+
+  it('produces the two-node JSON pair from ::unsubscribe', () => {
+    const json = smsRfmToJson('::unsubscribe')
+
+    expect(json.content).toHaveLength(2)
+    expect(json.content[0]).toMatchObject({ type: 'message', attrs: { 'is-unsubscribe': true } })
+    expect(json.content[1]).toMatchObject({ type: 'placeholder', attrs: { type: 'Link', 'is-unsubscribe': true } })
   })
 })
 
