@@ -19,9 +19,9 @@ In an SMS RFM string or inside `<rc-sms>` XML, write the footer as the
 
 The footer is two adjacent nodes at the end of the `content` array. The first
 renders the localised opt-out phrase — the platform resolves
-`[Subscriber:unsubscribe_text]` to the language-appropriate stop word at send
-time (e.g. "STOP" or "Unsubscribe"). The second is the personalised unsubscribe
-link.
+`[Subscriber:unsubscribe_text]` to the language-appropriate text at send time.
+The second is the personalised unsubscribe link. Together they produce something
+like: `Unsubscribe? i.rule.io/RzpmFP`
 
 ```json
 [
