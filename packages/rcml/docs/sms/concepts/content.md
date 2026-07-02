@@ -32,7 +32,10 @@ sms.createMessageNode({ text: 'Your order has shipped!\nAccount: ' })
 ## Link
 
 A clickable URL. The URL is used as both the destination and the visible text
-in the sent message. See [`link`](../content/nodes/link) for the full reference.
+in the sent message. The `track` and `shorten` flags control click tracking and
+URL shortening — with one constraint: **`track: true` requires `shorten: true`**.
+A tracked link must be shortened. To disable both, set both to `false`.
+See [`link`](../content/nodes/link) for the full reference.
 
 **XML**
 
@@ -41,6 +44,12 @@ and `shorten` are `"true"` or `"false"`:
 
 ```
 :link[https://example.com/orders/123]{track="true" shorten="true"}
+```
+
+Tracked and shortened disabled:
+
+```
+:link[https://example.com/orders/123]{track="false" shorten="false"}
 ```
 
 **JSON**
