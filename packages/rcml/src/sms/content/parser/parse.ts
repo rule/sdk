@@ -404,6 +404,7 @@ function parseTokenAttrs(attrsStr: string): Record<string, string | undefined> {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     const raw = m[2] !== undefined ? m[2] : m[3]
     // Unescape \" → " and \\ → \ for quoted values
+
     result[m[1] as string] = m[2] !== undefined ? raw!.replace(/\\"/g, '"').replace(/\\\\/g, '\\') : raw
   }
 
