@@ -2,7 +2,8 @@ import { z } from 'zod'
 
 /**
  * Attribute schema for the `:link` text directive in SMS RFM.
- * `href` is required; `track` and `shorten` are required boolean strings.
+ * `href` is accepted but ignored — the URL is read from the directive label.
+ * `track` and `shorten` are required boolean strings.
  *
  * @internal
  */

@@ -19,13 +19,17 @@ function serializeLinkNode(node: SmsLinkNode): string {
   return `:link[${text}]{track="${String(attrs.track)}" shorten="${String(attrs.shorten)}"}`
 }
 
+function escapeAttrValue(v: string | number): string {
+  return String(v).replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+}
+
 function serializePlaceholderNode(node: SmsPlaceholderNode): string {
   const { type, original, name, value } = node.attrs
   const maxLen = node.attrs['max-length']
-  const parts = [`type="${type}"`, `original="${original}"`, `name="${name}"`]
+  const parts = [`type="${escapeAttrValue(type)}"`, `original="${escapeAttrValue(original)}"`, `name="${escapeAttrValue(name)}"`]
 
-  if (value !== null) parts.push(`value="${value}"`)
-  if (maxLen != null && maxLen !== null) parts.push(`max-length="${maxLen}"`)
+  if (value !== null) parts.push(`value="${escapeAttrValue(value)}"`)
+  if (maxLen != null && maxLen !== null) parts.push(`max-length="${escapeAttrValue(maxLen)}"`)
 
   return `::placeholder{${parts.join(' ')}}`
 }

@@ -292,6 +292,10 @@ function convertLinkDirective(node: TextDirective): SmsLinkNode {
     .replace(new RegExp(COLON_ESCAPE, 'g'), ':')
   const url = labelText || raw['href'] || ''
 
+  if (!url) {
+    throw new RcmlValidationError([], ':link directive has no URL — provide a non-empty label: :link[https://…]{…}')
+  }
+
   return {
     type: 'link',
     text: url,
@@ -392,12 +396,15 @@ function expandAtomTokens(text: string, ctx: ConvertCtx): void {
 function parseTokenAttrs(attrsStr: string): Record<string, string | undefined> {
   const decoded = attrsStr.replace(new RegExp(COLON_ESCAPE, 'g'), ':')
   const result: Record<string, string | undefined> = {}
-  const re = /([\w-]+)=(?:"([^"]*)"|(\S+))/g
+  // Match key="val" allowing \" escapes inside quoted values, or bare non-whitespace tokens.
+  const re = /([\w-]+)=(?:"((?:[^"\\]|\\.)*)"|(\S+))/g
   let m: RegExpExecArray | null
 
   while ((m = re.exec(decoded)) !== null) {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    result[m[1] as string] = m[2] !== undefined ? m[2] : m[3]
+    const raw = m[2] !== undefined ? m[2] : m[3]
+    // Unescape \" → " and \\ → \ for quoted values
+    result[m[1] as string] = m[2] !== undefined ? raw!.replace(/\\"/g, '"').replace(/\\\\/g, '\\') : raw
   }
 
   return result
