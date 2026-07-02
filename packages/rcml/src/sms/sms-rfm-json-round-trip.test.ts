@@ -150,8 +150,8 @@ describe('jsonToSmsRfm — direct JSON input', () => {
 // ─── Link directive round-trips ───────────────────────────────────────────────
 
 describe('sms-rfm-json round-trip — :link directive', () => {
-  it('round-trips a basic :link directive', () => {
-    const input = ':link[https://example.com]{track="true" shorten="false"}'
+  it('round-trips a basic :link directive with track+shorten', () => {
+    const input = ':link[https://example.com]{track="true" shorten="true"}'
     const { original, roundTripped } = rt(input)
 
     expect(roundTripped).toEqual(original)

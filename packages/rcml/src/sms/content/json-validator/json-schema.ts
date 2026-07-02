@@ -66,6 +66,8 @@ export const smsContentJsonSchema = {
           },
           required: ['track', 'shorten'],
           additionalProperties: false,
+          if: { properties: { track: { const: true } } },
+          then: { properties: { shorten: { const: true } } },
         },
       },
       required: ['type', 'text', 'attrs'],

@@ -159,7 +159,7 @@ describe('XML round-trip — link nodes', () => {
           {
             type: 'link',
             text: 'https://example.com',
-            attrs: { track: true, shorten: false },
+            attrs: { track: true, shorten: true },
           },
         ],
       },

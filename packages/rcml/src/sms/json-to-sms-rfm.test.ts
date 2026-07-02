@@ -27,19 +27,19 @@ describe('jsonToSmsRfm()', () => {
     expect(jsonToSmsRfm(smsRfmToJson('Para one\n\nPara two'))).toBe('Para one\nPara two')
   })
 
-  it('renders a link node as :link directive', () => {
+  it('renders a tracked+shortened link node as :link directive', () => {
     const json: SmsContentJson = {
       type: 'sms',
       content: [
         {
           type: 'link',
           text: 'https://example.com',
-          attrs: { track: true, shorten: false },
+          attrs: { track: true, shorten: true },
         },
       ],
     }
 
-    expect(jsonToSmsRfm(json)).toBe(':link[https://example.com]{track="true" shorten="false"}')
+    expect(jsonToSmsRfm(json)).toBe(':link[https://example.com]{track="true" shorten="true"}')
   })
 
   it('empty content round-trips to empty string', () => {

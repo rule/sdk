@@ -22,11 +22,11 @@ describe('createMessageNode', () => {
 describe('createLinkNode', () => {
   it('produces a link node with url as text and boolean attrs', () => {
     expect(
-      createLinkNode({ url: 'https://example.com', track: true, shorten: false }),
+      createLinkNode({ url: 'https://example.com', track: true, shorten: true }),
     ).toEqual<SmsLinkNode>({
       type: 'link',
       text: 'https://example.com',
-      attrs: { track: true, shorten: false },
+      attrs: { track: true, shorten: true },
     })
   })
 

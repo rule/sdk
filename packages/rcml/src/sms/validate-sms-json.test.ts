@@ -17,7 +17,37 @@ describe('validateSmsJson()', () => {
     expect(() => validateSmsJson(doc)).not.toThrow()
   })
 
-  it('accepts a link node', () => {
+  it('accepts a tracked+shortened link node', () => {
+    const doc = {
+      type: 'sms',
+      content: [
+        {
+          type: 'link',
+          text: 'https://example.com',
+          attrs: { track: true, shorten: true },
+        },
+      ],
+    }
+
+    expect(() => validateSmsJson(doc)).not.toThrow()
+  })
+
+  it('accepts an untracked+unshortened link node', () => {
+    const doc = {
+      type: 'sms',
+      content: [
+        {
+          type: 'link',
+          text: 'https://example.com',
+          attrs: { track: false, shorten: false },
+        },
+      ],
+    }
+
+    expect(() => validateSmsJson(doc)).not.toThrow()
+  })
+
+  it('rejects track:true with shorten:false', () => {
     const doc = {
       type: 'sms',
       content: [
@@ -29,7 +59,7 @@ describe('validateSmsJson()', () => {
       ],
     }
 
-    expect(() => validateSmsJson(doc)).not.toThrow()
+    expect(() => validateSmsJson(doc)).toThrow(SmsContentParseError)
   })
 
   it('rejects a missing type field', () => {

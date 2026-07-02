@@ -11,6 +11,8 @@ URL-shortening behaviour.
 | `track` | Yes | boolean | `true` to enable click-through tracking. |
 | `shorten` | Yes | boolean | `true` to shorten the URL before sending. |
 
+**Constraint:** `track: true` requires `shorten: true`. A tracked link must also be shortened — this mirrors the editor's behaviour, where enabling tracking automatically enables shortening. To send a link without either, set both to `false`.
+
 ## Fields
 
 | Field | Required | Description |

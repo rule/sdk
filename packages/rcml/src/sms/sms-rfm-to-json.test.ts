@@ -97,13 +97,13 @@ describe('smsRfmToJson()', () => {
 
 describe('smsRfmToJson() — link directive', () => {
   it('parses a basic :link directive as a link node', () => {
-    const doc = smsRfmToJson(':link[https://example.com]{track="true" shorten="false"}')
+    const doc = smsRfmToJson(':link[https://example.com]{track="false" shorten="false"}')
 
     expect(doc.content).toEqual<SmsContentJson['content']>([
       {
         type: 'link',
         text: 'https://example.com',
-        attrs: { track: true, shorten: false },
+        attrs: { track: false, shorten: false },
       },
     ])
   })
@@ -133,12 +133,12 @@ describe('smsRfmToJson() — link directive', () => {
   })
 
   it('accepts legacy :link with href (backward compat) and reads URL from label', () => {
-    const doc = smsRfmToJson(':link[https://example.com]{href="https://example.com" track="true" shorten="false"}')
+    const doc = smsRfmToJson(':link[https://example.com]{href="https://example.com" track="false" shorten="false"}')
 
     expect(doc.content[0]).toMatchObject({
       type: 'link',
       text: 'https://example.com',
-      attrs: { track: true, shorten: false },
+      attrs: { track: false, shorten: false },
     })
   })
 })
