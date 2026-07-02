@@ -491,10 +491,8 @@ export interface CreateDefaultSmsCampaignParams {
   /**
    * Optional overrides for the auto-created SMS message.
    *
-   * Any field provided here replaces the default. `subject` (the SMS body
-   * text) defaults to a placeholder with an unsubscribe footer; the footer
-   * style (link vs stop-word) is determined from the account's sender
-   * configuration, fetched automatically when `subject` is omitted.
+   * Currently supports `utmCampaign` and `utmTerm`. When omitted the message
+   * is created with no UTM parameters.
    */
   message?: Partial<CreateSmsCampaignMessagePayload>;
   /**

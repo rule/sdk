@@ -14,25 +14,24 @@ Each dispatcher has its own message. Once you have a message ID, create a templa
 ## SMS message fields
 
 An SMS message has fewer fields than its email counterpart. There is no
-`fromName`, no `fromEmail`, no `preheader` — the platform's configured sender
-number is used for delivery, and the only content the message itself carries
-is the body text plus optional UTM tracking and (for automations) automail
-delivery settings.
+`fromName`, no `fromEmail`, no `preheader`, no subject — the platform's
+configured sender number is used for delivery, and the SMS body lives in the
+template, not the message. The message carries only optional UTM tracking and
+(for automations) automail delivery settings.
 
 | Field | Description |
 |-------|-------------|
-| `subject` | The SMS body text. The field name reads as "subject" for wire-format consistency with email; in SMS it is the entire message body. |
 | `utmCampaign` | UTM campaign parameter appended to tracked links. |
 | `utmTerm` | UTM term parameter appended to tracked links. |
 | `automailSetting` | Automation-only. Controls active state and send delay. |
 
 ## Creating a campaign message
 
-Use `createSmsCampaignMessage()` to create a message attached to an SMS campaign. Provide at minimum the SMS body in the `subject` field.
+Use `createSmsCampaignMessage()` to create a message attached to an SMS campaign. All fields are optional.
 
 ```typescript
 const message = await client.messages.createSmsCampaignMessage(campaignId, {
-  subject: 'Your order is on its way! Track it at https://acme.com/orders',
+  utmCampaign: 'spring-sale',
 });
 const messageId = message.id!;
 ```
@@ -41,11 +40,10 @@ const messageId = message.id!;
 
 ## Creating an automation message
 
-Use `createSmsAutomationMessage()` to create a message attached to an SMS automation. You can also configure when the automation fires via `automailSetting`.
+Use `createSmsAutomationMessage()` to create a message attached to an SMS automation. Configure when the automation fires via `automailSetting`.
 
 ```typescript
 const message = await client.messages.createSmsAutomationMessage(automationId, {
-  subject: 'Welcome to Acme! Reply STOP to opt out.',
   // Optional: control when the automation fires
   automailSetting: { active: true, delayInSeconds: '0' },
 });
@@ -66,22 +64,16 @@ const message = await client.messages.get(messageId);
 if (!message) {
   console.log('Message not found');
 } else {
-  console.log(message.subject);     // the SMS body
-  console.log(message.dispatcher);   // { id, type }
+  console.log(message.dispatcher);  // { id, type }
+  console.log(message.utmCampaign);
 }
 ```
 
 ## Updating a campaign message
 
-Use `updateSmsCampaignMessage()` to change the SMS body or UTM parameters. Pass only the fields you want to change — omitted fields are left as-is.
+Use `updateSmsCampaignMessage()` to change UTM parameters. Pass only the fields you want to change — omitted fields are left as-is.
 
 ```typescript
-// Change the SMS body
-await client.messages.updateSmsCampaignMessage(messageId, {
-  subject: 'Update: your order has shipped!',
-});
-
-// Update UTM tracking
 await client.messages.updateSmsCampaignMessage(messageId, {
   utmCampaign: 'spring-sale',
   utmTerm: 'sms-promo',
@@ -92,14 +84,9 @@ await client.messages.updateSmsCampaignMessage(messageId, {
 
 ## Updating an automation message
 
-Use `updateSmsAutomationMessage()` to change the SMS body, UTM, or delivery settings. Automation messages additionally support changing the `automailSetting` to adjust the active state or send delay.
+Use `updateSmsAutomationMessage()` to change UTM parameters or delivery settings. Use `automailSetting` to adjust the active state or send delay.
 
 ```typescript
-// Update body copy
-await client.messages.updateSmsAutomationMessage(messageId, {
-  subject: 'Welcome — updated copy',
-});
-
 // Change the send delay to 1 hour
 await client.messages.updateSmsAutomationMessage(messageId, {
   automailSetting: { active: true, delayInSeconds: '3600' },

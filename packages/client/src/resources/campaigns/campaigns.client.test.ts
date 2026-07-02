@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { createSmsDocument } from '@rule/rcml';
+
 import { RuleApiError } from '../../errors.js';
 
 import {
@@ -578,7 +580,7 @@ describe('CampaignsClient', () => {
       });
     });
 
-    it('uses SMS body text (not campaign name) as the message subject', async () => {
+    it('does not set subject on the SMS message POST', async () => {
       fetchMock.mockResolvedValueOnce(createMockResponse(WIRE_SENDER));
       fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_CAMPAIGN }));
       fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_MESSAGE }));
@@ -597,9 +599,7 @@ describe('CampaignsClient', () => {
 
       const body = JSON.parse((messagePostCall![1] as RequestInit).body as string);
 
-      expect(body.subject).not.toBe('Spring Newsletter');
-      expect(typeof body.subject).toBe('string');
-      expect(body.subject.length).toBeGreaterThan(0);
+      expect(body.subject).toBeUndefined();
     });
 
     it('rolls back created resources when message creation fails', async () => {
@@ -624,8 +624,8 @@ describe('CampaignsClient', () => {
       expect(deletedUrls.some((u) => u.includes('/editor/campaign/200'))).toBe(true);
     });
 
-    it('message.subject override replaces the default SMS body', async () => {
-      // No sender mock — getSenderDetails is skipped when message.subject is provided
+    it('skips getSenderDetails when template.content is provided', async () => {
+      // No sender mock — getSenderDetails is only called to build the default template content
       fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_CAMPAIGN }));
       fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_MESSAGE }));
       fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_TEMPLATE }));
@@ -633,18 +633,42 @@ describe('CampaignsClient', () => {
 
       const client = createClient(fetchMock);
 
-      await client.createDefaultSmsCampaign({
-        message: { subject: 'Hi [Subscriber:FirstName], your order shipped!' },
+      const result = await client.createDefaultSmsCampaign({
+        template: {
+          content: createSmsDocument({ content: 'Custom SMS body.' }),
+        },
       });
 
-      const messagePostCall = fetchMock.mock.calls.find(
+      expect(result).toEqual({
+        campaignId: 200,
+        messageId: 11,
+        templateId: 21,
+        dynamicSetId: 31,
+      });
+    });
+
+    it('omits unsubscribe footer and skips getSenderDetails for transactional sendout', async () => {
+      // No sender mock — getSenderDetails is skipped for transactional campaigns
+      fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_CAMPAIGN }));
+      fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_MESSAGE }));
+      fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_TEMPLATE }));
+      fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_DYNAMIC_SET }));
+
+      const client = createClient(fetchMock);
+
+      await client.createDefaultSmsCampaign({ sendoutType: 'transactional' });
+
+      const templatePostCall = fetchMock.mock.calls.find(
         ([url, init]) =>
-          (url as string).includes('/editor/message') &&
+          (url as string).includes('/editor/template') &&
           (init as RequestInit).method === 'POST'
       );
-      const body = JSON.parse((messagePostCall![1] as RequestInit).body as string);
+      const body = JSON.parse((templatePostCall![1] as RequestInit).body as string);
+      const contentStr = JSON.stringify(body.template);
 
-      expect(body.subject).toBe('Hi [Subscriber:FirstName], your order shipped!');
+      // Template content must not contain any unsubscribe element
+      expect(contentStr).not.toContain('unsubscribe');
+      expect(contentStr).not.toContain('stop_word');
     });
 
     it('template.name override uses the custom name', async () => {
