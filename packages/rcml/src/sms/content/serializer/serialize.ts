@@ -3,8 +3,7 @@
  *
  * - `message` nodes → verbatim text (embedded `\n` preserved as-is).
  * - `link` nodes → `:link[url]{track="..." shorten="..."}` directive.
- * - `placeholder` nodes with a resolved value or max-length → `::placeholder{...}` directive.
- * - `placeholder` nodes with null value and no max-length → compact `[Type:Name]` via `original`.
+ * - `placeholder` nodes → `::placeholder{...}` directive (always).
  * - Nodes are concatenated with no separator — whitespace and newlines live in `message` text.
  *
  * @internal
@@ -23,17 +22,12 @@ function serializeLinkNode(node: SmsLinkNode): string {
 function serializePlaceholderNode(node: SmsPlaceholderNode): string {
   const { type, original, name, value } = node.attrs
   const maxLen = node.attrs['max-length']
+  const parts = [`type="${type}"`, `original="${original}"`, `name="${name}"`]
 
-  if (value !== null || (maxLen != null && maxLen !== null)) {
-    const parts = [`type="${type}"`, `original="${original}"`, `name="${name}"`]
+  if (value !== null) parts.push(`value="${value}"`)
+  if (maxLen != null && maxLen !== null) parts.push(`max-length="${maxLen}"`)
 
-    if (value !== null) parts.push(`value="${value}"`)
-    if (maxLen != null && maxLen !== null) parts.push(`max-length="${maxLen}"`)
-
-    return `::placeholder{${parts.join(' ')}}`
-  }
-
-  return original
+  return `::placeholder{${parts.join(' ')}}`
 }
 
 // ─── Public entry point ───────────────────────────────────────────────────────

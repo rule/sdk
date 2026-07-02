@@ -97,8 +97,10 @@ describe('jsonToSmsRfm — placeholders', () => {
     expect(roundTripped).toEqual(original)
   })
 
-  it('produces the original token verbatim', () => {
-    expect(jsonToSmsRfm(smsRfmToJson('[Subscriber:FirstName]'))).toBe('[Subscriber:FirstName]')
+  it('serializes shorthand input as ::placeholder directive', () => {
+    expect(jsonToSmsRfm(smsRfmToJson('[Subscriber:FirstName]'))).toBe(
+      '::placeholder{type="Subscriber" original="[Subscriber:FirstName]" name="FirstName"}',
+    )
   })
 })
 

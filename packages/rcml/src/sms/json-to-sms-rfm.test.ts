@@ -9,13 +9,15 @@ describe('jsonToSmsRfm()', () => {
   })
 
   it('round-trips a placeholder', () => {
-    expect(jsonToSmsRfm(smsRfmToJson('[Subscriber:FirstName]'))).toBe('[Subscriber:FirstName]')
+    expect(jsonToSmsRfm(smsRfmToJson('[Subscriber:FirstName]'))).toBe(
+      '::placeholder{type="Subscriber" original="[Subscriber:FirstName]" name="FirstName"}',
+    )
   })
 
   it('round-trips text + placeholder + text', () => {
-    const input = 'Hi [Subscriber:FirstName]!'
-
-    expect(jsonToSmsRfm(smsRfmToJson(input))).toBe(input)
+    expect(jsonToSmsRfm(smsRfmToJson('Hi [Subscriber:FirstName]!'))).toBe(
+      'Hi ::placeholder{type="Subscriber" original="[Subscriber:FirstName]" name="FirstName"}!',
+    )
   })
 
   it('round-trips single newline in message text', () => {
@@ -87,7 +89,7 @@ describe('jsonToSmsRfm() — link node serialization', () => {
     expect(jsonToSmsRfm(json)).toBe('::placeholder{type="CustomField" original="[CustomField:Address.Firstname]" name="Address.Firstname" value="77856"}')
   })
 
-  it('emits [Type:Name] shorthand when value is null and max-length is absent', () => {
+  it('emits ::placeholder directive when value is null and max-length is absent', () => {
     const json: SmsContentJson = {
       type: 'sms',
       content: [{
@@ -101,7 +103,7 @@ describe('jsonToSmsRfm() — link node serialization', () => {
       }],
     }
 
-    expect(jsonToSmsRfm(json)).toBe('[Subscriber:FirstName]')
+    expect(jsonToSmsRfm(json)).toBe('::placeholder{type="Subscriber" original="[Subscriber:FirstName]" name="FirstName"}')
   })
 
   it('emits ::placeholder when max-length is non-null', () => {

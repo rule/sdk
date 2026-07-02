@@ -76,14 +76,6 @@ neither a `name` nor a `value` nor a `max-length` — the editor relies on
 those, so authoring through the `::placeholder{…}` directive keeps the
 template editor-friendly.
 
-### Serializer output
-
-`jsonToSmsRfm` emits the bare `[Type:Name]` form when both `value` and
-`max-length` are null, and the `::placeholder{…}` directive form otherwise.
-This is a serializer output optimization, not a recommendation about how to
-write SMS RFM by hand. Re-parsing the serializer output recovers the same
-`SmsContentJson` tree either way.
-
 ---
 
 ## Subscriber
