@@ -39,7 +39,7 @@ describe('jsonToSmsRfm()', () => {
       ],
     }
 
-    expect(jsonToSmsRfm(json)).toBe(':link[https://example.com]{href="https://example.com" track="true" shorten="false"}')
+    expect(jsonToSmsRfm(json)).toBe(':link[https://example.com]{track="true" shorten="false"}')
   })
 
   it('empty content round-trips to empty string', () => {
@@ -58,7 +58,7 @@ describe('jsonToSmsRfm() — link node serialization', () => {
       }],
     }
 
-    expect(jsonToSmsRfm(json)).toBe(':link[https://example.com]{href="https://example.com" track="false" shorten="false"}')
+    expect(jsonToSmsRfm(json)).toBe(':link[https://example.com]{track="false" shorten="false"}')
   })
 
   it('emits message text verbatim including embedded newlines', () => {

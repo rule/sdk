@@ -151,28 +151,28 @@ describe('jsonToSmsRfm — direct JSON input', () => {
 
 describe('sms-rfm-json round-trip — :link directive', () => {
   it('round-trips a basic :link directive', () => {
-    const input = ':link[https://example.com]{href="https://example.com" track="true" shorten="false"}'
+    const input = ':link[https://example.com]{track="true" shorten="false"}'
     const { original, roundTripped } = rt(input)
 
     expect(roundTripped).toEqual(original)
   })
 
   it('round-trips :link with track="false" shorten="false"', () => {
-    const input = ':link[https://example.com]{href="https://example.com" track="false" shorten="false"}'
+    const input = ':link[https://example.com]{track="false" shorten="false"}'
     const { original, roundTripped } = rt(input)
 
     expect(roundTripped).toEqual(original)
   })
 
   it('round-trips :link mixed with surrounding text', () => {
-    const input = 'Your message here. :link[https://google.com]{href="https://google.com" track="true" shorten="true"} Test'
+    const input = 'Your message here. :link[https://google.com]{track="true" shorten="true"} Test'
     const { original, roundTripped } = rt(input)
 
     expect(roundTripped).toEqual(original)
   })
 
   it('round-trips :link in a multi-paragraph document', () => {
-    const input = 'Hi [Subscriber:FirstName],\n\nClick :link[https://example.com]{href="https://example.com" track="true" shorten="true"} to view your order.'
+    const input = 'Hi [Subscriber:FirstName],\n\nClick :link[https://example.com]{track="true" shorten="true"} to view your order.'
     const { original, roundTripped } = rt(input)
 
     expect(roundTripped).toEqual(original)

@@ -2,7 +2,7 @@
  * Internal: SMS RFM (SMS Rule Flavor Markdown) string → SmsContentJson conversion.
  *
  * SMS RFM is a markdown-directive-based format:
- *   - `:link[text]{href="..." track="true|false" shorten="true|false"}` → link node
+ *   - `:link[url]{track="true|false" shorten="true|false"}` → link node (`href` accepted but ignored for backward compat)
  *   - `::placeholder{type="..." original="..." name="..." value="..."}` → placeholder node
  *   - `[Type:Name]` → shorthand placeholder (backward-compatible, converted to `::placeholder{...}` before parsing)
  *   - `\\\n` (backslash + newline) or bare `\n` within a paragraph → embedded `\n` in message text
@@ -202,16 +202,23 @@ function convertInlineNode(node: PhrasingContent, ctx: ConvertCtx): void {
 }
 
 /**
- * Convert a `:link[...]{href track shorten}` textDirective into an `SmsLinkNode`.
- * The `href` attribute is used as the link text — in SMS, links are shown as URLs.
+ * Convert a `:link[url]{track shorten}` textDirective into an `SmsLinkNode`.
+ * The URL is read from the label (node children text). `href` is accepted but
+ * ignored — kept for backward compat with content serialised before this change.
  * @internal
  */
 function convertLinkDirective(node: TextDirective): SmsLinkNode {
   const raw = (node.attributes ?? {}) as Record<string, string | null | undefined>
 
+  // Read URL from the label (first child text node), fall back to href.
+  const labelText = node.children
+    .map((c) => ('value' in c ? (c as { value: string }).value : ''))
+    .join('')
+  const url = labelText || raw['href'] || ''
+
   return {
     type: 'link',
-    text: raw['href'] ?? '',
+    text: url,
     attrs: {
       track: raw['track'] !== 'false',
       shorten: raw['shorten'] !== 'false',

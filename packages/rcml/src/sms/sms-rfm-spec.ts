@@ -123,7 +123,7 @@ const NODE_META: Record<string, SmsRfmNodeSpec> = {
   link: {
     description:
       'A hyperlink. The URL is used as both the destination and the visible text in the message body. ' +
-      'In SMS RFM, links are written as `:link[url]{href="url" track="true|false" shorten="true|false"}`.',
+      'In SMS RFM, links are written as `:link[url]{track="true|false" shorten="true|false"}`.',
     attrs: {
       text: {
         type: 'string',
@@ -197,7 +197,7 @@ function buildSmsRfmSpec(): SmsRfmSpec {
       'SMS RFM (SMS Rule Flavor Markdown) content flavor. Uses markdown-directive syntax. ' +
       'The content model is a flat sequence of top-level nodes: `message` (text), `link` (hyperlinks), ' +
       'and `placeholder` (dynamic values). ' +
-      'Links are written as `:link[url]{href="url" track="true|false" shorten="true|false"}`. ' +
+      'Links are written as `:link[url]{track="true|false" shorten="true|false"}`. ' +
       'Placeholders accept either the `::placeholder{...}` directive form or the compact `[Type:Name]` shorthand. ' +
       'The required unsubscribe footer is expressed as `::unsubscribe` — it expands to the two-node ' +
       'stop-word + link pair with `is-unsubscribe` markers.',

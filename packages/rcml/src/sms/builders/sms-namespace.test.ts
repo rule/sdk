@@ -76,6 +76,6 @@ describe('sms namespace through createSmsDocument', () => {
     expect(rfm).toContain('[Subscriber:FirstName]')
     expect(rfm).toContain('[CustomField:Order.Id]')
     expect(rfm).toContain('[Link:Unsubscribe]')
-    expect(rfm).toContain(':link[https://example.com/orders/[CustomField:Order.Id]]{href="https://example.com/orders/[CustomField:Order.Id]" track="true" shorten="true"}')
+    expect(rfm).toContain(':link[https://example.com/orders/[CustomField:Order.Id]]{track="true" shorten="true"}')
   })
 })

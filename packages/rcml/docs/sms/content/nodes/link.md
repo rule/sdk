@@ -59,11 +59,11 @@ A link with tracking and shortening disabled:
 
 ## SMS RFM syntax
 
-Use the `:link[…]{…}` span directive. The URL in the brackets and in `href`
-should be the same value:
+Use the `:link[…]{…}` span directive. The URL goes in the brackets; `track`
+and `shorten` control click tracking and URL shortening:
 
 ```
-Click :link[https://example.com/track]{href="https://example.com/track" track="true" shorten="true"} to track your order.
+Click :link[https://example.com/track]{track="true" shorten="true"} to track your order.
 ```
 
 Compiles to:

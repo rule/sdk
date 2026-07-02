@@ -1,100 +1,113 @@
 # Content
 
-The `content` field of an `SmsDocument` is an `SmsContentJson` — a flat
-sequence of three node types.
+The `content` field of an `SmsDocument` is a flat sequence of three node
+types. See [`SmsContentJson`](../content/nodes/sms) for the type reference.
 
-## Structure
+## Message
 
-```typescript
-interface SmsContentJson {
-  type: 'sms';
-  content: SmsTopLevelNode[];
-}
+Static text. Line breaks are `\n` characters embedded directly in the `text`
+field. See [`message`](../content/nodes/message) for the full reference.
 
-type SmsTopLevelNode = SmsMessageNode | SmsLinkNode | SmsPlaceholderNode;
+**XML**
+
+Plain text between other directives compiles to `message` nodes:
+
+```
+Your order has shipped!
+Account: 
 ```
 
-The sequence is flat — there are no block wrappers, paragraphs, or nesting
-levels. Line breaks are `\n` characters embedded in the `text` of a
-[`message`](../content/nodes/message) node.
+**JSON**
 
-## Node types
+```json
+{ "type": "message", "text": "Your order has shipped!\nAccount: " }
+```
 
-### `message`
+**Programmatic**
 
-Static text. The `text` field is a plain string; `\n` produces a line break in
-the sent message.
+```typescript
+sms.createMessageNode({ text: 'Your order has shipped!\nAccount: ' })
+```
 
-See [`message`](../content/nodes/message) for the full attribute reference.
+## Link
 
-### `link`
+A clickable URL. The URL is used as both the destination and the visible text
+in the sent message. See [`link`](../content/nodes/link) for the full reference.
 
-A clickable URL in the message body. The `attrs` object carries the destination
-`text` (URL or system-link token), a `track` flag, and a `shorten` flag.
+**XML**
 
-See [`link`](../content/nodes/link) for the full attribute reference.
+Use the `:link[…]{…}` span directive. The URL goes in the brackets; `track`
+and `shorten` are `"true"` or `"false"`:
 
-### `placeholder`
+```
+:link[https://example.com/orders/123]{track="true" shorten="true"}
+```
 
-A dynamic value the Rule platform substitutes at send time — a subscriber field,
-a custom field, a formatted date, fetched remote content, or a system-managed
-URL. The `attrs.type` discriminator identifies the substitution category.
-
-See [`placeholder`](../content/nodes/placeholder) for the full attribute
-reference and all supported substitution types.
-
-## Example
+**JSON**
 
 ```json
 {
-  "type": "sms",
-  "content": [
-    { "type": "message", "text": "Order " },
-    {
-      "type": "placeholder",
-      "attrs": {
-        "type": "CustomField",
-        "original": "[CustomField:Order.Id]",
-        "name": "Order.Id",
-        "value": "Order.Id"
-      }
-    },
-    { "type": "message", "text": " has shipped.\nTrack it: " },
-    {
-      "type": "link",
-      "text": "https://example.com/orders/[CustomField:Order.Id]",
-      "attrs": { "track": true, "shorten": true }
-    }
-  ]
+  "type": "link",
+  "text": "https://example.com/orders/123",
+  "attrs": { "track": true, "shorten": true }
 }
 ```
 
-## Building content
-
-Use `sms.createContent({ nodes })` to wrap a list of top-level nodes into an
-`SmsContentJson`:
+**Programmatic**
 
 ```typescript
-import { sms, createSmsDocument } from '@rule/rcml';
-
-const doc = createSmsDocument({
-  content: sms.createContent({
-    nodes: [
-      sms.createMessageNode({ text: 'Order ' }),
-      sms.createCustomFieldPlaceholder({ group: 'Order', name: 'Id' }),
-      sms.createMessageNode({ text: ' has shipped.' }),
-    ],
-  }),
-});
+sms.createLinkNode({ url: 'https://example.com/orders/123', track: true, shorten: true })
 ```
 
-For the full builder reference, see [Building programmatically](../building-programmatically).
+## Placeholder
+
+A dynamic value the Rule platform substitutes at send time — a subscriber
+field, custom field, date, remote content, or system-managed link URL. See
+[`placeholder`](../content/nodes/placeholder) for all token types and their
+attributes.
+
+**XML**
+
+Use the `::placeholder{…}` directive with `type`, `original`, and `name`:
+
+```
+::placeholder{type="Subscriber" original="[Subscriber:email]" name="Email"}
+```
+
+**JSON**
+
+```json
+{
+  "type": "placeholder",
+  "attrs": {
+    "type": "Subscriber",
+    "original": "[Subscriber:email]",
+    "name": "Email",
+    "value": "email"
+  }
+}
+```
+
+**Programmatic**
+
+Each placeholder category has a typed convenience builder:
+
+```typescript
+sms.createSubscriberPlaceholder({ field: 'email' })
+sms.createCustomFieldPlaceholder({ group: 'Order', name: 'Total' })
+sms.createLinkPlaceholder({ link: 'Unsubscribe' })
+```
+
+For types not covered by a convenience builder, use the generic builder:
+
+```typescript
+sms.createPlaceholderNode({ type: 'Date', original: '[Date:tomorrow::d.m.Y]', name: 'tomorrow' })
+```
 
 ## Related
 
-- [`sms`](../content/nodes/sms) — `sms` root node and `SmsContentJson` type reference
 - [`message`](../content/nodes/message) — message node reference
 - [`link`](../content/nodes/link) — link node reference
-- [`placeholder`](../content/nodes/placeholder) — placeholder node reference
-- [Unsubscription](./unsubscription) — required unsubscribe footer nodes
+- [`placeholder`](../content/nodes/placeholder) — placeholder node reference and all token types
+- [Unsubscription](./unsubscription) — required unsubscribe footer
 - [Building programmatically](../building-programmatically) — full builder API

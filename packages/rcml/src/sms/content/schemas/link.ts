@@ -8,7 +8,7 @@ import { z } from 'zod'
  */
 export const SmsLinkAttrsSchema = z
   .object({
-    href: z.string().min(1, { message: ':link href must not be empty' }),
+    href: z.string().optional(),
     track: z.enum(['true', 'false']),
     shorten: z.enum(['true', 'false']),
   })

@@ -97,7 +97,7 @@ describe('smsRfmToJson()', () => {
 
 describe('smsRfmToJson() — link directive', () => {
   it('parses a basic :link directive as a link node', () => {
-    const doc = smsRfmToJson(':link[https://example.com]{href="https://example.com" track="true" shorten="false"}')
+    const doc = smsRfmToJson(':link[https://example.com]{track="true" shorten="false"}')
 
     expect(doc.content).toEqual<SmsContentJson['content']>([
       {
@@ -109,7 +109,7 @@ describe('smsRfmToJson() — link directive', () => {
   })
 
   it('parses :link with shorten="true"', () => {
-    const doc = smsRfmToJson(':link[https://google.com]{href="https://google.com" track="true" shorten="true"}')
+    const doc = smsRfmToJson(':link[https://google.com]{track="true" shorten="true"}')
 
     expect(doc.content).toHaveLength(1)
     expect(doc.content[0]).toMatchObject({
@@ -120,7 +120,7 @@ describe('smsRfmToJson() — link directive', () => {
   })
 
   it('parses a :link mixed with surrounding text', () => {
-    const doc = smsRfmToJson('Your message here. :link[https://google.com]{href="https://google.com" track="true" shorten="true"} Test')
+    const doc = smsRfmToJson('Your message here. :link[https://google.com]{track="true" shorten="true"} Test')
 
     expect(doc.content).toHaveLength(3)
     expect(doc.content[0]).toEqual({ type: 'message', text: 'Your message here. ' })
@@ -130,6 +130,16 @@ describe('smsRfmToJson() — link directive', () => {
       attrs: { track: true, shorten: true },
     })
     expect(doc.content[2]).toEqual({ type: 'message', text: ' Test' })
+  })
+
+  it('accepts legacy :link with href (backward compat) and reads URL from label', () => {
+    const doc = smsRfmToJson(':link[https://example.com]{href="https://example.com" track="true" shorten="false"}')
+
+    expect(doc.content[0]).toMatchObject({
+      type: 'link',
+      text: 'https://example.com',
+      attrs: { track: true, shorten: false },
+    })
   })
 })
 

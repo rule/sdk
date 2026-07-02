@@ -9,7 +9,7 @@ import type { SmsContentJson } from './content/json-validator/types.js'
  * Convert an SMS RFM string into an {@link SmsContentJson} document.
  *
  * SMS RFM uses markdown-directive syntax:
- * - `:link[url]{href="..." track="true|false" shorten="true|false"}` → top-level `link` node
+ * - `:link[url]{track="true|false" shorten="true|false"}` → top-level `link` node
  * - `::placeholder{type="..." original="..." name="..." value="..." max-length="..."}` → `placeholder` node
  * - `[Type:Name]` shorthand (e.g. `[Subscriber:email]`) — backward-compatible alias for `::placeholder{...}`
  * - Plain text (including embedded `\n`) → `message` node
@@ -31,7 +31,7 @@ import type { SmsContentJson } from './content/json-validator/types.js'
  * // ] }
  *
  * // Link directive
- * const json2 = smsRfmToJson(':link[https://example.com]{href="https://example.com" track="true" shorten="true"}')
+ * const json2 = smsRfmToJson(':link[https://example.com]{track="true" shorten="true"}')
  * // { type: 'sms', content: [
  * //   { type: 'link', text: 'https://example.com', attrs: { track: true, shorten: true } },
  * // ] }

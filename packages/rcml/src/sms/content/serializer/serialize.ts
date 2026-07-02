@@ -2,7 +2,7 @@
  * Internal: SmsContentJson → SMS RFM (SMS Rule Flavor Markdown) string conversion.
  *
  * - `message` nodes → verbatim text (embedded `\n` preserved as-is).
- * - `link` nodes → `:link[url]{href="url" track="..." shorten="..."}` directive.
+ * - `link` nodes → `:link[url]{track="..." shorten="..."}` directive.
  * - `placeholder` nodes with a resolved value or max-length → `::placeholder{...}` directive.
  * - `placeholder` nodes with null value and no max-length → compact `[Type:Name]` via `original`.
  * - Nodes are concatenated with no separator — whitespace and newlines live in `message` text.
@@ -17,7 +17,7 @@ import type { SmsContentJson, SmsLinkNode, SmsPlaceholderNode } from '../json-va
 function serializeLinkNode(node: SmsLinkNode): string {
   const { text, attrs } = node
 
-  return `:link[${text}]{href="${text}" track="${String(attrs.track)}" shorten="${String(attrs.shorten)}"}`
+  return `:link[${text}]{track="${String(attrs.track)}" shorten="${String(attrs.shorten)}"}`
 }
 
 function serializePlaceholderNode(node: SmsPlaceholderNode): string {

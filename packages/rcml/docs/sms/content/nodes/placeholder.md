@@ -66,7 +66,7 @@ Plain-text `[Type:Name]` tokens — `[Subscriber:email]`,
    [`link`](./link) node, or the URL passed to a `RemoteContent` placeholder.
 
 ```
-:link[https://example.com]{href="https://example.com" track="false" shorten="false"}
+:link[https://example.com]{track="false" shorten="false"}
 ```
 
 A bare `[Type:Name]` token is **not the recommended form** for placeholders
@@ -331,7 +331,7 @@ A `[Link:…]` token is a valid value for the `text` field of a
 for plain-text tokens described above:
 
 ```
-:link[https://example.com/unsubscribe]{href="[Link:Unsubscribe]" track="true" shorten="false"}
+:link[[Link:Unsubscribe]]{track="true" shorten="false"}
 ```
 
 Use the `::placeholder{…}` form when you want the URL rendered as plain text in the
