@@ -49,7 +49,9 @@ import { createSmsDocument } from '@rule/sdk';
 
 const result = await client.campaigns.createDefaultSmsCampaign({
   template: {
-    content: createSmsDocument({ content: 'Your order [Order:Id] has shipped!' }),
+    content: createSmsDocument({
+      content: 'Your order ::placeholder{type="CustomField" original="[CustomField:Order.Id]" name="Order.Id"} has shipped!\n::unsubscribe',
+    }),
   },
 });
 ```

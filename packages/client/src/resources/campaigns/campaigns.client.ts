@@ -933,8 +933,8 @@ function buildDefaultSmsContent(linkInsteadOfStopWord: boolean): string {
   const body = 'Your message here.\n';
 
   if (linkInsteadOfStopWord) {
-    return `${body}[Subscriber:unsubscribe_text] [Link:Unsubscribe]`;
+    return `${body}::unsubscribe`;
   }
 
-  return `${body}[Subscriber:stop_word]`;
+  return `${body}::placeholder{type="Subscriber" original="[Subscriber:stop_word]" name="Stop word"}`;
 }
