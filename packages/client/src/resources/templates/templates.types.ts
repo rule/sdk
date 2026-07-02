@@ -152,10 +152,9 @@ export interface CreateSmsTemplatePayload {
   /**
    * Human-readable name for the template.
    *
-   * Must be unique within the account. Append a timestamp when creating
-   * programmatically to avoid conflicts.
+   * When omitted the API assigns a default name automatically.
    */
-  name: string;
+  name?: string;
   /** The SMS document defining the template body. */
   content: SmsDocument;
 }
@@ -272,7 +271,7 @@ export interface TemplateWire {
  * @internal
  */
 export interface CreateTemplateBody {
-  name: string;
+  name?: string;
   message_type: 'email' | 'text_message';
   template: RcmlDocument | SmsDocument;
 }

@@ -502,7 +502,7 @@ export interface CreateDefaultSmsCampaignParams {
    * `content` to supply a custom SMS document.
    */
   template?: {
-    /** Template name. Defaults to `'Campaign ${id} SMS template'`. */
+    /** Template name. When omitted the API assigns a default name automatically. */
     name?: string;
     /**
      * Custom SMS document. When omitted the SDK wraps the resolved SMS body

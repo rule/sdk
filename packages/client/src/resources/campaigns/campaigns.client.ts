@@ -794,7 +794,6 @@ export class CampaignsClient extends BaseResource {
           ...params.message,
         }),
         templates.createSmsTemplate({
-          name: `Campaign ${campaignId} SMS template`,
           ...templateMetaOverrides,
           content: templateContentOverride ?? createSmsDocument({ content: smsBody! }),
         }),
