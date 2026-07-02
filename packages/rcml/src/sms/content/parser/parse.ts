@@ -146,6 +146,7 @@ function convertDoc(ast: Root): SmsContentJson {
   }
 
   flushBuffer(ctx)
+
   return { type: 'sms', content: ctx.nodes }
 }
 
