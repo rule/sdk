@@ -28,7 +28,7 @@ import {
  * const content = sms.createContent({
  *   nodes: [
  *     sms.createMessageNode({ text: 'Hi ' }),
- *     sms.createSubscriberPlaceholder({ field: 'FirstName' }),
+ *     sms.createSubscriberPlaceholder({ field: 'email' }),
  *     sms.createMessageNode({ text: '!\n' }),
  *     sms.createLinkNode({ url: 'https://example.com', track: true, shorten: true }),
  *   ],

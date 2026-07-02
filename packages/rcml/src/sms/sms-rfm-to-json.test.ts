@@ -179,3 +179,35 @@ describe('smsRfmToJson() — ::placeholder directive', () => {
     })
   })
 })
+
+describe('smsRfmToJson() — ::unsubscribe directive', () => {
+  it('expands ::unsubscribe into the two-node footer pair', () => {
+    const doc = smsRfmToJson('::unsubscribe')
+
+    expect(doc.content).toHaveLength(2)
+    expect(doc.content[0]).toEqual({
+      type: 'message',
+      text: '[Subscriber:unsubscribe_text]',
+      attrs: { 'is-unsubscribe': true },
+    })
+    expect(doc.content[1]).toEqual({
+      type: 'placeholder',
+      attrs: {
+        type: 'Link',
+        name: 'Unsubscribe',
+        original: '[Link:Unsubscribe]',
+        value: null,
+        'is-unsubscribe': true,
+      },
+    })
+  })
+
+  it('::unsubscribe after message text produces three nodes', () => {
+    const doc = smsRfmToJson('Your order has shipped.\n::unsubscribe')
+
+    expect(doc.content).toHaveLength(3)
+    expect(doc.content[0]).toEqual({ type: 'message', text: 'Your order has shipped.\n' })
+    expect(doc.content[1]).toMatchObject({ type: 'message', attrs: { 'is-unsubscribe': true } })
+    expect(doc.content[2]).toMatchObject({ type: 'placeholder', attrs: { 'is-unsubscribe': true } })
+  })
+})

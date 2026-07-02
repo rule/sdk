@@ -3,6 +3,22 @@
 The root node of every `SmsContentJson` document. Its `content` array holds a
 flat sequence of top-level nodes.
 
+## TypeScript type
+
+```typescript
+interface SmsContentJson {
+  type: 'sms';
+  content: SmsTopLevelNode[];
+}
+
+type SmsTopLevelNode = SmsMessageNode | SmsLinkNode | SmsPlaceholderNode;
+```
+
+`SmsContentJson` is the `content` field of `SmsDocument` and the value accepted
+by `createSmsDocument({ content })`. The `content` array is a flat sequence of
+[`message`](./message), [`link`](./link), and [`placeholder`](./placeholder)
+nodes — there are no block wrappers or nesting levels.
+
 ## Attributes
 
 None.
@@ -37,17 +53,17 @@ Multi-node document:
 {
   "type": "sms",
   "content": [
-    { "type": "message", "text": "Hi " },
+    { "type": "message", "text": "Account: " },
     {
       "type": "placeholder",
       "attrs": {
         "type": "Subscriber",
-        "original": "[Subscriber:FirstName]",
-        "name": "FirstName",
+        "original": "[Subscriber:email]",
+        "name": "email",
         "value": null
       }
     },
-    { "type": "message", "text": "!" }
+    { "type": "message", "text": "\nYour order has shipped." }
   ]
 }
 ```
@@ -70,7 +86,8 @@ Compiles to:
 A message with a placeholder:
 
 ```
-Hi [Subscriber:FirstName]!
+Account: [Subscriber:email]
+Your order has shipped.
 ```
 
 Compiles to:
@@ -79,9 +96,9 @@ Compiles to:
 {
   "type": "sms",
   "content": [
-    { "type": "message", "text": "Hi " },
-    { "type": "placeholder", "attrs": { "type": "Subscriber", "original": "[Subscriber:FirstName]", "name": "FirstName", "value": null } },
-    { "type": "message", "text": "!" }
+    { "type": "message", "text": "Account: " },
+    { "type": "placeholder", "attrs": { "type": "Subscriber", "original": "[Subscriber:email]", "name": "email", "value": null } },
+    { "type": "message", "text": "\nYour order has shipped." }
   ]
 }
 ```

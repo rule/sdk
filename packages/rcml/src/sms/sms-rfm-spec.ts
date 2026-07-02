@@ -99,6 +99,14 @@ const NODE_META: Record<string, SmsRfmNodeSpec> = {
   sms: {
     description: 'Root document node. Its `content` array holds the flat sequence of top-level nodes.',
   },
+  unsubscribe: {
+    description:
+      'Unsubscribe footer directive. Written as `::unsubscribe` in SMS RFM / XML. ' +
+      'When parsed, it expands into two adjacent JSON nodes: a `message` node with the ' +
+      'localised stop-word text (`[Subscriber:unsubscribe_text]`) and a `placeholder` node ' +
+      'for `[Link:Unsubscribe]`, both carrying `attrs: { "is-unsubscribe": true }`. ' +
+      'When serialising JSON back to RFM, these two nodes are collapsed back to `::unsubscribe`.',
+  },
   message: {
     description:
       'A text segment in the message body. `text` may contain `\\n` characters for line breaks ' +
@@ -140,7 +148,7 @@ const NODE_META: Record<string, SmsRfmNodeSpec> = {
   placeholder: {
     description:
       'A dynamic value inserted at render time (e.g. subscriber first name, custom field value). ' +
-      'In SMS RFM, placeholders can be written as the `[Type:Name]` shorthand (e.g. `[Subscriber:FirstName]`) ' +
+      'In SMS RFM, placeholders can be written as the `[Type:Name]` shorthand (e.g. `[Subscriber:email]`) ' +
       'or as the full `::placeholder{type="..." original="..." name="..." value="..."}` directive. ' +
       'See `smsPlaceholderSpec` for the token syntax and parameters for each `type`.',
     attrs: {
@@ -190,7 +198,9 @@ function buildSmsRfmSpec(): SmsRfmSpec {
       'The content model is a flat sequence of top-level nodes: `message` (text), `link` (hyperlinks), ' +
       'and `placeholder` (dynamic values). ' +
       'Links are written as `:link[url]{href="url" track="true|false" shorten="true|false"}`. ' +
-      'Placeholders accept either the `::placeholder{...}` directive form or the compact `[Type:Name]` shorthand.',
+      'Placeholders accept either the `::placeholder{...}` directive form or the compact `[Type:Name]` shorthand. ' +
+      'The required unsubscribe footer is expressed as `::unsubscribe` — it expands to the two-node ' +
+      'stop-word + link pair with `is-unsubscribe` markers.',
     topLevelNodes: ['message', 'link', 'placeholder'],
     blockNodes: [],
     inlineNodes: [],

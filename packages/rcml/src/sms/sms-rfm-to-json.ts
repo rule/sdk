@@ -11,7 +11,7 @@ import type { SmsContentJson } from './content/json-validator/types.js'
  * SMS RFM uses markdown-directive syntax:
  * - `:link[url]{href="..." track="true|false" shorten="true|false"}` → top-level `link` node
  * - `::placeholder{type="..." original="..." name="..." value="..." max-length="..."}` → `placeholder` node
- * - `[Type:Name]` shorthand (e.g. `[Subscriber:FirstName]`) — backward-compatible alias for `::placeholder{...}`
+ * - `[Type:Name]` shorthand (e.g. `[Subscriber:email]`) — backward-compatible alias for `::placeholder{...}`
  * - Plain text (including embedded `\n`) → `message` node
  *
  * Throws `RcmlValidationError` if the input contains unsupported constructs.
@@ -22,12 +22,12 @@ import type { SmsContentJson } from './content/json-validator/types.js'
  * @example
  * ```ts
  * // Shorthand placeholder
- * const json = smsRfmToJson('Hi [Subscriber:FirstName]!\nYour order has shipped.')
+ * const json = smsRfmToJson('Account: [Subscriber:email]\nYour order has shipped.')
  * // { type: 'sms', content: [
- * //   { type: 'message', text: 'Hi ' },
- * //   { type: 'placeholder', attrs: { type: 'Subscriber', original: '[Subscriber:FirstName]',
- * //       name: 'FirstName', value: null } },
- * //   { type: 'message', text: '!\nYour order has shipped.' },
+ * //   { type: 'message', text: 'Account: ' },
+ * //   { type: 'placeholder', attrs: { type: 'Subscriber', original: '[Subscriber:email]',
+ * //       name: 'email', value: null } },
+ * //   { type: 'message', text: '\nYour order has shipped.' },
  * // ] }
  *
  * // Link directive

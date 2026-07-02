@@ -19,9 +19,9 @@ import type { SmsContentJson } from './content/json-validator/types.js'
  *
  * @example
  * ```ts
- * const json = smsRfmToJson('Hello [Subscriber:FirstName]')
+ * const json = smsRfmToJson('Account: [Subscriber:email]')
  * const rfm = jsonToSmsRfm(json)
- * // rfm === 'Hello [Subscriber:FirstName]'
+ * // rfm === 'Account: [Subscriber:email]'
  * ```
  * @public
  */

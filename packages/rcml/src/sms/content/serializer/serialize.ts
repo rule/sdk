@@ -44,18 +44,37 @@ function serializePlaceholderNode(node: SmsPlaceholderNode): string {
  * @internal — called by the public `jsonToSmsRfm` wrapper.
  */
 export function serializeSmsJson(json: SmsContentJson): string {
-  return json.content
-    .map((node) => {
-      switch (node.type) {
-        case 'message':
-          return node.text
-        case 'link':
-          return serializeLinkNode(node)
-        case 'placeholder':
-          return serializePlaceholderNode(node)
-        default:
-          return ''
-      }
-    })
-    .join('')
+  const parts: string[] = []
+  const nodes = json.content
+
+  for (let i = 0; i < nodes.length; i++) {
+    const node = nodes[i]!
+    const next = nodes[i + 1]
+
+    // Detect the two-node unsubscribe footer and emit the ::unsubscribe directive.
+    if (
+      node.type === 'message' &&
+      node.attrs?.['is-unsubscribe'] === true &&
+      next?.type === 'placeholder' &&
+      next.attrs['is-unsubscribe'] === true
+    ) {
+      parts.push('::unsubscribe')
+      i++ // skip the placeholder node
+      continue
+    }
+
+    switch (node.type) {
+      case 'message':
+        parts.push(node.text)
+        break
+      case 'link':
+        parts.push(serializeLinkNode(node))
+        break
+      case 'placeholder':
+        parts.push(serializePlaceholderNode(node))
+        break
+    }
+  }
+
+  return parts.join('')
 }

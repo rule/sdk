@@ -54,7 +54,7 @@ export type SmsPlaceholderNode = {
   attrs: {
     /** Category of the placeholder. */
     type: SmsPlaceholderType
-    /** Original source token (e.g. `[Subscriber:FirstName]`). */
+    /** Original source token (e.g. `[Subscriber:email]`). */
     original: string
     /** Human-readable display name for the placeholder. */
     name: string

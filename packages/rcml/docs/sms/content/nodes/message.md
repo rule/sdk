@@ -45,12 +45,12 @@ Adjacent to a placeholder:
 {
   "type": "sms",
   "content": [
-    { "type": "message", "text": "Hi " },
+    { "type": "message", "text": "Account: " },
     {
       "type": "placeholder",
-      "attrs": { "type": "Subscriber", "original": "[Subscriber:FirstName]", "name": "FirstName", "value": null }
+      "attrs": { "type": "Subscriber", "original": "[Subscriber:email]", "name": "email", "value": null }
     },
-    { "type": "message", "text": "!" }
+    { "type": "message", "text": "\nYour order has shipped." }
   ]
 }
 ```
@@ -74,15 +74,16 @@ Compiles to:
 Text surrounding a placeholder compiles to two separate `message` nodes:
 
 ```
-Hi [Subscriber:FirstName]!
+Account: [Subscriber:email]
+Your order has shipped.
 ```
 
 Compiles to:
 
 ```json
 [
-  { "type": "message", "text": "Hi " },
-  { "type": "placeholder", "attrs": { "type": "Subscriber", "original": "[Subscriber:FirstName]", "name": "FirstName", "value": null } },
-  { "type": "message", "text": "!" }
+  { "type": "message", "text": "Account: " },
+  { "type": "placeholder", "attrs": { "type": "Subscriber", "original": "[Subscriber:email]", "name": "email", "value": null } },
+  { "type": "message", "text": "\nYour order has shipped." }
 ]
 ```

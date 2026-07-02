@@ -7,7 +7,7 @@ representation.
 
 ## A note on plain-text tokens
 
-`[Type:Name]` tokens — `[Subscriber:FirstName]`, `[CustomField:Order.Total]`,
+`[Type:Name]` tokens — `[Subscriber:email]`, `[CustomField:Order.Total]`,
 `[Link:Unsubscribe]`, and so on — are valid in **exactly two places**:
 
 1. As the value of the `original` attribute on a `placeholder` node, whether
@@ -32,8 +32,8 @@ import { createSmsDocument } from '@rule/rcml';
 
 const doc = createSmsDocument({
   content:
-    'Hi ::placeholder{type="Subscriber" original="[Subscriber:FirstName]" name="First name"}!' +
-    ' Your order ::placeholder{type="CustomField" original="[CustomField:Order.Id]" name="Order.Id"} has shipped.',
+    'Your order ::placeholder{type="CustomField" original="[CustomField:Order.Id]" name="Order.Id"} has shipped.' +
+    '\nAccount: ::placeholder{type="Subscriber" original="[Subscriber:email]" name="Email"}',
 });
 ```
 
@@ -65,21 +65,20 @@ import { smsRfmToJson, jsonToSmsRfm } from '@rule/rcml';
 
 // SMS RFM → JSON. Use the ::placeholder{…} directive for dynamic values.
 const json = smsRfmToJson(
-  'Hi ::placeholder{type="Subscriber" original="[Subscriber:FirstName]" name="First name"}!\nYour order is ready.'
+  'Your order is ready.\nAccount: ::placeholder{type="Subscriber" original="[Subscriber:email]" name="Email"}'
 );
 // {
 //   type: 'sms',
 //   content: [
-//     { type: 'message', text: 'Hi ' },
-//     { type: 'placeholder', attrs: { type: 'Subscriber', original: '[Subscriber:FirstName]',
-//         name: 'First name', value: null } },
-//     { type: 'message', text: '!\nYour order is ready.' },
+//     { type: 'message', text: 'Your order is ready.\nAccount: ' },
+//     { type: 'placeholder', attrs: { type: 'Subscriber', original: '[Subscriber:email]',
+//         name: 'Email', value: null } },
 //   ],
 // }
 
 // JSON → SMS RFM
 const rfm = jsonToSmsRfm(json);
-// → 'Hi [Subscriber:FirstName]!\nYour order is ready.'
+// → 'Your order is ready.\nAccount: [Subscriber:email]'
 ```
 
 Both `\n` and `\n\n` in the SMS RFM string produce `\n` characters in the
@@ -115,9 +114,8 @@ import { sms, createSmsDocument } from '@rule/rcml';
 
 const content = sms.createContent({
   nodes: [
-    sms.createMessageNode({ text: 'Hi ' }),
-    sms.createSubscriberPlaceholder({ field: 'FirstName' }),
-    sms.createMessageNode({ text: '!' }),
+    sms.createMessageNode({ text: 'Your order is ready.\nAccount: ' }),
+    sms.createSubscriberPlaceholder({ field: 'email' }),
   ],
 });
 
@@ -134,7 +132,7 @@ each builder produces.
 #### `sms.createContent`
 
 Wraps top-level nodes in a root `sms` node — the shape of
-[`SmsContentJson`](./concepts/sms-document).
+[`SmsContentJson`](./concepts/content).
 
 ```typescript
 function createContent(opts: { nodes: SmsTopLevelNode[] }): SmsContentJson;
@@ -234,7 +232,7 @@ opt-out footer. When present, the platform does not append its own footer.
 
 The recommended way to construct a placeholder is one of the per-token
 convenience builders below. They compute the correct `original` token from
-domain inputs so you never have to assemble `[Subscriber:FirstName]` strings
+domain inputs so you never have to assemble `[Subscriber:email]` strings
 by hand.
 
 If you need a placeholder type the convenience builders do not cover, fall
@@ -253,11 +251,11 @@ function createSubscriberPlaceholder(opts: {
 ```
 
 ```typescript
-sms.createSubscriberPlaceholder({ field: 'FirstName' });
-// original: '[Subscriber:FirstName]', name: 'FirstName'
+sms.createSubscriberPlaceholder({ field: 'email' });
+// original: '[Subscriber:email]', name: 'email'
 
-sms.createSubscriberPlaceholder({ field: 'email', name: 'Email' });
-// original: '[Subscriber:email]',     name: 'Email'
+sms.createSubscriberPlaceholder({ field: 'phone_number', name: 'Phone' });
+// original: '[Subscriber:phone_number]', name: 'Phone'
 ```
 
 #### `sms.createUserPlaceholder`
@@ -417,7 +415,7 @@ const content: SmsContentJson = loadDraftFromStorage(); // your code
 const doc = createSmsDocument({ content });
 ```
 
-See [SMS document](./concepts/sms-document) for the full type reference.
+See [Content](./concepts/content) for the full type reference.
 
 ## XML format
 
@@ -431,15 +429,15 @@ import { createSmsDocument, smsToXml, xmlToSms } from '@rule/rcml';
 
 const doc = createSmsDocument({
   content:
-    'Hi ::placeholder{type="Subscriber" original="[Subscriber:FirstName]" name="First name"},' +
-    ' your total is ::placeholder{type="CustomField" original="[CustomField:Order.Total]" name="Order.Total"}.',
+    'Your total is ::placeholder{type="CustomField" original="[CustomField:Order.Total]" name="Order.Total"}.' +
+    '\nAccount: ::placeholder{type="Subscriber" original="[Subscriber:email]" name="Email"}',
 });
 
 // Serialize to XML. The XML body uses the compact [Type:Name] form
 // (the same serializer-output behaviour described under "Serializer output"
 // above).
 const xml = smsToXml(doc, { pretty: true });
-// → '<rc-sms>Hi [Subscriber:FirstName], your total is [CustomField:Order.Total].</rc-sms>'
+// → '<rc-sms>Your total is [CustomField:Order.Total].\nAccount: [Subscriber:email]</rc-sms>'
 
 // Parse back to SmsDocument
 const restored = xmlToSms(xml);
@@ -494,9 +492,7 @@ import { sms, createSmsDocument } from '@rule/rcml';
 
 const content = sms.createContent({
   nodes: [
-    sms.createMessageNode({ text: 'Hi ' }),
-    sms.createSubscriberPlaceholder({ field: 'FirstName' }),
-    sms.createMessageNode({ text: ',\nyour order ' }),
+    sms.createMessageNode({ text: 'Your order ' }),
     sms.createCustomFieldPlaceholder({ group: 'Order', name: 'Id' }),
     sms.createMessageNode({ text: ' has shipped.\nTrack it: ' }),
     sms.createLinkNode({
@@ -513,8 +509,8 @@ const doc = createSmsDocument({ content });
 
 ## Related
 
-- [SMS document](./concepts/sms-document) — `SmsDocument` and `SmsContentJson` types
-- [SMS RFM](./concepts/sms-rfm) — SMS RFM source format
+- [Template](./concepts/template) — `SmsDocument` structure and `createSmsDocument()` usage
+- [Content](./concepts/content) — `SmsContentJson` flat sequence model
 - [`message`](./content/nodes/message) — message node reference
 - [`link`](./content/nodes/link) — link node reference
 - [`placeholder`](./content/nodes/placeholder) — placeholder node attribute reference

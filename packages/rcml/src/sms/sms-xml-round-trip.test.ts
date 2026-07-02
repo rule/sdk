@@ -3,6 +3,7 @@ import type { SmsDocument } from './sms-types.js'
 import { smsToXml } from './sms-to-xml.js'
 import { xmlToSms } from './xml-to-sms.js'
 import { smsRfmToJson } from './sms-rfm-to-json.js'
+import { createUnsubscribeNodes } from './builders/nodes.js'
 
 /**
  * Docs that exercise the full range of SMS document shapes.
@@ -97,6 +98,52 @@ describe('xmlToSms → smsToXml (string → JSON → string) idempotence', () =>
 
     expect(xml2).toBe(xml1)
     expect(doc2).toEqual(doc)
+  })
+})
+
+describe('XML round-trip — ::unsubscribe directive', () => {
+  it('::unsubscribe in XML round-trips to the two-node JSON footer and back', () => {
+    const xml = '<rc-sms>Your order has shipped.\n::unsubscribe</rc-sms>'
+    const doc = xmlToSms(xml)
+
+    expect(doc.content.content).toHaveLength(3)
+    expect(doc.content.content[1]).toEqual({
+      type: 'message',
+      text: '[Subscriber:unsubscribe_text]',
+      attrs: { 'is-unsubscribe': true },
+    })
+    expect(doc.content.content[2]).toEqual({
+      type: 'placeholder',
+      attrs: {
+        type: 'Link',
+        name: 'Unsubscribe',
+        original: '[Link:Unsubscribe]',
+        value: null,
+        'is-unsubscribe': true,
+      },
+    })
+
+    const xmlBack = smsToXml(doc, { pretty: false })
+
+    expect(xmlBack).toBe('<rc-sms>Your order has shipped.\n::unsubscribe</rc-sms>')
+  })
+
+  it('document built with createUnsubscribeNodes round-trips through XML', () => {
+    const doc: SmsDocument = {
+      tagName: 'rc-sms',
+      attributes: {},
+      content: {
+        type: 'sms',
+        content: [
+          { type: 'message', text: 'Your order has shipped.' },
+          ...createUnsubscribeNodes(),
+        ],
+      },
+    }
+    const xml = smsToXml(doc)
+    const restored = xmlToSms(xml)
+
+    expect(restored).toEqual(doc)
   })
 })
 

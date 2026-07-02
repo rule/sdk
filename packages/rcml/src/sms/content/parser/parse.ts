@@ -23,10 +23,33 @@ import { smsRfmConfig } from '../flavors/sms-rfm.js'
 import type {
   SmsContentJson,
   SmsLinkNode,
+  SmsMessageNode,
   SmsPlaceholderNode,
   SmsPlaceholderType,
   SmsTopLevelNode,
 } from '../json-validator/types.js'
+
+// ─── Step 0: ::unsubscribe tokenization ────────────────────────────────────
+
+/**
+ * Matches `::unsubscribe` anywhere in the input, with optional surrounding whitespace.
+ * Must run BEFORE `normalizeHardbreaks` so that the newline preceding the directive
+ * is not converted to a markdown hard-break escape (`\\\n`), which would leave a stray
+ * backslash in the preceding message text.
+ */
+const UNSUBSCRIBE_DIRECTIVE_RE = /::unsubscribe(?:\s*\{\s*\})?/g
+
+/**
+ * Replace `::unsubscribe` occurrences with a PUA token so that `normalizeHardbreaks`
+ * and remark do not alter them.  `expandAtomTokens` decodes them back to the two
+ * unsubscribe nodes.
+ * @internal
+ */
+function tokenizeUnsubscribeDirective(input: string): string {
+  const token = `${ATOM_TOKEN_DELIMITER}unsubscribe${ATOM_TOKEN_SEPARATOR}${ATOM_TOKEN_DELIMITER}`
+
+  return input.replace(UNSUBSCRIBE_DIRECTIVE_RE, token)
+}
 
 // ─── Step 1: [Type:Name] shorthand expansion ──────────────────────────────────
 
@@ -108,13 +131,16 @@ function convertDoc(ast: Root): SmsContentJson {
         convertInlineNode(child, ctx)
       }
     } else if (block.type === 'leafDirective') {
-      // A ::placeholder{...} that ended up at block level (not tokenized by
-      // preprocessMarkdown because it was the only thing on its line)
+      // A ::placeholder{...} or ::unsubscribe that ended up at block level
+      // (not tokenized by preprocessMarkdown because it was the only thing on its line)
       const d = block as unknown as LeafDirective
 
       if (d.name === 'placeholder') {
         flushBuffer(ctx)
         ctx.nodes.push(convertLeafPlaceholder((d.attributes ?? {}) as Record<string, string | null | undefined>))
+      } else if (d.name === 'unsubscribe') {
+        flushBuffer(ctx)
+        ctx.nodes.push(...convertUnsubscribeDirective())
       }
     }
   }
@@ -165,6 +191,9 @@ function convertInlineNode(node: PhrasingContent, ctx: ConvertCtx): void {
       if (d.name === 'placeholder') {
         flushBuffer(ctx)
         ctx.nodes.push(convertLeafPlaceholder((d.attributes ?? {}) as Record<string, string | null | undefined>))
+      } else if (d.name === 'unsubscribe') {
+        flushBuffer(ctx)
+        ctx.nodes.push(...convertUnsubscribeDirective())
       }
 
       break
@@ -188,6 +217,26 @@ function convertLinkDirective(node: TextDirective): SmsLinkNode {
       shorten: raw['shorten'] !== 'false',
     },
   }
+}
+
+/**
+ * Expand `::unsubscribe` into the two-node unsubscribe footer pair.
+ * @internal
+ */
+function convertUnsubscribeDirective(): [SmsMessageNode, SmsPlaceholderNode] {
+  return [
+    { type: 'message', text: '[Subscriber:unsubscribe_text]', attrs: { 'is-unsubscribe': true } },
+    {
+      type: 'placeholder',
+      attrs: {
+        type: 'Link',
+        name: 'Unsubscribe',
+        original: '[Link:Unsubscribe]',
+        value: null,
+        'is-unsubscribe': true,
+      },
+    },
+  ]
 }
 
 /** @internal */
@@ -248,6 +297,9 @@ function expandAtomTokens(text: string, ctx: ConvertCtx): void {
 
         flushBuffer(ctx)
         ctx.nodes.push(convertLeafPlaceholder(rawAttrs))
+      } else if (name === 'unsubscribe') {
+        flushBuffer(ctx)
+        ctx.nodes.push(...convertUnsubscribeDirective())
       }
     }
   }
@@ -307,8 +359,12 @@ export function parseSmsRfm(input: string): SmsContentJson {
     return { type: 'sms', content: [] }
   }
 
+  // Step 0: tokenize ::unsubscribe before normalizeHardbreaks so the \n
+  // that may precede it is not converted to a markdown hard-break escape.
+  const unsubscribeTokenized = tokenizeUnsubscribeDirective(input)
+
   // Step 1: expand [Type:Name] shorthand to ::placeholder{...} directive syntax
-  const expanded = expandPlaceholderShorthand(input)
+  const expanded = expandPlaceholderShorthand(unsubscribeTokenized)
 
   // Step 2: convert bare \n to \\\n so remark produces break nodes (preserves \n\n boundaries)
   const hardbreaksNormalized = normalizeHardbreaks(expanded)

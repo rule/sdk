@@ -34,7 +34,7 @@ export interface CreateSmsPlaceholderNodeOptions {
   type: SmsPlaceholderType
   /**
    * Backend token the Rule platform substitutes at send time, e.g.
-   * `'[Subscriber:FirstName]'` or `'[CustomField:Order.Total]'`.
+   * `'[Subscriber:email]'` or `'[CustomField:Order.Total]'`.
    */
   original: string
   /** Human-readable display label shown in the editor chip. */
@@ -61,8 +61,8 @@ export interface CreateSmsPlaceholderNodeOptions {
  * ```ts
  * sms.createPlaceholderNode({
  *   type: 'Subscriber',
- *   original: '[Subscriber:FirstName]',
- *   name: 'FirstName',
+ *   original: '[Subscriber:email]',
+ *   name: 'email',
  * })
  * ```
  * @public
@@ -92,8 +92,7 @@ export function createPlaceholderNode(
 /** Options for {@link createSubscriberPlaceholder}. @public */
 export interface CreateSmsSubscriberPlaceholderOptions {
   /**
-   * Subscriber field identifier — e.g. `'FirstName'`, `'email'`,
-   * `'phone_number'`, `'language'`.
+   * Subscriber field identifier — e.g. `'email'`, `'phone_number'`, `'language'`.
    */
   field: string
   /**
@@ -110,9 +109,9 @@ export interface CreateSmsSubscriberPlaceholderOptions {
  *
  * @example
  * ```ts
- * sms.createSubscriberPlaceholder({ field: 'FirstName' })
+ * sms.createSubscriberPlaceholder({ field: 'email' })
  * // → { type: 'placeholder', attrs: { type: 'Subscriber',
- * //     original: '[Subscriber:FirstName]', name: 'FirstName', value: null } }
+ * //     original: '[Subscriber:email]', name: 'email', value: null } }
  * ```
  * @public
  */

@@ -35,10 +35,33 @@ None — `rc-sms` has no child elements. Its content is text, not nested element
 
 None — `rc-sms` is the document root.
 
+## TypeScript type
+
+```typescript
+interface SmsDocument {
+  /** Always `'rc-sms'`. */
+  tagName: 'rc-sms';
+  /** Reserved for future element attributes. Always `{}`. */
+  attributes: Record<string, never>;
+  /** The parsed message content. */
+  content: SmsContentJson;
+  /** Optional document identifier (UUID). Round-tripped through XML as `id="…"`. */
+  id?: string;
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `tagName` | `'rc-sms'` | Element discriminator. Always `'rc-sms'`. |
+| `attributes` | `{}` | Reserved; always an empty object. |
+| `content` | `SmsContentJson` | The parsed message content. See [Content](../concepts/content) for the content model. |
+| `id` | `string` (optional) | Document identifier. The Rule editor sets this when persisting drafts. |
+
 ## XML
 
 ```xml
-<rc-sms>Hi ::placeholder{type="Subscriber" original="[Subscriber:FirstName]" name="First name"}, your order has shipped!</rc-sms>
+<rc-sms>Your order has shipped!
+Account: ::placeholder{type="Subscriber" original="[Subscriber:email]" name="Email"}</rc-sms>
 ```
 
 ## JSON
@@ -50,17 +73,16 @@ None — `rc-sms` is the document root.
   "content": {
     "type": "sms",
     "content": [
-      { "type": "message", "text": "Hi " },
+      { "type": "message", "text": "Your order has shipped!\nAccount: " },
       {
         "type": "placeholder",
         "attrs": {
           "type": "Subscriber",
-          "name": "First name",
-          "original": "[Subscriber:FirstName]",
-          "value": null
+          "name": "Email",
+          "original": "[Subscriber:email]",
+          "value": "email"
         }
-      },
-      { "type": "message", "text": ", your order has shipped!" }
+      }
     ]
   }
 }
@@ -75,8 +97,8 @@ the full walkthrough.
 
 ## Related
 
-- [SMS document](../concepts/sms-document) — `SmsDocument` and `SmsContentJson` types
-- [SMS RFM](../concepts/sms-rfm) — SMS RFM syntax reference
+- [Template](../concepts/template) — `SmsDocument` structure and `createSmsDocument()` usage
+- [Content](../concepts/content) — `SmsContentJson` flat sequence model
 - [`message`](../content/nodes/message) — message node reference
 - [`link`](../content/nodes/link) — link node reference
 - [`placeholder`](../content/nodes/placeholder) — placeholder node and all token types

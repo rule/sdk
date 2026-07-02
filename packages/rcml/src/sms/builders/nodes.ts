@@ -36,7 +36,7 @@ export interface CreateSmsMessageNodeOptions {
  *
  * @example
  * ```ts
- * sms.createMessageNode({ text: 'Hi [Subscriber:FirstName], your order has shipped!\n' })
+ * sms.createMessageNode({ text: 'Your order has shipped!\nAccount: [Subscriber:email]' })
  * ```
  * @public
  */
@@ -103,7 +103,7 @@ export interface CreateSmsContentOptions {
  * const content = sms.createContent({
  *   nodes: [
  *     sms.createMessageNode({ text: 'Hi ' }),
- *     sms.createSubscriberPlaceholder({ field: 'FirstName' }),
+ *     sms.createSubscriberPlaceholder({ field: 'email' }),
  *     sms.createMessageNode({ text: ', your order has shipped!' }),
  *   ],
  * })

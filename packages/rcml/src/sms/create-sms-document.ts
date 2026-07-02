@@ -18,7 +18,7 @@ export interface CreateSmsDocumentOptions {
    *
    * Accepts either:
    * - A **string** in SMS RFM (SMS Rule Flavor Markdown) — placeholders use `[Type:Name]`
-   *   syntax (e.g. `[Subscriber:FirstName]`), single `\n` becomes a hard break,
+   *   syntax (e.g. `[Subscriber:email]`), single `\n` becomes a hard break,
    *   and double `\n\n` starts a new paragraph.
    * - A pre-built {@link SmsContentJson} document — validated on the way in.
    */
@@ -42,7 +42,7 @@ export interface CreateSmsDocumentOptions {
  *
  * // From an SMS RFM string
  * const doc = createSmsDocument({
- *   content: 'Hi [Subscriber:FirstName], your order has shipped!',
+ *   content: 'Your order has shipped!\nAccount: [Subscriber:email]',
  * });
  *
  * // From a pre-built content JSON document

@@ -286,8 +286,9 @@ export const guideSidebar: DefaultTheme.SidebarItem[] = [
             text: 'Concepts',
             collapsed: false,
             items: [
-              { text: 'SMS document', link: '/packages/rcml/sms/concepts/sms-document' },
-              { text: 'SMS RFM', link: '/packages/rcml/sms/concepts/sms-rfm' },
+              { text: 'Template', link: '/packages/rcml/sms/concepts/template' },
+              { text: 'Content', link: '/packages/rcml/sms/concepts/content' },
+              { text: 'Unsubscription', link: '/packages/rcml/sms/concepts/unsubscription' },
             ],
           },
           {
@@ -299,27 +300,13 @@ export const guideSidebar: DefaultTheme.SidebarItem[] = [
             ],
           },
           {
-            text: 'SMS RFM Content',
+            text: 'Node reference',
             collapsed: true,
             items: [
-              {
-                text: 'Nodes',
-                collapsed: false,
-                items: [
-                  { text: 'doc', link: '/packages/rcml/sms/content/nodes/doc' },
-                  { text: 'paragraph', link: '/packages/rcml/sms/content/nodes/paragraph' },
-                  { text: 'text', link: '/packages/rcml/sms/content/nodes/text' },
-                  { text: 'placeholder', link: '/packages/rcml/sms/content/nodes/placeholder' },
-                  { text: 'hardbreak', link: '/packages/rcml/sms/content/nodes/hardbreak' },
-                ],
-              },
-              {
-                text: 'Marks',
-                collapsed: false,
-                items: [
-                  { text: 'link', link: '/packages/rcml/sms/content/marks/link' },
-                ],
-              },
+              { text: 'sms', link: '/packages/rcml/sms/content/nodes/sms' },
+              { text: 'message', link: '/packages/rcml/sms/content/nodes/message' },
+              { text: 'link', link: '/packages/rcml/sms/content/nodes/link' },
+              { text: 'placeholder', link: '/packages/rcml/sms/content/nodes/placeholder' },
             ],
           },
           { text: 'Building programmatically', link: '/packages/rcml/sms/building-programmatically' },

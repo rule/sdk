@@ -30,8 +30,8 @@ export type SmsToXmlOptions = {
  *
  * @example
  * ```ts
- * const xml = smsToXml(createSmsDocument({ content: 'Hello [Subscriber:FirstName]' }))
- * // '<rc-sms>Hello [Subscriber:FirstName]</rc-sms>'
+ * const xml = smsToXml(createSmsDocument({ content: 'Account: [Subscriber:email]' }))
+ * // '<rc-sms>Account: [Subscriber:email]</rc-sms>'
  * ```
  * @public
  */

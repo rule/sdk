@@ -122,3 +122,71 @@ describe('jsonToSmsRfm() — link node serialization', () => {
     expect(jsonToSmsRfm(json)).toBe('::placeholder{type="Subscriber" original="[Subscriber:FirstName]" name="FirstName" max-length="20"}')
   })
 })
+
+describe('jsonToSmsRfm() — ::unsubscribe serialization', () => {
+  it('collapses the two-node unsubscribe footer to ::unsubscribe', () => {
+    const json: SmsContentJson = {
+      type: 'sms',
+      content: [
+        {
+          type: 'message',
+          text: '[Subscriber:unsubscribe_text]',
+          attrs: { 'is-unsubscribe': true },
+        },
+        {
+          type: 'placeholder',
+          attrs: {
+            type: 'Link',
+            name: 'Unsubscribe',
+            original: '[Link:Unsubscribe]',
+            value: null,
+            'is-unsubscribe': true,
+          },
+        },
+      ],
+    }
+
+    expect(jsonToSmsRfm(json)).toBe('::unsubscribe')
+  })
+
+  it('message node with is-unsubscribe NOT followed by unsubscribe placeholder is emitted verbatim', () => {
+    const json: SmsContentJson = {
+      type: 'sms',
+      content: [
+        {
+          type: 'message',
+          text: '[Subscriber:unsubscribe_text]',
+          attrs: { 'is-unsubscribe': true },
+        },
+      ],
+    }
+
+    expect(jsonToSmsRfm(json)).toBe('[Subscriber:unsubscribe_text]')
+  })
+
+  it('full template with body and unsubscribe footer round-trips', () => {
+    const json: SmsContentJson = {
+      type: 'sms',
+      content: [
+        { type: 'message', text: 'Your order has shipped.\n' },
+        {
+          type: 'message',
+          text: '[Subscriber:unsubscribe_text]',
+          attrs: { 'is-unsubscribe': true },
+        },
+        {
+          type: 'placeholder',
+          attrs: {
+            type: 'Link',
+            name: 'Unsubscribe',
+            original: '[Link:Unsubscribe]',
+            value: null,
+            'is-unsubscribe': true,
+          },
+        },
+      ],
+    }
+
+    expect(jsonToSmsRfm(json)).toBe('Your order has shipped.\n::unsubscribe')
+  })
+})

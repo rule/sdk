@@ -34,7 +34,7 @@ To insert a placeholder as text in the message body, use the `::placeholder{…}
 directive:
 
 ```
-Hi ::placeholder{type="Subscriber" original="[Subscriber:FirstName]" name="First name"}!
+Your account email: ::placeholder{type="Subscriber" original="[Subscriber:email]" name="Email"}
 Your total: ::placeholder{type="CustomField" original="[CustomField:Order.Total]" name="Order.Total"}
 ```
 
@@ -55,7 +55,7 @@ that as the string value `"null"`. To assign a non-null value, quote it
 
 ### Plain-text `[Type:Name]` tokens
 
-Plain-text `[Type:Name]` tokens — `[Subscriber:FirstName]`,
+Plain-text `[Type:Name]` tokens — `[Subscriber:email]`,
 `[CustomField:Order.Total]`, `[Link:Unsubscribe]`, and so on — are valid in
 **exactly two places**:
 
@@ -103,9 +103,9 @@ Inserts a standard subscriber profile field.
   "type": "placeholder",
   "attrs": {
     "type": "Subscriber",
-    "name": "First name",
-    "original": "[Subscriber:FirstName]",
-    "value": null
+    "name": "Email",
+    "original": "[Subscriber:email]",
+    "value": "email"
   }
 }
 ```
@@ -113,13 +113,13 @@ Inserts a standard subscriber profile field.
 **SMS RFM:**
 
 ```
-Hi ::placeholder{type="Subscriber" original="[Subscriber:FirstName]" name="First name"}!
+Your account email: ::placeholder{type="Subscriber" original="[Subscriber:email]" name="Email"}
 ```
 
 With a resolved preview value:
 
 ```
-Hi ::placeholder{type="Subscriber" original="[Subscriber:FirstName]" name="First name" value="Jane"}!
+Your account email: ::placeholder{type="Subscriber" original="[Subscriber:email]" name="Email" value="jane@example.com"}
 ```
 
 ---
@@ -145,7 +145,7 @@ Inserts a field from the sender's Rule.io account profile.
     "type": "User",
     "name": "Company name",
     "original": "[User:CompanyName]",
-    "value": null
+    "value": "CompanyName"
   }
 }
 ```
@@ -173,7 +173,7 @@ truncate the value to N characters and append `…`.
     "type": "CustomField",
     "name": "Order.Total",
     "original": "[CustomField:Order.Total]",
-    "value": null
+    "value": "Order.Total"
   }
 }
 ```
@@ -187,7 +187,7 @@ truncate the value to N characters and append `…`.
     "type": "CustomField",
     "name": "Order.Total",
     "original": "[CustomField:Order.Total::20]",
-    "value": null,
+    "value": "Order.Total",
     "max-length": "20"
   }
 }
