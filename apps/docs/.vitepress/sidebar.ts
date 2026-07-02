@@ -299,13 +299,26 @@ export const guideSidebar: DefaultTheme.SidebarItem[] = [
             ],
           },
           {
-            text: 'SMS RFM',
-            collapsed: true,
+            text: 'RCML Content',
+            collapsed: false,
             items: [
-              { text: 'sms', link: '/packages/rcml/sms/content/nodes/sms' },
-              { text: 'message', link: '/packages/rcml/sms/content/nodes/message' },
-              { text: 'link', link: '/packages/rcml/sms/content/nodes/link' },
-              { text: 'placeholder', link: '/packages/rcml/sms/content/nodes/placeholder' },
+              { text: 'Flavors', link: '/packages/rcml/sms/content/flavors' },
+              {
+                text: 'Block nodes',
+                collapsed: true,
+                items: [
+                  { text: 'sms', link: '/packages/rcml/sms/content/nodes/sms' },
+                ],
+              },
+              {
+                text: 'Inline nodes',
+                collapsed: true,
+                items: [
+                  { text: 'message', link: '/packages/rcml/sms/content/nodes/message' },
+                  { text: 'link', link: '/packages/rcml/sms/content/nodes/link' },
+                  { text: 'placeholder', link: '/packages/rcml/sms/content/nodes/placeholder' },
+                ],
+              },
             ],
           },
           { text: 'Building programmatically', link: '/packages/rcml/sms/building-programmatically' },

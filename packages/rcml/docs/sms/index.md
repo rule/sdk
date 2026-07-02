@@ -58,7 +58,7 @@ content model is explained in [Content](./concepts/content).
 | [Content](./concepts/content) | `SmsContentJson` flat sequence model and node types |
 | [Unsubscription](./concepts/unsubscription) | Required unsubscribe footer and `createUnsubscribeNodes()` |
 | [SMS RCML](./rcml/) | The `rc-sms` element reference |
-| [Node reference](./content/nodes/sms) | Every node with full attribute tables |
+| [RCML Content](./content/flavors) | SMS RFM flavor and node reference |
 | [Building programmatically](./building-programmatically) | `createSmsDocument`, the `sms` builder namespace, SMS RFM ↔ JSON, XML round-trip |
 | [Validation](./validation) | Validating documents and content before submission |
 | [Building with LLM](./building-with-llm) | Using spec objects to drive LLM-assisted template generation |
