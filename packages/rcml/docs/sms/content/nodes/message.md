@@ -55,6 +55,16 @@ Adjacent to a placeholder:
 }
 ```
 
+## Programmatic
+
+```typescript
+sms.createMessageNode({ text: 'Hello, world' })
+// → { type: 'message', text: 'Hello, world' }
+
+sms.createMessageNode({ text: 'Line one\nLine two' })
+// → { type: 'message', text: 'Line one\nLine two' }
+```
+
 ## SMS RFM syntax
 
 Plain text written between placeholders and links compiles directly to `message`

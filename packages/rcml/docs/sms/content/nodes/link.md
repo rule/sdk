@@ -59,6 +59,16 @@ A link with tracking and shortening disabled:
 }
 ```
 
+## Programmatic
+
+```typescript
+sms.createLinkNode({ url: 'https://example.com/orders/123', track: true, shorten: true })
+// → { type: 'link', text: 'https://example.com/orders/123', attrs: { track: true, shorten: true } }
+
+sms.createLinkNode({ url: 'https://example.com', track: false, shorten: false })
+// → { type: 'link', text: 'https://example.com', attrs: { track: false, shorten: false } }
+```
+
 ## SMS RFM syntax
 
 Use the `:link[…]{…}` span directive. The URL goes in the brackets; `track`

@@ -96,8 +96,6 @@ wire-format details (`'max-length'` kebab key, `original` token format). They
 perform no validation themselves; the TypeScript types catch shape errors and
 `createSmsDocument` validates the assembled document at the boundary.
 
-A small worked example:
-
 ```typescript
 import { sms, createSmsDocument } from '@rule/rcml';
 
@@ -105,27 +103,22 @@ const content = sms.createContent({
   nodes: [
     sms.createMessageNode({ text: 'Your order is ready.\nAccount: ' }),
     sms.createSubscriberPlaceholder({ field: 'email' }),
+    ...sms.createUnsubscribeNodes(),
   ],
 });
 
 const doc = createSmsDocument({ content });
 ```
 
-The remainder of this section is the builder reference. Read the
-[`message`](./content/nodes/message), [`link`](./content/nodes/link), and
-[`placeholder`](./content/nodes/placeholder) reference pages for the JSON shapes
-each builder produces.
+Builder signatures and examples for each node type live on the node reference pages:
 
-### Document and node builders
+- [`message`](./content/nodes/message) — `sms.createMessageNode`
+- [`link`](./content/nodes/link) — `sms.createLinkNode`
+- [`placeholder`](./content/nodes/placeholder) — `sms.createSubscriberPlaceholder`, `sms.createCustomFieldPlaceholder`, `sms.createDatePlaceholder`, `sms.createRemoteContentPlaceholder`, `sms.createLinkPlaceholder`, `sms.createPlaceholderNode`
 
-#### `sms.createContent`
+### `sms.createContent`
 
-Wraps top-level nodes in a root `sms` node — the shape of
-[`SmsContentJson`](./concepts/content).
-
-```typescript
-function createContent(opts: { nodes: SmsTopLevelNode[] }): SmsContentJson;
-```
+Wraps top-level nodes in a root `sms` node:
 
 ```typescript
 const content = sms.createContent({
@@ -134,54 +127,10 @@ const content = sms.createContent({
 // → { type: 'sms', content: [{ type: 'message', text: 'Hello' }] }
 ```
 
-#### `sms.createMessageNode`
+### `sms.createUnsubscribeNodes`
 
-Builds a message node with arbitrary text. Embedded `\n` characters produce
-line breaks in the sent message.
-
-```typescript
-function createMessageNode(opts: { text: string }): SmsMessageNode;
-```
-
-```typescript
-sms.createMessageNode({ text: 'Hello, world' });
-// → { type: 'message', text: 'Hello, world' }
-
-sms.createMessageNode({ text: 'Line one\nLine two' });
-// → { type: 'message', text: 'Line one\nLine two' }
-```
-
-#### `sms.createLinkNode`
-
-Builds a link node with a destination URL and tracking/shortening flags.
-
-```typescript
-function createLinkNode(opts: {
-  url: string;
-  track: boolean;
-  shorten: boolean;
-}): SmsLinkNode;
-```
-
-```typescript
-sms.createLinkNode({
-  url: 'https://example.com/orders/123',
-  track: true,
-  shorten: true,
-});
-// → { type: 'link', text: 'https://example.com/orders/123', attrs: { track: true, shorten: true } }
-```
-
-#### `sms.createUnsubscribeNodes`
-
-Produces the two-node unsubscribe footer as a spreadable tuple: a localised
-stop-word message followed by the system unsubscribe link placeholder.
-
-```typescript
-function createUnsubscribeNodes(): [SmsMessageNode, SmsPlaceholderNode];
-```
-
-Spread the result directly into a `createContent({ nodes })` call:
+Produces the two-node unsubscribe footer as a spreadable tuple. See
+[Unsubscription](./concepts/unsubscription) for details.
 
 ```typescript
 sms.createContent({
@@ -189,204 +138,6 @@ sms.createContent({
     sms.createMessageNode({ text: 'Your order has shipped.' }),
     ...sms.createUnsubscribeNodes(),
   ],
-});
-```
-
-JSON equivalent of the two nodes produced:
-
-```json
-[
-  {
-    "type": "message",
-    "text": "[Subscriber:unsubscribe_text]",
-    "attrs": { "is-unsubscribe": true }
-  },
-  {
-    "type": "placeholder",
-    "attrs": {
-      "type": "Link",
-      "name": "Unsubscribe",
-      "original": "[Link:Unsubscribe]",
-      "value": null,
-      "is-unsubscribe": true
-    }
-  }
-]
-```
-
-The `is-unsubscribe` marker signals to the Rule platform that the block is the
-opt-out footer. When present, the platform does not append its own footer.
-
-### Placeholder builders
-
-The recommended way to construct a placeholder is one of the per-token
-convenience builders below. They compute the correct `original` token from
-domain inputs so you never have to assemble `[Subscriber:email]` strings
-by hand.
-
-If you need a placeholder type the convenience builders do not cover, fall
-back to the generic `sms.createPlaceholderNode`.
-
-#### `sms.createSubscriberPlaceholder`
-
-Inserts a subscriber-profile field. `name` defaults to the `field` value,
-matching what the SMS RFM parser produces.
-
-```typescript
-function createSubscriberPlaceholder(opts: {
-  field: string;
-  name?: string;
-}): SmsPlaceholderNode;
-```
-
-```typescript
-sms.createSubscriberPlaceholder({ field: 'email' });
-// original: '[Subscriber:email]', name: 'email'
-
-sms.createSubscriberPlaceholder({ field: 'phone_number', name: 'Phone' });
-// original: '[Subscriber:phone_number]', name: 'Phone'
-```
-
-#### `sms.createUserPlaceholder`
-
-Inserts a field from the sender's Rule.io account profile.
-
-```typescript
-function createUserPlaceholder(opts: {
-  field: string;
-  name?: string;
-}): SmsPlaceholderNode;
-```
-
-```typescript
-sms.createUserPlaceholder({ field: 'CompanyName' });
-// original: '[User:CompanyName]', name: 'CompanyName'
-```
-
-#### `sms.createCustomFieldPlaceholder`
-
-Inserts a subscriber custom-field value. `group` and `name` are joined with a
-dot to form both the `original` token and the placeholder's display label.
-Optional `maxLength` (a number) appends `::N` to the token and sets the
-node's `max-length` attribute, which truncates the value at render time.
-
-```typescript
-function createCustomFieldPlaceholder(opts: {
-  group: string;
-  name: string;
-  maxLength?: number;
-}): SmsPlaceholderNode;
-```
-
-```typescript
-sms.createCustomFieldPlaceholder({ group: 'Order', name: 'Total' });
-// original: '[CustomField:Order.Total]'
-
-sms.createCustomFieldPlaceholder({ group: 'Order', name: 'Total', maxLength: 20 });
-// original: '[CustomField:Order.Total::20]', 'max-length': '20'
-```
-
-#### `sms.createDatePlaceholder`
-
-Inserts a formatted date computed at send time. The `source` argument is a
-typed discriminated union covering the simple keywords (`'now'`, `'tomorrow'`,
-`'yesterday'`), day-offset variants, and custom-field references. The
-`format` argument is a closed set of PHP date format strings.
-
-```typescript
-type SmsDateSource =
-  | 'now' | 'tomorrow' | 'yesterday'
-  | { kind: 'days-from-now'; count: number }
-  | { kind: 'days-ago'; count: number }
-  | { kind: 'custom-field'; group: string; name: string };
-
-type SmsDateFormat = 'Y-m-d' | 'd.m.Y' | 'm-d-Y' | 'm/d/Y' | 'd/m/Y';
-
-function createDatePlaceholder(opts: {
-  source: SmsDateSource;
-  format: SmsDateFormat;
-  name?: string;
-}): SmsPlaceholderNode;
-```
-
-```typescript
-sms.createDatePlaceholder({ source: 'tomorrow', format: 'd.m.Y' });
-// original: '[Date:tomorrow::d.m.Y]'
-
-sms.createDatePlaceholder({
-  source: { kind: 'days-from-now', count: 7 },
-  format: 'Y-m-d',
-});
-// original: '[Date:in-7-days::Y-m-d]'
-
-sms.createDatePlaceholder({
-  source: { kind: 'custom-field', group: 'Order', name: 'CreatedAt' },
-  format: 'Y-m-d',
-});
-// original: '[Date:[CustomField:Order.CreatedAt]::Y-m-d]'
-```
-
-#### `sms.createRemoteContentPlaceholder`
-
-Inserts a value fetched from a URL at send time. The URL is the second of the
-two valid locations for plain-text tokens — it may contain nested
-`[Subscriber:…]`, `[User:…]`, or `[CustomField:…]` tokens that the Rule
-platform resolves before the request is made.
-
-```typescript
-function createRemoteContentPlaceholder(opts: { url: string }): SmsPlaceholderNode;
-```
-
-```typescript
-sms.createRemoteContentPlaceholder({
-  url: 'https://api.example.com/offer?id=[CustomField:Order.Id]',
-});
-// original: '[RemoteContent:https://api.example.com/offer?id=[CustomField:Order.Id]]'
-```
-
-#### `sms.createLinkPlaceholder`
-
-Inserts a system-managed link URL as plain text in the message body — Rule's
-unsubscribe URL, web-browser-view URL, and similar. The `link` argument is a
-closed enum of the five available link types.
-
-To produce a clickable link instead, use `sms.createLinkNode` with the
-system-link URL as `url`.
-
-```typescript
-type SmsSystemLinkType =
-  | 'Optin' | 'Unsubscribe' | 'WebBrowser' | 'ShareLink' | 'Signup';
-
-function createLinkPlaceholder(opts: { link: SmsSystemLinkType }): SmsPlaceholderNode;
-```
-
-```typescript
-sms.createLinkPlaceholder({ link: 'Unsubscribe' });
-// original: '[Link:Unsubscribe]', name: 'Unsubscribe'
-```
-
-#### `sms.createPlaceholderNode`
-
-The low-level fallback. Takes the raw `type`, `original` token, `name`, and
-optional `value` / `maxLength`. Use this only when the convenience builders
-above do not cover what you need.
-
-```typescript
-function createPlaceholderNode(opts: {
-  type: SmsPlaceholderType;
-  original: string;
-  name: string;
-  value?: string | number | null;
-  maxLength?: string | null;
-}): SmsPlaceholderNode;
-```
-
-```typescript
-sms.createPlaceholderNode({
-  type: 'Subscriber',
-  original: '[Subscriber:email]',
-  name: 'Email',
-  value: 'jane@example.com',
 });
 ```
 

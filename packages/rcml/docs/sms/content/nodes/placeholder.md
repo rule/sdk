@@ -28,6 +28,21 @@ None (leaf node).
 
 - SMS RFM (`rc-sms`)
 
+## Programmatic
+
+Each placeholder type has a typed convenience builder. See the per-type sections below
+for the builder for each type. For types not covered by a convenience builder, use the
+generic `sms.createPlaceholderNode`:
+
+```typescript
+sms.createPlaceholderNode({
+  type: 'Subscriber',
+  original: '[Subscriber:email]',
+  name: 'Email',
+  value: 'jane@example.com',
+})
+```
+
 ## SMS RFM syntax
 
 To insert a placeholder as text in the message body, use the `::placeholder{…}`
@@ -107,6 +122,13 @@ With a resolved preview value:
 Your account email: ::placeholder{type="Subscriber" original="[Subscriber:email]" name="Email" value="jane@example.com"}
 ```
 
+**Programmatic:**
+
+```typescript
+sms.createSubscriberPlaceholder({ field: 'email' })
+sms.createSubscriberPlaceholder({ field: 'phone_number', name: 'Phone' })
+```
+
 ---
 
 ## User
@@ -139,6 +161,13 @@ Inserts a field from the sender's Rule.io account profile.
 
 ```
 Sent by ::placeholder{type="User" original="[User:CompanyName]" name="Company name"}
+```
+
+**Programmatic:**
+
+```typescript
+sms.createUserPlaceholder({ field: 'CompanyName' })
+sms.createUserPlaceholder({ field: 'CompanyName', name: 'Company name' })
 ```
 
 ---
@@ -190,6 +219,13 @@ Your total: ::placeholder{type="CustomField" original="[CustomField:Order.Total]
 Your total: ::placeholder{type="CustomField" original="[CustomField:Order.Total::20]" name="Order.Total" max-length="20"}
 ```
 
+**Programmatic:**
+
+```typescript
+sms.createCustomFieldPlaceholder({ group: 'Order', name: 'Total' })
+sms.createCustomFieldPlaceholder({ group: 'Order', name: 'Total', maxLength: 20 })
+```
+
 ---
 
 ## Date
@@ -229,6 +265,14 @@ Supported values: `Y-m-d`, `d.m.Y`, `m-d-Y`, `m/d/Y`, `d/m/Y`.
 
 ```
 Offer valid until ::placeholder{type="Date" original="[Date:tomorrow::d.m.Y]" name="Offer expires"}.
+```
+
+**Programmatic:**
+
+```typescript
+sms.createDatePlaceholder({ source: 'tomorrow', format: 'd.m.Y' })
+sms.createDatePlaceholder({ source: { kind: 'days-from-now', count: 7 }, format: 'Y-m-d' })
+sms.createDatePlaceholder({ source: { kind: 'custom-field', group: 'Order', name: 'CreatedAt' }, format: 'Y-m-d' })
 ```
 
 ---
@@ -273,6 +317,13 @@ With nested tokens in the URL:
 ::placeholder{type="RemoteContent" original="[RemoteContent:https://api.example.com/promo]" name="RemoteContent"}
 ```
 
+**Programmatic:**
+
+```typescript
+sms.createRemoteContentPlaceholder({ url: 'https://api.example.com/promo' })
+sms.createRemoteContentPlaceholder({ url: 'https://api.example.com/offer?id=[CustomField:Order.Id]' })
+```
+
 ---
 
 ## Link
@@ -307,6 +358,13 @@ URL visible in the message body rather than as linked text.
 
 ```
 Reply STOP or unsubscribe here: ::placeholder{type="Link" original="[Link:Unsubscribe]" name="Unsubscribe"}
+```
+
+**Programmatic:**
+
+```typescript
+sms.createLinkPlaceholder({ link: 'Unsubscribe' })
+sms.createLinkPlaceholder({ link: 'WebBrowser' })
 ```
 
 ### Link tokens in link nodes
