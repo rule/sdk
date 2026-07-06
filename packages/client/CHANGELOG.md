@@ -1,3 +1,26 @@
+## 0.4.0-beta.9 (2026-07-06)
+
+### 🚀 Features
+
+- **client/rcml:** SMS integration tests overhaul + subscriber/user placeholder type safety ([5a5d85a](https://github.com/rulecom/rule-io-sdk/commit/5a5d85a))
+- **client:** add unsubscriptionMethod param to createDefaultSmsCampaign, fix template update API ([cdb3817](https://github.com/rulecom/rule-io-sdk/commit/cdb3817))
+- **rcml,client:** enforce UUID id on SmsDocument and auto-inject it ([15b8c9f](https://github.com/rulecom/rule-io-sdk/commit/15b8c9f))
+
+### 🩹 Fixes
+
+- **rcml/client:** fix FirstName placeholder in sms-namespace test; guard missing content in updateSmsTemplate ([d714ddd](https://github.com/rulecom/rule-io-sdk/commit/d714ddd))
+- **client:** address Copilot review comments ([dc9eada](https://github.com/rulecom/rule-io-sdk/commit/dc9eada))
+- **client:** fix lint errors — missing blank lines and unused var ([4f5e3bd](https://github.com/rulecom/rule-io-sdk/commit/4f5e3bd))
+- **client:** add blank line before return in normalizeSmsId (lint) ([e6e217b](https://github.com/rulecom/rule-io-sdk/commit/e6e217b))
+- **client:** make name optional in CreateSmsTemplatePayload ([3238768](https://github.com/rulecom/rule-io-sdk/commit/3238768))
+- **client:** remove subject from SMS message payloads and omit unsubscribe footer for transactional SMS ([6f43965](https://github.com/rulecom/rule-io-sdk/commit/6f43965))
+- **client:** update SMS defaults and docs for rcml API consistency ([6f7e1e2](https://github.com/rulecom/rule-io-sdk/commit/6f7e1e2))
+
+### ❤️ Thank You
+
+- Claude
+- Oleksandr Ryzhyk
+
 ## 0.4.0-beta.8 (2026-06-19)
 
 ### 🚀 Features

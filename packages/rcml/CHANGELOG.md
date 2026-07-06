@@ -1,3 +1,34 @@
+## 0.4.0-beta.9 (2026-07-06)
+
+### 🚀 Features
+
+- **client/rcml:** SMS integration tests overhaul + subscriber/user placeholder type safety ([5a5d85a](https://github.com/rulecom/rule-io-sdk/commit/5a5d85a))
+- **rcml,client:** enforce UUID id on SmsDocument and auto-inject it ([15b8c9f](https://github.com/rulecom/rule-io-sdk/commit/15b8c9f))
+- **rcml:** restrict Link placeholder type to is-unsubscribe context only ([ca1a9c6](https://github.com/rulecom/rule-io-sdk/commit/ca1a9c6))
+- **rcml:** always serialize placeholder nodes as ::placeholder{…} directive ([af3544e](https://github.com/rulecom/rule-io-sdk/commit/af3544e))
+- **rcml:** enforce track:true requires shorten:true on SMS link nodes ([0560f99](https://github.com/rulecom/rule-io-sdk/commit/0560f99))
+- **rcml:** drop href from SMS :link directive; URL lives in label only ([eaedc8d](https://github.com/rulecom/rule-io-sdk/commit/eaedc8d))
+- **rcml:** add ::unsubscribe RFM directive and fix SMS docs concepts pages ([cf323c3](https://github.com/rulecom/rule-io-sdk/commit/cf323c3))
+- **rcml:** migrate SMS content model to flat sms/message/link/placeholder AST ([8ae77f1](https://github.com/rulecom/rule-io-sdk/commit/8ae77f1))
+
+### 🩹 Fixes
+
+- **rcml:** wrap smsRfmToJson throws as SmsDocumentBuildError; fix link.ts href comment ([c0d15a0](https://github.com/rulecom/rule-io-sdk/commit/c0d15a0))
+- **rcml/client:** fix FirstName placeholder in sms-namespace test; guard missing content in updateSmsTemplate ([d714ddd](https://github.com/rulecom/rule-io-sdk/commit/d714ddd))
+- **rcml:** address Copilot review comments on PR #157 (fifth round) ([#157](https://github.com/rulecom/rule-io-sdk/issues/157))
+- **rcml:** address fourth round of Copilot review comments on PR #157 ([#157](https://github.com/rulecom/rule-io-sdk/issues/157))
+- **rcml:** address third round of Copilot review comments on PR #157 ([#157](https://github.com/rulecom/rule-io-sdk/issues/157))
+- **rcml:** add blank line before statement to satisfy padding-line ESLint rule ([3d9976a](https://github.com/rulecom/rule-io-sdk/commit/3d9976a))
+- **rcml:** address second round of Copilot review comments on PR #157 ([#157](https://github.com/rulecom/rule-io-sdk/issues/157))
+- **rcml:** address Copilot review comments on PR #157 ([#157](https://github.com/rulecom/rule-io-sdk/issues/157))
+- **rcml:** fix ESLint padding-line error and dead doc links in CI ([ccf5298](https://github.com/rulecom/rule-io-sdk/commit/ccf5298))
+- **rcml:** consistency sweep — remove createLinkPlaceholder from public API, fix stale JSDoc, add ::unsubscribe tests ([e162edb](https://github.com/rulecom/rule-io-sdk/commit/e162edb))
+
+### ❤️ Thank You
+
+- Claude
+- Oleksandr Ryzhyk
+
 ## 0.4.0-beta.8 (2026-06-19)
 
 ### 🚀 Features

@@ -1,3 +1,46 @@
+## 0.4.0-beta.9 (2026-07-06)
+
+### 🚀 Features
+
+- SMS integration tests + subscriber/user placeholder type safety ([#159](https://github.com/rulecom/rule-io-sdk/pull/159))
+- **client:** add unsubscriptionMethod param to createDefaultSmsCampaign, fix template update API ([cdb3817](https://github.com/rulecom/rule-io-sdk/commit/cdb3817))
+- **client/rcml:** SMS integration tests overhaul + subscriber/user placeholder type safety ([5a5d85a](https://github.com/rulecom/rule-io-sdk/commit/5a5d85a))
+- **client/rcml:** SMS integration tests overhaul + subscriber/user placeholder type safety ([#158](https://github.com/rulecom/rule-io-sdk/pull/158))
+- **rcml:** migrate SMS content model to flat sms/message/link/placeholder AST ([8ae77f1](https://github.com/rulecom/rule-io-sdk/commit/8ae77f1))
+- **rcml:** add ::unsubscribe RFM directive and fix SMS docs concepts pages ([cf323c3](https://github.com/rulecom/rule-io-sdk/commit/cf323c3))
+- **rcml:** drop href from SMS :link directive; URL lives in label only ([eaedc8d](https://github.com/rulecom/rule-io-sdk/commit/eaedc8d))
+- **rcml:** enforce track:true requires shorten:true on SMS link nodes ([0560f99](https://github.com/rulecom/rule-io-sdk/commit/0560f99))
+- **rcml:** always serialize placeholder nodes as ::placeholder{…} directive ([af3544e](https://github.com/rulecom/rule-io-sdk/commit/af3544e))
+- **rcml:** restrict Link placeholder type to is-unsubscribe context only ([ca1a9c6](https://github.com/rulecom/rule-io-sdk/commit/ca1a9c6))
+- **rcml,client:** enforce UUID id on SmsDocument and auto-inject it ([15b8c9f](https://github.com/rulecom/rule-io-sdk/commit/15b8c9f))
+- **rcml/client:** SMS RCML content model overhaul — flat AST, new directives, validator, docs ([#157](https://github.com/rulecom/rule-io-sdk/pull/157))
+
+### 🩹 Fixes
+
+- **client:** update SMS defaults and docs for rcml API consistency ([6f7e1e2](https://github.com/rulecom/rule-io-sdk/commit/6f7e1e2))
+- **client:** remove subject from SMS message payloads and omit unsubscribe footer for transactional SMS ([6f43965](https://github.com/rulecom/rule-io-sdk/commit/6f43965))
+- **client:** make name optional in CreateSmsTemplatePayload ([3238768](https://github.com/rulecom/rule-io-sdk/commit/3238768))
+- **client:** add blank line before return in normalizeSmsId (lint) ([e6e217b](https://github.com/rulecom/rule-io-sdk/commit/e6e217b))
+- **client:** fix lint errors — missing blank lines and unused var ([4f5e3bd](https://github.com/rulecom/rule-io-sdk/commit/4f5e3bd))
+- **client:** address Copilot review comments ([dc9eada](https://github.com/rulecom/rule-io-sdk/commit/dc9eada))
+- **integration:** fix lint errors — static import and missing blank lines ([427cbd6](https://github.com/rulecom/rule-io-sdk/commit/427cbd6))
+- **integration:** fix afterAll cleanup ordering and beforeAll-failure guards ([45e2fef](https://github.com/rulecom/rule-io-sdk/commit/45e2fef))
+- **rcml:** consistency sweep — remove createLinkPlaceholder from public API, fix stale JSDoc, add ::unsubscribe tests ([e162edb](https://github.com/rulecom/rule-io-sdk/commit/e162edb))
+- **rcml:** fix ESLint padding-line error and dead doc links in CI ([ccf5298](https://github.com/rulecom/rule-io-sdk/commit/ccf5298))
+- **rcml:** address Copilot review comments on PR #157 ([#157](https://github.com/rulecom/rule-io-sdk/issues/157))
+- **rcml:** address second round of Copilot review comments on PR #157 ([#157](https://github.com/rulecom/rule-io-sdk/issues/157))
+- **rcml:** add blank line before statement to satisfy padding-line ESLint rule ([3d9976a](https://github.com/rulecom/rule-io-sdk/commit/3d9976a))
+- **rcml:** address third round of Copilot review comments on PR #157 ([#157](https://github.com/rulecom/rule-io-sdk/issues/157))
+- **rcml:** address fourth round of Copilot review comments on PR #157 ([#157](https://github.com/rulecom/rule-io-sdk/issues/157))
+- **rcml:** address Copilot review comments on PR #157 (fifth round) ([#157](https://github.com/rulecom/rule-io-sdk/issues/157))
+- **rcml:** wrap smsRfmToJson throws as SmsDocumentBuildError; fix link.ts href comment ([c0d15a0](https://github.com/rulecom/rule-io-sdk/commit/c0d15a0))
+- **rcml/client:** fix FirstName placeholder in sms-namespace test; guard missing content in updateSmsTemplate ([d714ddd](https://github.com/rulecom/rule-io-sdk/commit/d714ddd))
+
+### ❤️ Thank You
+
+- Claude
+- Oleksandr Ryzhyk @webmarket7
+
 ## 0.4.0-beta.8 (2026-06-19)
 
 ### 🚀 Features
