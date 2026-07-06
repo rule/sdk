@@ -38,7 +38,7 @@ const ROUND_TRIP_DOCS: ReadonlyArray<{ name: string; doc: SmsDocument }> = [
     doc: {
       id: '44444444-4444-4444-4444-444444444444',
       tagName: 'rc-sms',
-      content: smsRfmToJson('Hello [Subscriber:FirstName], total: [CustomField:Order.Total]. [Link:Unsubscribe]'),
+      content: smsRfmToJson('Hello [Subscriber:FirstName], total: [CustomField:Order.Total].'),
     },
   },
   {

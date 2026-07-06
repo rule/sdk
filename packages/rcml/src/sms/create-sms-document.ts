@@ -68,7 +68,19 @@ export function createSmsDocument(options: CreateSmsDocumentOptions): SmsDocumen
   let content: SmsContentJson
 
   if (typeof options.content === 'string') {
-    content = smsRfmToJson(options.content)
+    const parsed = safeParseSmsJson(smsRfmToJson(options.content))
+
+    if (!parsed.success) {
+      throw new SmsDocumentBuildError(
+        parsed.errors.map((e) => ({
+          code: SmsDocumentBuildErrorCodes.CONTENT_INVALID,
+          path: `content${e.path}`,
+          message: e.message,
+        })),
+      )
+    }
+
+    content = parsed.data
   } else {
     const result = safeParseSmsJson(options.content)
 

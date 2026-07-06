@@ -8,7 +8,7 @@ no wrapping root element, no head, no body.
 
 | Attribute | Required | Type | Description |
 |-----------|----------|------|-------------|
-| `id` | Yes | UUID string | Document identifier. Generated automatically by `createSmsDocument` and the XML parser. Required by the Rule editor. Client methods auto-inject a valid UUID if the document is missing one or has a malformed value. |
+| `id` | No | UUID string | Document identifier. Auto-injected by `createSmsDocument`, the XML parser, and client methods. The Rule editor requires this field; the SDK ensures it is always present before sending to the API. |
 
 `id` lives at the top level of `SmsDocument`.
 
