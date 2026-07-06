@@ -29,13 +29,11 @@ describe('AutomationsClient — SMS', () => {
     await Promise.allSettled(createdMessageIds.map((id) => client.messages.delete(id)));
     await Promise.allSettled(createdTemplateIds.map((id) => client.templates.delete(id)));
     await Promise.allSettled(createdIds.map((id) => client.automations.delete(id)));
-  });
 
-  afterAll(async () => {
-    await Promise.allSettled([
-      client.tags.deleteById(tagId),
-      client.subscribers.deleteByEmail(bootstrapEmail),
-    ]);
+    const tagCleanup = tagId ? [client.tags.deleteById(tagId)] : [];
+    const subCleanup = bootstrapEmail ? [client.subscribers.deleteByEmail(bootstrapEmail).catch(() => undefined)] : [];
+
+    await Promise.allSettled([...tagCleanup, ...subCleanup]);
   });
 
   describe('createSmsAutomation', () => {

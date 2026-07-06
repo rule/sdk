@@ -11,9 +11,9 @@ describe('CampaignsClient — SMS', () => {
   const createdDynamicSetIds: number[] = [];
 
   afterAll(async () => {
+    await Promise.allSettled(createdDynamicSetIds.map((id) => client.dynamicSets.delete(id)));
     await Promise.allSettled(createdMessageIds.map((id) => client.messages.delete(id)));
     await Promise.allSettled(createdTemplateIds.map((id) => client.templates.delete(id)));
-    await Promise.allSettled(createdDynamicSetIds.map((id) => client.dynamicSets.delete(id)));
     await Promise.allSettled(createdCampaignIds.map((id) => client.campaigns.delete(id)));
   });
 

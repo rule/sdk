@@ -63,10 +63,11 @@ describe('MessagesClient — SMS', () => {
     await Promise.allSettled(createdMessageIds.map((id) => client.messages.delete(id)));
     await Promise.allSettled(createdAutomationIds.map((id) => client.automations.delete(id)));
     await Promise.allSettled(createdCampaignIds.map((id) => client.campaigns.delete(id)));
-    await Promise.allSettled([
-      client.tags.deleteById(tagId),
-      client.subscribers.deleteByEmail(bootstrapEmail),
-    ]);
+
+    const tagCleanup = tagId ? [client.tags.deleteById(tagId)] : [];
+    const subCleanup = bootstrapEmail ? [client.subscribers.deleteByEmail(bootstrapEmail).catch(() => undefined)] : [];
+
+    await Promise.allSettled([...tagCleanup, ...subCleanup]);
   });
 
   describe('createSmsCampaignMessage', () => {
