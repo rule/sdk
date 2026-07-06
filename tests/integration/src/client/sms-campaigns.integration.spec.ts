@@ -1,4 +1,5 @@
 import { RuleClient, RuleApiError } from '@rule/client';
+import { createSmsDocument } from '@rule/rcml';
 import { createTestClient } from '../helpers/client.js';
 import { testName } from '../helpers/test-data.js';
 
@@ -202,7 +203,6 @@ describe('CampaignsClient — SMS', () => {
     });
 
     it('accepts a template content override', async () => {
-      const { createSmsDocument } = await import('@rule/rcml');
       const result = await client.campaigns.createDefaultSmsCampaign({
         name: testName('sms-camp-default-custom'),
         template: {

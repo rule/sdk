@@ -22,6 +22,7 @@ describe('TemplatesClient — SMS', () => {
     if (previewSubscriberEmail) {
       await client.subscribers.deleteByEmail(previewSubscriberEmail).catch(() => undefined);
     }
+
     await Promise.allSettled(createdComplexDynamicSetIds.map((id) => client.dynamicSets.delete(id)));
     await Promise.allSettled(createdComplexMessageIds.map((id) => client.messages.delete(id)));
     await Promise.allSettled(createdComplexTemplateIds.map((id) => client.templates.delete(id)));
@@ -164,6 +165,7 @@ describe('TemplatesClient — SMS', () => {
       createdComplexMessageIds.push(result.messageId);
       createdComplexTemplateIds.push(result.templateId);
       createdComplexDynamicSetIds.push(result.dynamicSetId);
+
       return result;
     }
 

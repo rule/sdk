@@ -31,10 +31,12 @@ describe('MessagesClient — SMS', () => {
     const campaign = await client.campaigns.createSmsCampaign({
       name: testName('sms-msg-setup-campaign'),
     });
+
     sharedCampaignId = campaign.id!;
     createdCampaignIds.push(sharedCampaignId);
 
     const campaignMessage = await client.messages.createSmsCampaignMessage(sharedCampaignId, {});
+
     sharedCampaignMessageId = campaignMessage.id!;
     createdMessageIds.push(sharedCampaignMessageId);
 
@@ -44,6 +46,7 @@ describe('MessagesClient — SMS', () => {
       trigger: { type: 'TAG', id: tagId },
       sendoutType: 'marketing',
     });
+
     sharedAutomationId = automation.id!;
     createdAutomationIds.push(sharedAutomationId);
 
@@ -51,6 +54,7 @@ describe('MessagesClient — SMS', () => {
       sharedAutomationId,
       { automailSetting: { active: false, delayInSeconds: '0' } }
     );
+
     sharedAutomationMessageId = automationMessage.id!;
     createdMessageIds.push(sharedAutomationMessageId);
   });
@@ -70,6 +74,7 @@ describe('MessagesClient — SMS', () => {
       const campaign = await client.campaigns.createSmsCampaign({
         name: testName('sms-msg-create-camp'),
       });
+
       createdCampaignIds.push(campaign.id!);
 
       const result = await client.messages.createSmsCampaignMessage(campaign.id!, {});
@@ -84,6 +89,7 @@ describe('MessagesClient — SMS', () => {
       const campaign = await client.campaigns.createSmsCampaign({
         name: testName('sms-msg-create-camp-utm'),
       });
+
       createdCampaignIds.push(campaign.id!);
 
       const result = await client.messages.createSmsCampaignMessage(campaign.id!, {
@@ -104,6 +110,7 @@ describe('MessagesClient — SMS', () => {
         trigger: { type: 'TAG', id: tagId },
         sendoutType: 'marketing',
       });
+
       createdAutomationIds.push(automation.id!);
 
       const result = await client.messages.createSmsAutomationMessage(automation.id!, {
@@ -205,6 +212,7 @@ describe('MessagesClient — SMS', () => {
       const campaign = await client.campaigns.createSmsCampaign({
         name: testName('sms-msg-delete-camp'),
       });
+
       createdCampaignIds.push(campaign.id!);
 
       const message = await client.messages.createSmsCampaignMessage(campaign.id!, {});
