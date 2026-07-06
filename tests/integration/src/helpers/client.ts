@@ -1,4 +1,4 @@
-import { RuleClient } from '@rulecom/client';
+import { RuleClient } from '@rule/client';
 
 export function createTestClient(): RuleClient {
   const apiKey = process.env['RULE_API_KEY'];
