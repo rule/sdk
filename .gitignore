@@ -42,7 +42,6 @@ email-snapshots/
 # Claude Code
 .claude/
 CLAUDE.md
-
 # MCP
 .mcp.json
 

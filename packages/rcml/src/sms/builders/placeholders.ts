@@ -89,12 +89,17 @@ export function createPlaceholderNode(
 
 // ─── Subscriber ───────────────────────────────────────────────────────────────
 
+/** Subscriber fields valid in `[Subscriber:*]` SMS placeholders. @public */
+export type SmsSubscriberField = 'email' | 'phone_number' | 'language'
+
 /** Options for {@link createSubscriberPlaceholder}. @public */
 export interface CreateSmsSubscriberPlaceholderOptions {
   /**
-   * Subscriber field identifier — e.g. `'email'`, `'phone_number'`, `'language'`.
+   * Subscriber profile field. Only `'email'`, `'phone_number'`, and
+   * `'language'` are supported by the backend — other values are rejected at
+   * template save time.
    */
-  field: string
+  field: SmsSubscriberField
   /**
    * Override for the editor display label. Defaults to `field` (matching
    * what the SMS RFM parser produces).
@@ -127,13 +132,16 @@ export function createSubscriberPlaceholder(
 
 // ─── User ─────────────────────────────────────────────────────────────────────
 
+/** User (account) fields valid in `[User:*]` SMS placeholders. @public */
+export type SmsUserField = 'CompanyName' | 'Street' | 'Zip' | 'City' | 'EmailAddress'
+
 /** Options for {@link createUserPlaceholder}. @public */
 export interface CreateSmsUserPlaceholderOptions {
   /**
-   * Account field identifier — e.g. `'CompanyName'`, `'Street'`, `'Zip'`,
-   * `'City'`, `'EmailAddress'`.
+   * Account profile field. Only `'CompanyName'`, `'Street'`, `'Zip'`,
+   * `'City'`, and `'EmailAddress'` are supported by the backend.
    */
-  field: string
+  field: SmsUserField
   /** Override for the editor display label. Defaults to `field`. */
   name?: string
 }

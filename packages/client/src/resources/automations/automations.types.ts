@@ -9,7 +9,10 @@
  * it under "Automation" terminology.
  */
 
+import type { SmsDocument } from '@rule/rcml';
+
 import type { PagePaginationParams, RuleApiResponse } from '../../shared.types.js';
+import type { CreateSmsAutomationMessagePayload } from '../messages/messages.types.js';
 
 // ── Public SDK types ──────────────────────────────────────────────────────────
 
@@ -258,6 +261,71 @@ export interface UpdateEmailAutomationPayload {
  * ```
  */
 export type UpdateSmsAutomationPayload = UpdateEmailAutomationPayload;
+
+// ── Default SMS message result ────────────────────────────────────────────────
+
+/**
+ * Result from `AutomationsClient.createDefaultSmsMessage`.
+ *
+ * Contains the IDs of the three resources created: message, template, and the
+ * dynamic set linking them.
+ */
+export interface CreateDefaultSmsMessageResult {
+  /** The created message ID. */
+  messageId: number;
+  /** The created template ID. */
+  templateId: number;
+  /** The created dynamic set ID linking the message to the template. */
+  dynamicSetId: number;
+}
+
+/**
+ * Options for `AutomationsClient.createDefaultSmsMessage`.
+ *
+ * @example
+ * ```typescript
+ * const setup = await client.automations.createDefaultSmsMessage(automationId);
+ * console.log(setup.messageId, setup.templateId, setup.dynamicSetId);
+ * ```
+ */
+export interface CreateDefaultSmsMessageParams {
+  /**
+   * Optional overrides for the auto-created SMS message.
+   *
+   * Any field provided here replaces the default. See
+   * {@link CreateSmsAutomationMessagePayload} for available fields.
+   */
+  message?: Partial<CreateSmsAutomationMessagePayload>;
+  /**
+   * Optional overrides for the auto-created SMS template.
+   *
+   * Provide `content` to supply a custom SMS document — this skips the default
+   * body generation entirely. Provide `name` to override the auto-generated
+   * template name.
+   */
+  template?: {
+    /** Template name. Defaults to `'Automation ${id} SMS template'`. */
+    name?: string;
+    /** Custom SMS document. When omitted a default body is generated. */
+    content?: SmsDocument;
+  };
+  /**
+   * Unsubscription method included in the auto-generated SMS body footer.
+   *
+   * - `'unsubscribeLink'` (default) — appends `::unsubscribe`.
+   * - `'stopWord'` — appends the stop-word merge-tag placeholder.
+   *
+   * Has no effect when `template.content` is provided (the footer is then
+   * the caller's responsibility) or when `sendoutType` is `'transactional'`
+   * (transactional automations do not include an unsubscription footer).
+   */
+  unsubscriptionMethod?: 'unsubscribeLink' | 'stopWord';
+  /**
+   * Sendout type of the parent automation — used to decide whether to include
+   * an unsubscription footer. Defaults to `'marketing'`.
+   */
+  sendoutType?: AutomationSendoutType;
+}
 
 // ── List params ───────────────────────────────────────────────────────────────
 

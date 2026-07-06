@@ -74,6 +74,8 @@ export type {
   CreateSmsRemoteContentPlaceholderOptions,
   SmsDateFormat,
   SmsDateSource,
+  SmsSubscriberField,
+  SmsUserField,
 } from './builders/index.js'
 
 export { SmsTagNamesEnum, SMS_SCHEMA_SPEC } from './schema/index.js'

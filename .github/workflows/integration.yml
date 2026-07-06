@@ -1,0 +1,38 @@
+name: Integration Tests
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      rule_api_key:
+        description: 'Rule.io API key (falls back to RULE_API_KEY repo secret if omitted)'
+        required: false
+        type: string
+
+jobs:
+  integration:
+    name: Run Integration Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Mask API key input
+        if: ${{ inputs.rule_api_key != '' }}
+        run: echo "::add-mask::${{ inputs.rule_api_key }}"
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run integration tests
+        env:
+          RULE_API_KEY: ${{ inputs.rule_api_key || secrets.RULE_API_KEY }}
+        run: npx nx run integration:test

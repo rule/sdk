@@ -70,6 +70,8 @@ export type {
   Automation,
   AutomationSendoutType,
   AutomationTrigger,
+  CreateDefaultSmsMessageParams,
+  CreateDefaultSmsMessageResult,
   CreateEmailAutomationPayload,
   CreateSmsAutomationPayload,
   ListAutomationsParams,
