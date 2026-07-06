@@ -50,7 +50,7 @@ describe('sms namespace through createSmsDocument', () => {
     const content = sms.createContent({
       nodes: [
         sms.createMessageNode({ text: 'Hi ' }),
-        sms.createSubscriberPlaceholder({ field: 'FirstName' }),
+        sms.createSubscriberPlaceholder({ field: 'email' }),
         sms.createMessageNode({ text: ', your order ' }),
         sms.createCustomFieldPlaceholder({ group: 'Order', name: 'Id' }),
         sms.createMessageNode({ text: ' has shipped.\n' }),
@@ -69,7 +69,7 @@ describe('sms namespace through createSmsDocument', () => {
     // exercising every node kind we built.
     const rfm = jsonToSmsRfm(content)
 
-    expect(rfm).toContain('[Subscriber:FirstName]')
+    expect(rfm).toContain('[Subscriber:email]')
     expect(rfm).toContain('[CustomField:Order.Id]')
     expect(rfm).toContain('::unsubscribe')
     expect(rfm).toContain(':link[https://example.com/orders/[CustomField:Order.Id]]{track="true" shorten="true"}')

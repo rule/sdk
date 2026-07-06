@@ -209,11 +209,15 @@ export class TemplatesClient extends BaseResource {
 
     const contentToSend = payload.content ?? (existing.content as SmsDocument | undefined);
 
+    if (contentToSend === undefined) {
+      throw new RuleApiError(`Template ${id} has no content and none was provided`, 400);
+    }
+
     const res = await this.transport.put<TemplateResponse>(`/editor/template/${id}`, {
       body: JSON.stringify({
         message_type: 'text_message',
         name: payload.name ?? existing.name,
-        ...(contentToSend !== undefined && { template: normalizeSmsId(contentToSend) }),
+        template: normalizeSmsId(contentToSend),
       }),
     });
 
