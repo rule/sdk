@@ -35,6 +35,7 @@ const SMS_UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{1
 
 function normalizeSmsId(doc: SmsDocument): SmsDocument {
   if (typeof doc.id === 'string' && SMS_UUID_RE.test(doc.id)) return doc
+
   return { ...doc, id: randomUUID() }
 }
 
