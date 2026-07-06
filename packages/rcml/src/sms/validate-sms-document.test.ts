@@ -27,6 +27,18 @@ describe('validateSmsDocument()', () => {
     expect(() => validateSmsDocument(doc)).toThrow(SmsDocumentValidationError)
   })
 
+  it('rejects a document without id', () => {
+    const doc = { tagName: 'rc-sms' as const, content: smsRfmToJson('Hello') }
+
+    expect(() => validateSmsDocument(doc)).toThrow(SmsDocumentValidationError)
+  })
+
+  it('rejects a document with a malformed id', () => {
+    const doc = { id: 'not-a-uuid', tagName: 'rc-sms' as const, content: smsRfmToJson('Hello') }
+
+    expect(() => validateSmsDocument(doc)).toThrow(SmsDocumentValidationError)
+  })
+
   it('rejects invalid content JSON', () => {
     const doc = {
       tagName: 'rc-sms' as const,
@@ -57,8 +69,42 @@ describe('safeValidateSmsDocument()', () => {
     }
   })
 
+  it('returns failure with ID_INVALID when id is missing', () => {
+    const doc = { tagName: 'rc-sms' as const, content: smsRfmToJson('Hello') }
+    const result = safeValidateSmsDocument(doc)
+
+    expect(result.success).toBe(false)
+
+    if (!result.success) {
+      expect(result.errors.some((e) => e.code === 'ID_INVALID')).toBe(true)
+    }
+  })
+
+  it('returns failure with ID_INVALID for a malformed id', () => {
+    const doc = { id: 'not-a-uuid', tagName: 'rc-sms' as const, content: smsRfmToJson('Hello') }
+    const result = safeValidateSmsDocument(doc)
+
+    expect(result.success).toBe(false)
+
+    if (!result.success) {
+      expect(result.errors.some((e) => e.code === 'ID_INVALID')).toBe(true)
+    }
+  })
+
+  it('returns success for a document with a valid UUID id', () => {
+    const doc = {
+      id: '550e8400-e29b-41d4-a716-446655440000',
+      tagName: 'rc-sms' as const,
+      content: smsRfmToJson('Hello'),
+    }
+    const result = safeValidateSmsDocument(doc)
+
+    expect(result.success).toBe(true)
+  })
+
   it('returns failure with CONTENT_INVALID for bad content', () => {
     const doc = {
+      id: '550e8400-e29b-41d4-a716-446655440000',
       tagName: 'rc-sms' as const,
       content: { type: 'bad' } as never,
     }

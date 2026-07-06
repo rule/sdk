@@ -8,6 +8,7 @@ export const SmsDocumentBuildErrorCodes = {
   STRUCTURE_INVALID: 'STRUCTURE_INVALID',
   CONTENT_INVALID: 'CONTENT_INVALID',
   CONTENT_REQUIRED: 'CONTENT_REQUIRED',
+  ID_INVALID: 'ID_INVALID',
 } as const
 
 export type SmsDocumentBuildErrorCode =

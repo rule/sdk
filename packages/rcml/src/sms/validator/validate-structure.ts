@@ -1,5 +1,7 @@
 import { SmsDocumentBuildErrorCodes, type SmsDocumentBuildIssue } from '../builders/errors.js'
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 /**
  * Check that `input` has the correct `rc-sms` leaf-node shape.
  *
@@ -26,6 +28,20 @@ export function validateSmsStructure(input: unknown): SmsDocumentBuildIssue[] {
       code: SmsDocumentBuildErrorCodes.STRUCTURE_INVALID,
       path: 'tagName',
       message: `tagName must be 'rc-sms', got '${String(node['tagName'])}'.`,
+    })
+  }
+
+  if (node['id'] === undefined || node['id'] === null) {
+    issues.push({
+      code: SmsDocumentBuildErrorCodes.ID_INVALID,
+      path: 'id',
+      message: 'id is required (a UUID string).',
+    })
+  } else if (typeof node['id'] !== 'string' || !UUID_RE.test(node['id'])) {
+    issues.push({
+      code: SmsDocumentBuildErrorCodes.ID_INVALID,
+      path: 'id',
+      message: `id must be a valid UUID, got '${String(node['id'])}'.`,
     })
   }
 

@@ -23,6 +23,7 @@ export const SmsDocumentErrorCodes = {
   STRUCTURE_INVALID: 'STRUCTURE_INVALID',
   CONTENT_REQUIRED: 'CONTENT_REQUIRED',
   CONTENT_INVALID: 'CONTENT_INVALID',
+  ID_INVALID: 'ID_INVALID',
 } as const
 
 export type SmsDocumentErrorCode =
@@ -115,7 +116,9 @@ export function safeValidateSmsDocument(input: SmsDocument): SafeValidateSmsResu
       code:
         issue.code === SmsDocumentBuildErrorCodes.CONTENT_REQUIRED
           ? SmsDocumentErrorCodes.CONTENT_REQUIRED
-          : SmsDocumentErrorCodes.STRUCTURE_INVALID,
+          : issue.code === SmsDocumentBuildErrorCodes.ID_INVALID
+            ? SmsDocumentErrorCodes.ID_INVALID
+            : SmsDocumentErrorCodes.STRUCTURE_INVALID,
       message: issue.message,
     })
   }

@@ -2,6 +2,7 @@
  * Public API: factory for constructing SMS RCML documents.
  */
 
+import { randomUUID } from 'node:crypto'
 import type { SmsDocument } from './sms-types.js'
 import type { SmsContentJson } from './content/json-validator/types.js'
 import { smsRfmToJson } from './sms-rfm-to-json.js'
@@ -30,6 +31,9 @@ export interface CreateSmsDocumentOptions {
  *
  * Returns an {@link SmsDocument} that can be passed to
  * `client.templates.createSmsTemplate` or `client.templates.updateSmsTemplate`.
+ *
+ * A UUID is automatically generated for the `id` field. The Rule editor
+ * requires this identifier to open and save templates.
  *
  * @param options - SMS document options.
  * @returns A valid {@link SmsDocument}.
@@ -82,6 +86,7 @@ export function createSmsDocument(options: CreateSmsDocumentOptions): SmsDocumen
   }
 
   return {
+    id: randomUUID(),
     tagName: 'rc-sms',
     content,
   }

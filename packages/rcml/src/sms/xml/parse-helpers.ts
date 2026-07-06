@@ -7,12 +7,15 @@
  * @internal
  */
 
+import { randomUUID } from 'node:crypto'
 import { XMLParser, XMLValidator } from 'fast-xml-parser'
 import type { SmsDocument } from '../sms-types.js'
 import { smsRfmToJson } from '../sms-rfm-to-json.js'
 import type { SmsXmlParseIssue } from '../xml-to-sms.js'
 
 type PreservedNode = Record<string, unknown>
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 const parser = new XMLParser({
   ignoreAttributes: false,
@@ -91,7 +94,8 @@ export function convertXmlToSms(
   const rawAttributes = rootNode[':@'] as Record<string, unknown> | undefined
   const rawChildren = rootNode['rc-sms']
 
-  const id = typeof rawAttributes?.['id'] === 'string' ? rawAttributes['id'] : undefined
+  const rawId = typeof rawAttributes?.['id'] === 'string' ? rawAttributes['id'] : undefined
+  const id = rawId !== undefined && UUID_RE.test(rawId) ? rawId : randomUUID()
   const textResult = extractText(rawChildren)
 
   if (typeof textResult !== 'string') {
@@ -120,13 +124,7 @@ export function convertXmlToSms(
     }
   }
 
-  const doc: SmsDocument = { tagName: 'rc-sms', content }
-
-  if (id !== undefined) {
-    doc.id = id
-  }
-
-  return { success: true, data: doc }
+  return { success: true, data: { id, tagName: 'rc-sms', content } }
 }
 
 /**
