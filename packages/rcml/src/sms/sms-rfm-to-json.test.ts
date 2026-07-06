@@ -4,17 +4,17 @@ import type { SmsContentJson } from './content/json-validator/types.js'
 
 describe('smsRfmToJson()', () => {
   describe('document structure', () => {
-    it('empty string produces a single empty paragraph', () => {
+    it('empty string produces an empty sms document', () => {
       expect(smsRfmToJson('')).toEqual<SmsContentJson>({
-        type: 'doc',
-        content: [{ type: 'paragraph' }],
+        type: 'sms',
+        content: [],
       })
     })
 
-    it('plain text produces doc > paragraph > text', () => {
+    it('plain text produces a single message node', () => {
       expect(smsRfmToJson('Hello world')).toEqual<SmsContentJson>({
-        type: 'doc',
-        content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Hello world' }] }],
+        type: 'sms',
+        content: [{ type: 'message', text: 'Hello world' }],
       })
     })
   })
@@ -22,76 +22,64 @@ describe('smsRfmToJson()', () => {
   describe('placeholders', () => {
     it('parses a single placeholder', () => {
       expect(smsRfmToJson('[Subscriber:FirstName]')).toEqual<SmsContentJson>({
-        type: 'doc',
+        type: 'sms',
         content: [
           {
-            type: 'paragraph',
-            content: [
-              {
-                type: 'placeholder',
-                attrs: {
-                  type: 'Subscriber',
-                  name: 'FirstName',
-                  original: '[Subscriber:FirstName]',
-                  value: null,
-                  'max-length': null,
-                },
-              },
-            ],
+            type: 'placeholder',
+            attrs: {
+              type: 'Subscriber',
+              name: 'FirstName',
+              original: '[Subscriber:FirstName]',
+              value: null,
+            },
           },
         ],
       })
     })
 
-    it('parses text + placeholder + text', () => {
+    it('parses text + placeholder + text as separate nodes', () => {
       const doc = smsRfmToJson('Hi [Subscriber:FirstName]!')
-      const para = doc.content[0]!
 
-      expect(para.content).toHaveLength(3)
-      expect(para.content![0]).toEqual({ type: 'text', text: 'Hi ' })
-      expect(para.content![1]).toMatchObject({ type: 'placeholder', attrs: { name: 'FirstName' } })
-      expect(para.content![2]).toEqual({ type: 'text', text: '!' })
+      expect(doc.content).toHaveLength(3)
+      expect(doc.content[0]).toEqual({ type: 'message', text: 'Hi ' })
+      expect(doc.content[1]).toMatchObject({ type: 'placeholder', attrs: { name: 'FirstName' } })
+      expect(doc.content[2]).toEqual({ type: 'message', text: '!' })
     })
 
     it('parses multiple placeholder types', () => {
       const doc = smsRfmToJson('[CustomField:OrderId][Link:Unsubscribe][Date:Today]')
-      const para = doc.content[0]!
 
-      expect(para.content).toHaveLength(3)
-      expect(para.content![0]).toMatchObject({ attrs: { type: 'CustomField', name: 'OrderId' } })
-      expect(para.content![1]).toMatchObject({ attrs: { type: 'Link', name: 'Unsubscribe' } })
-      expect(para.content![2]).toMatchObject({ attrs: { type: 'Date', name: 'Today' } })
+      expect(doc.content).toHaveLength(3)
+      expect(doc.content[0]).toMatchObject({ attrs: { type: 'CustomField', name: 'OrderId' } })
+      expect(doc.content[1]).toMatchObject({ attrs: { type: 'Link', name: 'Unsubscribe' } })
+      expect(doc.content[2]).toMatchObject({ attrs: { type: 'Date', name: 'Today' } })
     })
   })
 
-  describe('line breaks', () => {
-    it('single newline produces a hardbreak node', () => {
+  describe('line breaks and paragraphs', () => {
+    it('single newline stays as \\n in message text', () => {
       const doc = smsRfmToJson('Line one\nLine two')
-      const para = doc.content[0]!
 
-      expect(para.content).toEqual([
-        { type: 'text', text: 'Line one' },
-        { type: 'hardbreak', attrs: { isInline: false } },
-        { type: 'text', text: 'Line two' },
+      expect(doc.content).toEqual<SmsContentJson['content']>([
+        { type: 'message', text: 'Line one\nLine two' },
       ])
     })
 
-    it('double newline produces a new paragraph', () => {
+    it('double newline becomes a single \\n boundary in message text', () => {
       const doc = smsRfmToJson('Para one\n\nPara two')
 
-      expect(doc.content).toHaveLength(2)
-      expect(doc.content[0]!.content).toEqual([{ type: 'text', text: 'Para one' }])
-      expect(doc.content[1]!.content).toEqual([{ type: 'text', text: 'Para two' }])
+      expect(doc.content).toEqual<SmsContentJson['content']>([
+        { type: 'message', text: 'Para one\nPara two' },
+      ])
     })
   })
 
   describe('combined', () => {
-    it('placeholder mid-line with hardbreak', () => {
+    it('placeholder mid-line with newline', () => {
       const doc = smsRfmToJson('Hi [Subscriber:FirstName]!\nLine two')
-      const para = doc.content[0]!
 
-      expect(para.content).toEqual([
-        { type: 'text', text: 'Hi ' },
+      expect(doc.content).toEqual<SmsContentJson['content']>([
+        { type: 'message', text: 'Hi ' },
         {
           type: 'placeholder',
           attrs: {
@@ -99,81 +87,94 @@ describe('smsRfmToJson()', () => {
             name: 'FirstName',
             original: '[Subscriber:FirstName]',
             value: null,
-            'max-length': null,
           },
         },
-        { type: 'text', text: '!' },
-        { type: 'hardbreak', attrs: { isInline: false } },
-        { type: 'text', text: 'Line two' },
+        { type: 'message', text: '!\nLine two' },
       ])
     })
   })
 })
 
 describe('smsRfmToJson() — link directive', () => {
-  it('parses a basic :link directive', () => {
-    const doc = smsRfmToJson(':link[Click here]{href="https://example.com" track="true" shorten="false"}')
-    const para = doc.content[0]!
+  it('parses a basic :link directive as a link node', () => {
+    const doc = smsRfmToJson(':link[https://example.com]{track="false" shorten="false"}')
 
-    expect(para.content).toEqual([
+    expect(doc.content).toEqual<SmsContentJson['content']>([
       {
-        type: 'text',
-        text: 'Click here',
-        marks: [{ type: 'link', attrs: { href: 'https://example.com', track: true, shorten: false } }],
+        type: 'link',
+        text: 'https://example.com',
+        attrs: { track: false, shorten: false },
       },
     ])
   })
 
   it('parses :link with shorten="true"', () => {
-    const doc = smsRfmToJson(':link[go]{href="https://google.com" track="true" shorten="true"}')
-    const para = doc.content[0]!
+    const doc = smsRfmToJson(':link[https://google.com]{track="true" shorten="true"}')
 
-    expect(para.content).toHaveLength(1)
-    expect(para.content![0]).toMatchObject({
-      type: 'text',
-      marks: [{ type: 'link', attrs: { href: 'https://google.com', track: true, shorten: true } }],
+    expect(doc.content).toHaveLength(1)
+    expect(doc.content[0]).toMatchObject({
+      type: 'link',
+      text: 'https://google.com',
+      attrs: { track: true, shorten: true },
     })
   })
 
   it('parses a :link mixed with surrounding text', () => {
-    const doc = smsRfmToJson('Your message here. :link[https://google.com]{href="https://google.com" track="true" shorten="true"} Test')
-    const para = doc.content[0]!
+    const doc = smsRfmToJson('Your message here. :link[https://google.com]{track="true" shorten="true"} Test')
 
-    expect(para.content).toHaveLength(3)
-    expect(para.content![0]).toEqual({ type: 'text', text: 'Your message here. ' })
-    expect(para.content![1]).toMatchObject({
-      type: 'text',
+    expect(doc.content).toHaveLength(3)
+    expect(doc.content[0]).toEqual({ type: 'message', text: 'Your message here. ' })
+    expect(doc.content[1]).toMatchObject({
+      type: 'link',
       text: 'https://google.com',
-      marks: [{ type: 'link', attrs: { href: 'https://google.com', track: true, shorten: true } }],
+      attrs: { track: true, shorten: true },
     })
-    expect(para.content![2]).toEqual({ type: 'text', text: ' Test' })
+    expect(doc.content[2]).toEqual({ type: 'message', text: ' Test' })
+  })
+
+  it('accepts legacy :link with href (backward compat) and reads URL from label', () => {
+    const doc = smsRfmToJson(':link[https://example.com]{href="https://example.com" track="false" shorten="false"}')
+
+    expect(doc.content[0]).toMatchObject({
+      type: 'link',
+      text: 'https://example.com',
+      attrs: { track: false, shorten: false },
+    })
+  })
+
+  it('preserves [Type:Name] tokens inside :link URL without expanding them to placeholders', () => {
+    const doc = smsRfmToJson(':link[https://example.com/[CustomField:Order.Id]]{track="true" shorten="true"}')
+
+    expect(doc.content).toHaveLength(1)
+    expect(doc.content[0]).toMatchObject({
+      type: 'link',
+      text: 'https://example.com/[CustomField:Order.Id]',
+      attrs: { track: true, shorten: true },
+    })
   })
 })
 
 describe('smsRfmToJson() — ::placeholder directive', () => {
   it('parses a ::placeholder directive with a resolved value', () => {
     const doc = smsRfmToJson('Your message here. ::placeholder{type="CustomField" original="[CustomField:Address.Firstname]" name="Address.Firstname" value="77856" max-length=""}')
-    const para = doc.content[0]!
 
-    expect(para.content).toHaveLength(2)
-    expect(para.content![1]).toEqual({
+    expect(doc.content).toHaveLength(2)
+    expect(doc.content[1]).toEqual({
       type: 'placeholder',
       attrs: {
         type: 'CustomField',
         name: 'Address.Firstname',
         original: '[CustomField:Address.Firstname]',
         value: 77856,
-        'max-length': null,
       },
     })
   })
 
   it('parses a ::placeholder directive with null value', () => {
     const doc = smsRfmToJson('::placeholder{type="Subscriber" original="[Subscriber:FirstName]" name="FirstName" value="" max-length=""}')
-    const para = doc.content[0]!
 
-    expect(para.content).toHaveLength(1)
-    expect(para.content![0]).toMatchObject({
+    expect(doc.content).toHaveLength(1)
+    expect(doc.content[0]).toMatchObject({
       type: 'placeholder',
       attrs: { type: 'Subscriber', name: 'FirstName', original: '[Subscriber:FirstName]', value: null },
     })
@@ -183,14 +184,51 @@ describe('smsRfmToJson() — ::placeholder directive', () => {
     const fromShorthand = smsRfmToJson('[Subscriber:FirstName]')
     const fromDirective = smsRfmToJson('::placeholder{type="Subscriber" original="[Subscriber:FirstName]" name="FirstName" value="" max-length=""}')
 
-    expect(fromDirective.content[0]!.content![0]).toMatchObject({
+    expect(fromDirective.content[0]).toMatchObject({
       type: 'placeholder',
       attrs: {
-        type: fromShorthand.content[0]!.content![0]!.attrs.type,
-        name: (fromShorthand.content[0]!.content![0]! as { attrs: { name: string } }).attrs.name,
+        type: 'Subscriber',
+        name: 'FirstName',
         value: null,
-        'max-length': null,
       },
     })
+    expect(fromDirective.content[0]).toMatchObject({
+      attrs: {
+        type: (fromShorthand.content[0] as { attrs: { type: string } }).attrs.type,
+        name: (fromShorthand.content[0] as { attrs: { name: string } }).attrs.name,
+      },
+    })
+  })
+})
+
+describe('smsRfmToJson() — ::unsubscribe directive', () => {
+  it('expands ::unsubscribe into the two-node footer pair', () => {
+    const doc = smsRfmToJson('::unsubscribe')
+
+    expect(doc.content).toHaveLength(2)
+    expect(doc.content[0]).toEqual({
+      type: 'message',
+      text: '[Subscriber:unsubscribe_text]',
+      attrs: { 'is-unsubscribe': true },
+    })
+    expect(doc.content[1]).toEqual({
+      type: 'placeholder',
+      attrs: {
+        type: 'Link',
+        name: 'Unsubscribe',
+        original: '[Link:Unsubscribe]',
+        value: null,
+        'is-unsubscribe': true,
+      },
+    })
+  })
+
+  it('::unsubscribe after message text produces three nodes', () => {
+    const doc = smsRfmToJson('Your order has shipped.\n::unsubscribe')
+
+    expect(doc.content).toHaveLength(3)
+    expect(doc.content[0]).toEqual({ type: 'message', text: 'Your order has shipped.\n' })
+    expect(doc.content[1]).toMatchObject({ type: 'message', attrs: { 'is-unsubscribe': true } })
+    expect(doc.content[2]).toMatchObject({ type: 'placeholder', attrs: { 'is-unsubscribe': true } })
   })
 })

@@ -1,87 +1,76 @@
 /**
  * JSON Schema Draft 2020-12 definition for SMS content JSON.
  *
- * SMS content is structurally simpler than email: only paragraphs (no lists,
- * no align blocks), only link marks (no font marks), and an extended
- * placeholder type set that includes `'Link'`.
+ * The SMS content model is a flat sequence of top-level nodes:
+ * `message` (text segments), `link` (hyperlinks), and `placeholder` (dynamic values).
+ * There are no intermediate block nodes or marks.
  *
  * @internal
  */
 export const smsContentJsonSchema = {
   $schema: 'https://json-schema.org/draft/2020-12/schema',
   $id: 'sms-content-json',
-  $ref: '#/$defs/doc',
+  $ref: '#/$defs/sms',
 
   $defs: {
-    doc: {
+    sms: {
       type: 'object',
       properties: {
-        type: { const: 'doc' },
+        type: { const: 'sms' },
         content: {
           type: 'array',
-          items: { $ref: '#/$defs/block' },
-          minItems: 1,
+          items: { $ref: '#/$defs/node' },
         },
       },
       required: ['type', 'content'],
       additionalProperties: false,
     },
 
-    block: {
-      type: 'object',
-      oneOf: [{ $ref: '#/$defs/paragraph' }],
-    },
-
-    paragraph: {
-      type: 'object',
-      properties: {
-        type: { const: 'paragraph' },
-        content: {
-          type: 'array',
-          items: { $ref: '#/$defs/inline' },
-        },
-      },
-      required: ['type'],
-      additionalProperties: false,
-    },
-
-    inline: {
+    node: {
       type: 'object',
       oneOf: [
-        { $ref: '#/$defs/text' },
-        { $ref: '#/$defs/hardbreak' },
+        { $ref: '#/$defs/message' },
+        { $ref: '#/$defs/link' },
         { $ref: '#/$defs/placeholder' },
       ],
     },
 
-    text: {
+    message: {
       type: 'object',
       properties: {
-        type: { const: 'text' },
+        type: { const: 'message' },
         text: { type: 'string' },
-        marks: {
-          type: 'array',
-          items: { $ref: '#/$defs/mark' },
+        attrs: {
+          type: 'object',
+          properties: {
+            'is-unsubscribe': { const: true },
+          },
+          required: ['is-unsubscribe'],
+          additionalProperties: false,
         },
       },
       required: ['type', 'text'],
       additionalProperties: false,
     },
 
-    hardbreak: {
+    link: {
       type: 'object',
       properties: {
-        type: { const: 'hardbreak' },
+        type: { const: 'link' },
+        text: { type: 'string', minLength: 1 },
         attrs: {
           type: 'object',
           properties: {
-            isInline: { type: 'boolean' },
+            track: { type: 'boolean' },
+            shorten: { type: 'boolean' },
           },
-          required: ['isInline'],
+          required: ['track', 'shorten'],
           additionalProperties: false,
+          if: { properties: { track: { const: true } } },
+          then: { properties: { shorten: { const: true } } },
         },
       },
-      required: ['type', 'attrs'],
+      required: ['type', 'text', 'attrs'],
       additionalProperties: false,
     },
 
@@ -91,41 +80,32 @@ export const smsContentJsonSchema = {
         type: { const: 'placeholder' },
         attrs: {
           type: 'object',
-          properties: {
-            type: {
-              enum: ['CustomField', 'Subscriber', 'User', 'RemoteContent', 'Date', 'Link'],
+          oneOf: [
+            {
+              // Normal placeholder: CustomField, Subscriber, User, RemoteContent, Date
+              properties: {
+                type: { enum: ['CustomField', 'Subscriber', 'User', 'RemoteContent', 'Date'] },
+                original: { type: 'string' },
+                name: { type: 'string' },
+                value: { type: ['string', 'number', 'null'] },
+                'max-length': { type: ['string', 'null'] },
+              },
+              required: ['type', 'original', 'name', 'value'],
+              additionalProperties: false,
             },
-            name: { type: 'string' },
-            original: { type: 'string' },
-            value: { type: ['string', 'number', 'null'] },
-            'max-length': { type: ['string', 'null'] },
-          },
-          required: ['type', 'name', 'original', 'value', 'max-length'],
-          additionalProperties: false,
-        },
-      },
-      required: ['type', 'attrs'],
-      additionalProperties: false,
-    },
-
-    mark: {
-      type: 'object',
-      oneOf: [{ $ref: '#/$defs/link-mark' }],
-    },
-
-    'link-mark': {
-      type: 'object',
-      properties: {
-        type: { const: 'link' },
-        attrs: {
-          type: 'object',
-          properties: {
-            href: { type: 'string', minLength: 1 },
-            track: { type: 'boolean' },
-            shorten: { type: 'boolean' },
-          },
-          required: ['href', 'track', 'shorten'],
-          additionalProperties: false,
+            {
+              // Unsubscribe placeholder: type Link, is-unsubscribe: true required
+              properties: {
+                type: { const: 'Link' },
+                original: { type: 'string' },
+                name: { type: 'string' },
+                value: { type: ['string', 'number', 'null'] },
+                'is-unsubscribe': { const: true },
+              },
+              required: ['type', 'original', 'name', 'value', 'is-unsubscribe'],
+              additionalProperties: false,
+            },
+          ],
         },
       },
       required: ['type', 'attrs'],

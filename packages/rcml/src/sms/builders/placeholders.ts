@@ -34,7 +34,7 @@ export interface CreateSmsPlaceholderNodeOptions {
   type: SmsPlaceholderType
   /**
    * Backend token the Rule platform substitutes at send time, e.g.
-   * `'[Subscriber:FirstName]'` or `'[CustomField:Order.Total]'`.
+   * `'[Subscriber:email]'` or `'[CustomField:Order.Total]'`.
    */
   original: string
   /** Human-readable display label shown in the editor chip. */
@@ -61,8 +61,8 @@ export interface CreateSmsPlaceholderNodeOptions {
  * ```ts
  * sms.createPlaceholderNode({
  *   type: 'Subscriber',
- *   original: '[Subscriber:FirstName]',
- *   name: 'FirstName',
+ *   original: '[Subscriber:email]',
+ *   name: 'email',
  * })
  * ```
  * @public
@@ -70,16 +70,21 @@ export interface CreateSmsPlaceholderNodeOptions {
 export function createPlaceholderNode(
   opts: CreateSmsPlaceholderNodeOptions,
 ): SmsPlaceholderNode {
-  return {
+  const node: SmsPlaceholderNode = {
     type: 'placeholder',
     attrs: {
       type: opts.type,
       name: opts.name,
       original: opts.original,
       value: opts.value ?? null,
-      'max-length': opts.maxLength ?? null,
     },
   }
+
+  if (opts.maxLength !== undefined) {
+    node.attrs['max-length'] = opts.maxLength
+  }
+
+  return node
 }
 
 // ─── Subscriber ───────────────────────────────────────────────────────────────
@@ -87,8 +92,7 @@ export function createPlaceholderNode(
 /** Options for {@link createSubscriberPlaceholder}. @public */
 export interface CreateSmsSubscriberPlaceholderOptions {
   /**
-   * Subscriber field identifier — e.g. `'FirstName'`, `'email'`,
-   * `'phone_number'`, `'language'`.
+   * Subscriber field identifier — e.g. `'email'`, `'phone_number'`, `'language'`.
    */
   field: string
   /**
@@ -105,10 +109,9 @@ export interface CreateSmsSubscriberPlaceholderOptions {
  *
  * @example
  * ```ts
- * sms.createSubscriberPlaceholder({ field: 'FirstName' })
+ * sms.createSubscriberPlaceholder({ field: 'email' })
  * // → { type: 'placeholder', attrs: { type: 'Subscriber',
- * //     original: '[Subscriber:FirstName]', name: 'FirstName',
- * //     value: null, 'max-length': null } }
+ * //     original: '[Subscriber:email]', name: 'email', value: null } }
  * ```
  * @public
  */
@@ -195,7 +198,7 @@ export function createCustomFieldPlaceholder(
     type: 'CustomField',
     original: `[CustomField:${fullName}${truncSuffix}]`,
     name: fullName,
-    maxLength: opts.maxLength !== undefined ? String(opts.maxLength) : null,
+    maxLength: opts.maxLength !== undefined ? String(opts.maxLength) : undefined,
   })
 }
 
@@ -334,13 +337,12 @@ export function createRemoteContentPlaceholder(
   })
 }
 
-// ─── Link (system-managed link URL) ───────────────────────────────────────────
+// ─── Link (system-managed link URL — internal) ────────────────────────────────
 
 /**
- * The five system-managed link types that can be inserted as a `Link`
- * placeholder or as the `href` of a link mark.
+ * The system-managed link types used internally in `Link` placeholder nodes.
  *
- * @public
+ * @internal
  */
 export type SmsSystemLinkType =
   | 'Optin'
@@ -349,28 +351,19 @@ export type SmsSystemLinkType =
   | 'ShareLink'
   | 'Signup'
 
-/** Options for {@link createLinkPlaceholder}. @public */
+/** @internal */
 export interface CreateSmsLinkPlaceholderOptions {
-  /** Which system-managed link to insert. */
   link: SmsSystemLinkType
 }
 
 /**
- * Build a `Link` placeholder node — inserts a system-managed link URL as
- * plain text in the message body. Use this when you want the raw URL
- * visible in the message.
+ * Build a raw `Link` placeholder node.
  *
- * To produce a clickable link instead, use {@link createLinkMark} with
- * `href: '[Link:Unsubscribe]'` (or another system link) on a text node.
+ * **Do not use directly** — this produces a node without `is-unsubscribe: true`
+ * which will fail `validateSmsJson`. For the unsubscribe footer, use
+ * {@link createUnsubscribeNodes} instead.
  *
- * Produces `original = '[Link:<link>]'` and `name = '<link>'`.
- *
- * @example
- * ```ts
- * sms.createLinkPlaceholder({ link: 'Unsubscribe' })
- * // original: '[Link:Unsubscribe]', name: 'Unsubscribe'
- * ```
- * @public
+ * @internal
  */
 export function createLinkPlaceholder(
   opts: CreateSmsLinkPlaceholderOptions,

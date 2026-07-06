@@ -20,7 +20,7 @@ function rt(input: string): { original: SmsContentJson; roundTripped: SmsContent
 // ─── Plain text ───────────────────────────────────────────────────────────────
 
 describe('jsonToSmsRfm — plain text', () => {
-  it('round-trips a plain text paragraph', () => {
+  it('round-trips a plain text message', () => {
     const { original, roundTripped } = rt('Hello world')
 
     expect(roundTripped).toEqual(original)
@@ -30,14 +30,11 @@ describe('jsonToSmsRfm — plain text', () => {
     expect(jsonToSmsRfm(smsRfmToJson('Hello world'))).toBe('Hello world')
   })
 
-  it('round-trips multiple paragraphs', () => {
+  it('round-trips multiple paragraphs (as single \\n boundary after flatten)', () => {
+    // Paragraph boundaries collapse to \n in the flat model; rt() produces equivalent JSON.
     const { original, roundTripped } = rt('First\n\nSecond\n\nThird')
 
     expect(roundTripped).toEqual(original)
-  })
-
-  it('separates paragraphs with double newline', () => {
-    expect(jsonToSmsRfm(smsRfmToJson('First\n\nSecond'))).toBe('First\n\nSecond')
   })
 
   it('round-trips an empty string', () => {
@@ -80,14 +77,8 @@ describe('jsonToSmsRfm — placeholders', () => {
     expect(roundTripped).toEqual(original)
   })
 
-  it('round-trips a Link placeholder', () => {
-    const { original, roundTripped } = rt('[Link:Unsubscribe]')
-
-    expect(roundTripped).toEqual(original)
-  })
-
   it('round-trips all placeholder types in one message', () => {
-    const input = '[Subscriber:FirstName] [CustomField:Order.Total] [User:CompanyName] [Link:WebBrowser]'
+    const input = '[Subscriber:FirstName] [CustomField:Order.Total] [User:CompanyName]'
     const { original, roundTripped } = rt(input)
 
     expect(roundTripped).toEqual(original)
@@ -100,46 +91,44 @@ describe('jsonToSmsRfm — placeholders', () => {
     expect(roundTripped).toEqual(original)
   })
 
-  it('produces the original token verbatim', () => {
-    expect(jsonToSmsRfm(smsRfmToJson('[Subscriber:FirstName]'))).toBe('[Subscriber:FirstName]')
+  it('serializes shorthand input as ::placeholder directive', () => {
+    expect(jsonToSmsRfm(smsRfmToJson('[Subscriber:FirstName]'))).toBe(
+      '::placeholder{type="Subscriber" original="[Subscriber:FirstName]" name="FirstName"}',
+    )
   })
 })
 
 // ─── Line breaks ──────────────────────────────────────────────────────────────
 
 describe('jsonToSmsRfm — line breaks', () => {
-  it('round-trips a single newline as hardbreak', () => {
+  it('round-trips a single newline in message text', () => {
     const { original, roundTripped } = rt('Line one\nLine two')
 
     expect(roundTripped).toEqual(original)
   })
 
-  it('emits \\n for hardbreak', () => {
+  it('emits \\n for single newline', () => {
     expect(jsonToSmsRfm(smsRfmToJson('Line one\nLine two'))).toBe('Line one\nLine two')
   })
 
-  it('round-trips a double newline as paragraph boundary', () => {
+  it('round-trips a double newline (flattened to \\n in flat model)', () => {
     const { original, roundTripped } = rt('Para one\n\nPara two')
 
     expect(roundTripped).toEqual(original)
-  })
-
-  it('emits \\n\\n between paragraphs', () => {
-    expect(jsonToSmsRfm(smsRfmToJson('Para one\n\nPara two'))).toBe('Para one\n\nPara two')
   })
 })
 
 // ─── Combined ─────────────────────────────────────────────────────────────────
 
 describe('jsonToSmsRfm — combined constructs', () => {
-  it('round-trips placeholder + hardbreak + text', () => {
+  it('round-trips placeholder + newline + text', () => {
     const { original, roundTripped } = rt('Hi [Subscriber:FirstName]!\nYour order has shipped.')
 
     expect(roundTripped).toEqual(original)
   })
 
   it('round-trips multi-paragraph with placeholders', () => {
-    const input = 'Hello [Subscriber:FirstName],\n\nYour order [CustomField:Order.Id] is ready.\n\nClick [Link:WebBrowser] to view it.'
+    const input = 'Hello [Subscriber:FirstName],\n\nYour order [CustomField:Order.Id] is ready.\n\nSent by [User:CompanyName].'
     const { original, roundTripped } = rt(input)
 
     expect(roundTripped).toEqual(original)
@@ -157,32 +146,62 @@ describe('jsonToSmsRfm — direct JSON input', () => {
 // ─── Link directive round-trips ───────────────────────────────────────────────
 
 describe('sms-rfm-json round-trip — :link directive', () => {
-  it('round-trips a basic :link directive', () => {
-    const input = ':link[Click here]{href="https://example.com" track="true" shorten="false"}'
+  it('round-trips a basic :link directive with track+shorten', () => {
+    const input = ':link[https://example.com]{track="true" shorten="true"}'
     const { original, roundTripped } = rt(input)
 
     expect(roundTripped).toEqual(original)
   })
 
   it('round-trips :link with track="false" shorten="false"', () => {
-    const input = ':link[Visit us]{href="https://example.com" track="false" shorten="false"}'
+    const input = ':link[https://example.com]{track="false" shorten="false"}'
     const { original, roundTripped } = rt(input)
 
     expect(roundTripped).toEqual(original)
   })
 
   it('round-trips :link mixed with surrounding text', () => {
-    const input = 'Your message here. :link[https://google.com]{href="https://google.com" track="true" shorten="true"} Test'
+    const input = 'Your message here. :link[https://google.com]{track="true" shorten="true"} Test'
     const { original, roundTripped } = rt(input)
 
     expect(roundTripped).toEqual(original)
   })
 
   it('round-trips :link in a multi-paragraph document', () => {
-    const input = 'Hi [Subscriber:FirstName],\n\nClick :link[here]{href="https://example.com" track="true" shorten="true"} to view your order.'
+    const input = 'Hi [Subscriber:FirstName],\n\nClick :link[https://example.com]{track="true" shorten="true"} to view your order.'
     const { original, roundTripped } = rt(input)
 
     expect(roundTripped).toEqual(original)
+  })
+})
+
+// ─── ::unsubscribe directive round-trips ─────────────────────────────────────
+
+describe('sms-rfm-json round-trip — ::unsubscribe directive', () => {
+  it('round-trips ::unsubscribe standalone', () => {
+    const { original, roundTripped } = rt('::unsubscribe')
+
+    expect(roundTripped).toEqual(original)
+  })
+
+  it('serializes ::unsubscribe back as ::unsubscribe (not the two-node pair)', () => {
+    const rfm = jsonToSmsRfm(smsRfmToJson('::unsubscribe'))
+
+    expect(rfm).toBe('::unsubscribe')
+  })
+
+  it('round-trips a full message with unsubscribe footer', () => {
+    const { original, roundTripped } = rt('Your order has shipped.\n::unsubscribe')
+
+    expect(roundTripped).toEqual(original)
+  })
+
+  it('produces the two-node JSON pair from ::unsubscribe', () => {
+    const json = smsRfmToJson('::unsubscribe')
+
+    expect(json.content).toHaveLength(2)
+    expect(json.content[0]).toMatchObject({ type: 'message', attrs: { 'is-unsubscribe': true } })
+    expect(json.content[1]).toMatchObject({ type: 'placeholder', attrs: { type: 'Link', 'is-unsubscribe': true } })
   })
 })
 

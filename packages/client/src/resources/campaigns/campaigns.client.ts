@@ -759,14 +759,18 @@ export class CampaignsClient extends BaseResource {
 
     const { content: templateContentOverride, ...templateMetaOverrides } = params.template ?? {};
 
-    let smsBody: string;
+    let smsBody: string | undefined;
 
-    if (params.message?.subject === undefined) {
-      const senderDetails = await account.getSenderDetails();
+    if (!templateContentOverride) {
+      const isMarketing = (params.sendoutType ?? 'marketing') !== 'transactional';
 
-      smsBody = buildDefaultSmsContent(senderDetails.linkInsteadOfStopWord ?? false);
-    } else {
-      smsBody = params.message.subject;
+      if (isMarketing) {
+        const senderDetails = await account.getSenderDetails();
+
+        smsBody = buildDefaultSmsContent(senderDetails.linkInsteadOfStopWord ?? false);
+      } else {
+        smsBody = 'Your message here.';
+      }
     }
 
     const createdResources: { type: 'campaign' | 'message' | 'template'; id: number }[] = [];
@@ -788,12 +792,10 @@ export class CampaignsClient extends BaseResource {
       const [messageResult, templateResult] = await Promise.allSettled([
         messages.createSmsCampaignMessage(campaignId, {
           ...params.message,
-          subject: params.message?.subject ?? smsBody,
         }),
         templates.createSmsTemplate({
-          name: `Campaign ${campaignId} SMS template`,
           ...templateMetaOverrides,
-          content: templateContentOverride ?? createSmsDocument({ content: smsBody }),
+          content: templateContentOverride ?? createSmsDocument({ content: smsBody! }),
         }),
       ]);
 
@@ -933,8 +935,8 @@ function buildDefaultSmsContent(linkInsteadOfStopWord: boolean): string {
   const body = 'Your message here.\n';
 
   if (linkInsteadOfStopWord) {
-    return `${body}[Subscriber:unsubscribe_text] [Link:Unsubscribe]`;
+    return `${body}::unsubscribe`;
   }
 
-  return `${body}[Subscriber:stop_word]`;
+  return `${body}::placeholder{type="Subscriber" original="[Subscriber:stop_word]" name="Stop word"}`;
 }

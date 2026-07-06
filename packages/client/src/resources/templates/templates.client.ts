@@ -9,9 +9,11 @@
  * to a campaign or automation.
  */
 
+import { randomUUID } from 'node:crypto';
 import { RuleApiError } from '../../errors.js';
 import { BaseResource } from '../../core/base-resource.js';
 import { buildQueryString } from '../../core/query-string.js';
+import type { SmsDocument } from '@rule/rcml';
 import type {
   CreateEmailTemplatePayload,
   CreateSmsTemplatePayload,
@@ -26,6 +28,16 @@ import type {
   UpdateEmailTemplatePayload,
   UpdateSmsTemplatePayload,
 } from './templates.types.js';
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+const SMS_UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+function normalizeSmsId(doc: SmsDocument): SmsDocument {
+  if (typeof doc.id === 'string' && SMS_UUID_RE.test(doc.id)) return doc
+
+  return { ...doc, id: randomUUID() }
+}
 
 // ── Client ────────────────────────────────────────────────────────────────────
 
@@ -146,7 +158,7 @@ export class TemplatesClient extends BaseResource {
       body: JSON.stringify({
         name: payload.name,
         message_type: 'text_message',
-        template: payload.content,
+        template: normalizeSmsId(payload.content),
       }),
     });
 
@@ -175,7 +187,7 @@ export class TemplatesClient extends BaseResource {
     const res = await this.transport.put<TemplateResponse>(`/editor/template/${id}`, {
       body: JSON.stringify({
         name: payload.name,
-        template: payload.content,
+        ...(payload.content !== undefined && { template: normalizeSmsId(payload.content) }),
       }),
     });
 

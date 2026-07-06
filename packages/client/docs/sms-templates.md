@@ -1,10 +1,10 @@
 # SMS Templates
 
-A template holds the SMS body as an [`SmsDocument`](/packages/rcml/sms/concepts/sms-document) from `@rule/rcml`. Templates are independent objects — they are not linked to a message at creation time. The link is made later, via a dynamic set. This means the same template can be reused across multiple messages.
+A template holds the SMS body as an [`SmsDocument`](/packages/rcml/sms/rcml/rc-sms) from `@rule/rcml`. Templates are independent objects — they are not linked to a message at creation time. The link is made later, via a dynamic set. This means the same template can be reused across multiple messages.
 
 ## Creating a template
 
-Use `createSmsTemplate()` to create a new SMS template. The template's `SmsDocument` defines the message body, including any `::placeholder{…}` directives or `:link[…]{…}` link marks.
+Use `createSmsTemplate()` to create a new SMS template. The template's `SmsDocument` defines the message body, including any `::placeholder{…}` directives, `:link[…]{…}` link nodes, or `::unsubscribe` footer.
 
 ```typescript
 import { createSmsDocument } from '@rule/rcml';

@@ -199,13 +199,13 @@ export class MessagesClient extends BaseResource {
    * SMS chain.
    *
    * @param campaignId - ID of the SMS campaign this message belongs to.
-   * @param payload - SMS body text and optional UTM tracking fields.
+   * @param payload - Optional UTM tracking fields.
    * @returns The created campaign SMS message.
    *
    * @example
    * ```typescript
    * const message = await client.messages.createSmsCampaignMessage(campaignId, {
-   *   subject: 'Your order has shipped!',
+   *   utmCampaign: 'spring-sale',
    * });
    * ```
    */
@@ -216,7 +216,6 @@ export class MessagesClient extends BaseResource {
     const body: CreateMessageBody = {
       dispatcher: { id: campaignId, type: 'campaign' },
       type: 2,
-      subject: payload.subject,
       utm_campaign: payload.utmCampaign,
       utm_term: payload.utmTerm,
     };
@@ -230,19 +229,18 @@ export class MessagesClient extends BaseResource {
   /**
    * Create an SMS message attached to an automation.
    *
-   * The `subject` field holds the SMS body text. After creating a message,
-   * create an SMS template and link them with a dynamic set to complete the
-   * SMS chain.
+   * After creating a message, create an SMS template and link them with a
+   * dynamic set to complete the SMS chain.
    *
    * @param automationId - ID of the SMS automation this message belongs to.
-   * @param payload - SMS body text, optional UTM fields, and automail delivery
-   *   settings (active flag and delay).
+   * @param payload - Optional UTM fields and automail delivery settings (active
+   *   flag and delay).
    * @returns The created automation SMS message.
    *
    * @example
    * ```typescript
    * const message = await client.messages.createSmsAutomationMessage(automationId, {
-   *   subject: 'Hi {{Subscriber.FirstName}}, your order has shipped!',
+   *   utmCampaign: 'welcome-flow',
    *   automailSetting: { active: true, delayInSeconds: '0' },
    * });
    * ```
@@ -254,7 +252,6 @@ export class MessagesClient extends BaseResource {
     const body: CreateMessageBody = {
       dispatcher: { id: automationId, type: 'automail' },
       type: 2,
-      subject: payload.subject,
       utm_campaign: payload.utmCampaign,
       utm_term: payload.utmTerm,
       automail_setting: payload.automailSetting
@@ -280,7 +277,7 @@ export class MessagesClient extends BaseResource {
    * @example
    * ```typescript
    * await client.messages.updateSmsCampaignMessage(messageId, {
-   *   subject: 'Updated: your order has shipped!',
+   *   utmCampaign: 'spring-sale',
    * });
    * ```
    */
@@ -289,7 +286,6 @@ export class MessagesClient extends BaseResource {
     payload: UpdateSmsCampaignMessagePayload
   ): Promise<SmsCampaignMessage> {
     const body: UpdateMessageBody = {
-      subject: payload.subject,
       utm_campaign: payload.utmCampaign,
       utm_term: payload.utmTerm,
     };
@@ -313,7 +309,6 @@ export class MessagesClient extends BaseResource {
    * @example
    * ```typescript
    * await client.messages.updateSmsAutomationMessage(messageId, {
-   *   subject: 'Hi {{Subscriber.FirstName}}, your order shipped!',
    *   automailSetting: { active: true, delayInSeconds: '3600' },
    * });
    * ```
@@ -323,7 +318,6 @@ export class MessagesClient extends BaseResource {
     payload: UpdateSmsAutomationMessagePayload
   ): Promise<SmsAutomationMessage> {
     const body: UpdateMessageBody = {
-      subject: payload.subject,
       utm_campaign: payload.utmCampaign,
       utm_term: payload.utmTerm,
       automail_setting: payload.automailSetting

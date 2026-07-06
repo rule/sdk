@@ -19,7 +19,8 @@ and convert between each other.
 A minimal example in both formats:
 
 ```xml
-<rc-sms>Hi ::placeholder{type="Subscriber" original="[Subscriber:FirstName]" name="First name"}, your order has shipped!</rc-sms>
+<rc-sms>Your order has shipped!
+Account: ::placeholder{type="Subscriber" original="[Subscriber:email]" name="Email"}</rc-sms>
 ```
 
 ```typescript
@@ -27,43 +28,36 @@ import type { SmsDocument } from '@rule/rcml';
 
 const doc: SmsDocument = {
   tagName: 'rc-sms',
-  attributes: {},
   content: {
-    type: 'doc',
+    type: 'sms',
     content: [
+      { type: 'message', text: 'Your order has shipped!\nAccount: ' },
       {
-        type: 'paragraph',
-        content: [
-          { type: 'text', text: 'Hi ' },
-          {
-            type: 'placeholder',
-            attrs: {
-              type: 'Subscriber',
-              name: 'First name',
-              original: '[Subscriber:FirstName]',
-              value: null,
-              'max-length': null,
-            },
-          },
-          { type: 'text', text: ', your order has shipped!' },
-        ],
+        type: 'placeholder',
+        attrs: {
+          type: 'Subscriber',
+          name: 'Email',
+          original: '[Subscriber:email]',
+          value: null,
+        },
       },
     ],
   },
 };
 ```
 
-The full type model lives in [SMS document](./concepts/sms-document); the SMS RFM
-syntax used inside `<rc-sms>` lives in [SMS RFM](./concepts/sms-rfm).
+The document structure is explained in [Template](./concepts/template); the
+content model is explained in [Content](./concepts/content).
 
 ## In this section
 
 | Page | What it covers |
 |------|---------------|
-| [SMS document](./concepts/sms-document) | The `SmsDocument` and `SmsContentJson` type model |
-| [SMS RFM](./concepts/sms-rfm) | The SMS RFM source format: paragraphs, hard breaks, placeholders, links |
+| [Template](./concepts/template) | `SmsDocument` structure and `createSmsDocument()` usage |
+| [Content](./concepts/content) | `SmsContentJson` flat sequence model and node types |
+| [Unsubscription](./concepts/unsubscription) | Required unsubscribe footer and `createUnsubscribeNodes()` |
 | [SMS RCML](./rcml/) | The `rc-sms` element reference |
-| [SMS RFM Content](./content/nodes/doc) | Every node and mark with full attribute tables |
+| [RCML Content](./content/flavors) | SMS RFM flavor and node reference |
 | [Building programmatically](./building-programmatically) | `createSmsDocument`, the `sms` builder namespace, SMS RFM ↔ JSON, XML round-trip |
 | [Validation](./validation) | Validating documents and content before submission |
 | [Building with LLM](./building-with-llm) | Using spec objects to drive LLM-assisted template generation |

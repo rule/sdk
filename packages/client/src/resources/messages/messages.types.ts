@@ -248,19 +248,17 @@ export interface CreateEmailAutomationMessagePayload {
 /**
  * Payload for `MessagesClient.createSmsCampaignMessage`.
  *
- * The `subject` field holds the SMS message body text. SMS messages do not
- * have sender, preheader, or from-email fields.
+ * SMS messages do not have sender, preheader, or from-email fields. All fields
+ * are optional — the API applies account-level defaults when omitted.
  *
  * @example
  * ```typescript
  * await client.messages.createSmsCampaignMessage(campaignId, {
- *   subject: 'Your order has shipped!',
+ *   utmCampaign: 'spring-sale',
  * });
  * ```
  */
 export interface CreateSmsCampaignMessagePayload {
-  /** SMS message body text. Required. */
-  subject: string;
   /** UTM campaign parameter appended to tracked links. */
   utmCampaign?: string | null;
   /** UTM term parameter appended to tracked links. */
@@ -270,20 +268,18 @@ export interface CreateSmsCampaignMessagePayload {
 /**
  * Payload for `MessagesClient.createSmsAutomationMessage`.
  *
- * The `subject` field holds the SMS message body text. SMS messages do not
- * have sender, preheader, or from-email fields.
+ * SMS messages do not have sender, preheader, or from-email fields. All fields
+ * are optional — the API applies account-level defaults when omitted.
  *
  * @example
  * ```typescript
  * await client.messages.createSmsAutomationMessage(automationId, {
- *   subject: 'Hi {{Subscriber.FirstName}}, your order has shipped!',
+ *   utmCampaign: 'welcome-flow',
  *   automailSetting: { active: true, delayInSeconds: '0' },
  * });
  * ```
  */
 export interface CreateSmsAutomationMessagePayload {
-  /** SMS message body text. Required. */
-  subject: string;
   /** UTM campaign parameter appended to tracked links. */
   utmCampaign?: string | null;
   /** UTM term parameter appended to tracked links. */
@@ -369,13 +365,11 @@ export interface UpdateEmailAutomationMessagePayload {
  * @example
  * ```typescript
  * await client.messages.updateSmsCampaignMessage(messageId, {
- *   subject: 'Updated: your order has shipped!',
+ *   utmCampaign: 'spring-sale',
  * });
  * ```
  */
 export interface UpdateSmsCampaignMessagePayload {
-  /** New SMS message body text. */
-  subject?: string;
   /** New UTM campaign parameter. Pass `null` to clear. */
   utmCampaign?: string | null;
   /** New UTM term parameter. Pass `null` to clear. */
@@ -390,14 +384,11 @@ export interface UpdateSmsCampaignMessagePayload {
  * @example
  * ```typescript
  * await client.messages.updateSmsAutomationMessage(messageId, {
- *   subject: 'Hi {{Subscriber.FirstName}}, your order shipped!',
  *   automailSetting: { active: true, delayInSeconds: '3600' },
  * });
  * ```
  */
 export interface UpdateSmsAutomationMessagePayload {
-  /** New SMS message body text. */
-  subject?: string;
   /** New UTM campaign parameter. Pass `null` to clear. */
   utmCampaign?: string | null;
   /** New UTM term parameter. Pass `null` to clear. */
@@ -455,7 +446,8 @@ export interface CreateMessageBody {
   dispatcher: { id: number; type: 'campaign' | 'automail' };
   /** `1` = email, `2` = SMS. */
   type: 1 | 2;
-  subject: string;
+  /** Required for email; omitted for SMS (the API sets a default). */
+  subject?: string;
   pre_header?: string | null;
   sender?: MessageSenderWire;
   utm_campaign?: string | null;

@@ -491,10 +491,8 @@ export interface CreateDefaultSmsCampaignParams {
   /**
    * Optional overrides for the auto-created SMS message.
    *
-   * Any field provided here replaces the default. `subject` (the SMS body
-   * text) defaults to a placeholder with an unsubscribe footer; the footer
-   * style (link vs stop-word) is determined from the account's sender
-   * configuration, fetched automatically when `subject` is omitted.
+   * Currently supports `utmCampaign` and `utmTerm`. When omitted the message
+   * is created with no UTM parameters.
    */
   message?: Partial<CreateSmsCampaignMessagePayload>;
   /**
@@ -504,7 +502,7 @@ export interface CreateDefaultSmsCampaignParams {
    * `content` to supply a custom SMS document.
    */
   template?: {
-    /** Template name. Defaults to `'Campaign ${id} SMS template'`. */
+    /** Template name. When omitted the API assigns a default name automatically. */
     name?: string;
     /**
      * Custom SMS document. When omitted the SDK wraps the resolved SMS body

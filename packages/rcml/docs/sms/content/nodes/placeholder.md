@@ -1,8 +1,7 @@
 # `placeholder`
 
 An inline atom that is replaced at render time with a dynamic value — a subscriber
-field, custom field value, user attribute, remote content, formatted date, or
-system-managed link.
+field, custom field value, user attribute, remote content, or formatted date.
 
 ## Attributes
 
@@ -12,21 +11,36 @@ system-managed link.
 | `name` | Yes | string | Human-readable display label shown in the editor chip. |
 | `original` | Yes | string | The backend token substituted at send time. |
 | `value` | Yes | string \| number \| null | Resolved preview value shown in the editor, or `null` when not yet resolved. |
-| `max-length` | Yes | string \| null | Maximum character length (truncates and appends `…`), or `null` for no limit. |
+| `max-length` | No | string \| null | Maximum character length (truncates and appends `…`). Omit when no limit is needed. |
 
-Allowed `type` values: `"CustomField"` | `"Subscriber"` | `"User"` | `"Date"` | `"RemoteContent"` | `"Link"`
+Allowed `type` values: `"CustomField"` | `"Subscriber"` | `"User"` | `"Date"` | `"RemoteContent"`
 
 ## Children
 
-None (inline atom, leaf node).
+None (leaf node).
 
 ## Parent nodes
 
-- [`paragraph`](./paragraph)
+- [`sms`](./sms)
 
 ## Available in
 
 - SMS RFM (`rc-sms`)
+
+## Programmatic
+
+Each placeholder type has a typed convenience builder. See the per-type sections below
+for the builder for each type. For types not covered by a convenience builder, use the
+generic `sms.createPlaceholderNode`:
+
+```typescript
+sms.createPlaceholderNode({
+  type: 'Subscriber',
+  original: '[Subscriber:email]',
+  name: 'Email',
+  value: 'jane@example.com',
+})
+```
 
 ## SMS RFM syntax
 
@@ -34,7 +48,7 @@ To insert a placeholder as text in the message body, use the `::placeholder{…}
 directive:
 
 ```
-Hi ::placeholder{type="Subscriber" original="[Subscriber:FirstName]" name="First name"}!
+Your account email: ::placeholder{type="Subscriber" original="[Subscriber:email]" name="Email"}
 Your total: ::placeholder{type="CustomField" original="[CustomField:Order.Total]" name="Order.Total"}
 ```
 
@@ -47,7 +61,7 @@ that as the string value `"null"`. To assign a non-null value, quote it
 
 | Attribute | Required? | Notes |
 |-----------|-----------|-------|
-| `type` | Yes | One of the six placeholder types. |
+| `type` | Yes | One of the five placeholder types. |
 | `original` | Yes | Backend `[Type:Name]` token. |
 | `name` | Yes | Editor display label. |
 | `value` | No | Omit when null. To set a preview value, quote the string (e.g. `value="Jane"`). |
@@ -55,34 +69,19 @@ that as the string value `"null"`. To assign a non-null value, quote it
 
 ### Plain-text `[Type:Name]` tokens
 
-Plain-text `[Type:Name]` tokens — `[Subscriber:FirstName]`,
+Plain-text `[Type:Name]` tokens — `[Subscriber:email]`,
 `[CustomField:Order.Total]`, `[Link:Unsubscribe]`, and so on — are valid in
 **exactly two places**:
 
-1. As the value of the `original` attribute on a placeholder node — the value
-   appears verbatim inside the `::placeholder{…}` directive in SMS RFM and on
-   `attrs.original` in JSON.
-2. As a URL value or part of a URL value — typically the `href` of a link
-   mark, or the URL passed to a `RemoteContent` placeholder.
+1. As the value of the `original` attribute on a placeholder node — appears
+   verbatim inside `::placeholder{…}` in SMS RFM and on `attrs.original` in JSON.
+2. As a URL value — typically the `text` of a [`link`](./link) node, or the
+   URL passed to a `RemoteContent` placeholder.
 
-```
-:link[Unsubscribe]{href="[Link:Unsubscribe]" track="false" shorten="false"}
-```
-
-A bare `[Type:Name]` token is **not the recommended form** for placeholders
-in body content. The parser does accept it as a backward-compatible
-shorthand and produces an equivalent placeholder node, but it carries
-neither a `name` nor a `value` nor a `max-length` — the editor relies on
-those, so authoring through the `::placeholder{…}` directive keeps the
-template editor-friendly.
-
-### Serializer output
-
-`jsonToSmsRfm` emits the bare `[Type:Name]` form when both `value` and
-`max-length` are null, and the `::placeholder{…}` directive form otherwise.
-This is a serializer output optimization, not a recommendation about how to
-write SMS RFM by hand. Re-parsing the serializer output recovers the same
-`SmsContentJson` tree either way.
+The parser also accepts a bare `[Type:Name]` token as a shorthand for a
+placeholder in body content, and produces an equivalent node. The serializer
+(`jsonToSmsRfm`) always emits the full `::placeholder{…}` directive form —
+the shorthand is parse-only.
 
 ---
 
@@ -103,10 +102,9 @@ Inserts a standard subscriber profile field.
   "type": "placeholder",
   "attrs": {
     "type": "Subscriber",
-    "name": "First name",
-    "original": "[Subscriber:FirstName]",
-    "value": null,
-    "max-length": null
+    "name": "Email",
+    "original": "[Subscriber:email]",
+    "value": "email"
   }
 }
 ```
@@ -114,13 +112,20 @@ Inserts a standard subscriber profile field.
 **SMS RFM:**
 
 ```
-Hi ::placeholder{type="Subscriber" original="[Subscriber:FirstName]" name="First name"}!
+Your account email: ::placeholder{type="Subscriber" original="[Subscriber:email]" name="Email"}
 ```
 
 With a resolved preview value:
 
 ```
-Hi ::placeholder{type="Subscriber" original="[Subscriber:FirstName]" name="First name" value="Jane"}!
+Your account email: ::placeholder{type="Subscriber" original="[Subscriber:email]" name="Email" value="jane@example.com"}
+```
+
+**Programmatic:**
+
+```typescript
+sms.createSubscriberPlaceholder({ field: 'email' })
+sms.createSubscriberPlaceholder({ field: 'phone_number', name: 'Phone' })
 ```
 
 ---
@@ -146,8 +151,7 @@ Inserts a field from the sender's Rule.io account profile.
     "type": "User",
     "name": "Company name",
     "original": "[User:CompanyName]",
-    "value": null,
-    "max-length": null
+    "value": "CompanyName"
   }
 }
 ```
@@ -156,6 +160,13 @@ Inserts a field from the sender's Rule.io account profile.
 
 ```
 Sent by ::placeholder{type="User" original="[User:CompanyName]" name="Company name"}
+```
+
+**Programmatic:**
+
+```typescript
+sms.createUserPlaceholder({ field: 'CompanyName' })
+sms.createUserPlaceholder({ field: 'CompanyName', name: 'Company name' })
 ```
 
 ---
@@ -175,8 +186,7 @@ truncate the value to N characters and append `…`.
     "type": "CustomField",
     "name": "Order.Total",
     "original": "[CustomField:Order.Total]",
-    "value": null,
-    "max-length": null
+    "value": "Order.Total"
   }
 }
 ```
@@ -190,7 +200,7 @@ truncate the value to N characters and append `…`.
     "type": "CustomField",
     "name": "Order.Total",
     "original": "[CustomField:Order.Total::20]",
-    "value": null,
+    "value": "Order.Total",
     "max-length": "20"
   }
 }
@@ -206,6 +216,13 @@ Your total: ::placeholder{type="CustomField" original="[CustomField:Order.Total]
 
 ```
 Your total: ::placeholder{type="CustomField" original="[CustomField:Order.Total::20]" name="Order.Total" max-length="20"}
+```
+
+**Programmatic:**
+
+```typescript
+sms.createCustomFieldPlaceholder({ group: 'Order', name: 'Total' })
+sms.createCustomFieldPlaceholder({ group: 'Order', name: 'Total', maxLength: 20 })
 ```
 
 ---
@@ -238,8 +255,7 @@ Supported values: `Y-m-d`, `d.m.Y`, `m-d-Y`, `m/d/Y`, `d/m/Y`.
     "type": "Date",
     "name": "Offer expires",
     "original": "[Date:tomorrow::d.m.Y]",
-    "value": null,
-    "max-length": null
+    "value": null
   }
 }
 ```
@@ -248,6 +264,14 @@ Supported values: `Y-m-d`, `d.m.Y`, `m-d-Y`, `m/d/Y`, `d/m/Y`.
 
 ```
 Offer valid until ::placeholder{type="Date" original="[Date:tomorrow::d.m.Y]" name="Offer expires"}.
+```
+
+**Programmatic:**
+
+```typescript
+sms.createDatePlaceholder({ source: 'tomorrow', format: 'd.m.Y' })
+sms.createDatePlaceholder({ source: { kind: 'days-from-now', count: 7 }, format: 'Y-m-d' })
+sms.createDatePlaceholder({ source: { kind: 'custom-field', group: 'Order', name: 'CreatedAt' }, format: 'Y-m-d' })
 ```
 
 ---
@@ -267,8 +291,7 @@ always `"RemoteContent"`. The URL may contain nested `[CustomField:…]`,
     "type": "RemoteContent",
     "name": "RemoteContent",
     "original": "[RemoteContent:https://api.example.com/promo]",
-    "value": null,
-    "max-length": null
+    "value": null
   }
 }
 ```
@@ -282,8 +305,7 @@ With nested tokens in the URL:
     "type": "RemoteContent",
     "name": "RemoteContent",
     "original": "[RemoteContent:https://api.example.com/offer?id=[CustomField:Order.Id]&email=[Subscriber:email]]",
-    "value": null,
-    "max-length": null
+    "value": null
   }
 }
 ```
@@ -294,55 +316,12 @@ With nested tokens in the URL:
 ::placeholder{type="RemoteContent" original="[RemoteContent:https://api.example.com/promo]" name="RemoteContent"}
 ```
 
----
+**Programmatic:**
 
-## Link
-
-Inserts a system-managed link URL — Rule's pre-defined system links such as the
-unsubscribe URL or the web-browser-view URL. Use this token when you want the raw
-URL visible in the message body rather than as linked text.
-
-| `original` token | Link type |
-|-----------------|-----------|
-| `[Link:Unsubscribe]` | Unsubscribe link |
-| `[Link:WebBrowser]` | View in web browser |
-| `[Link:Optin]` | Opt-in confirmation |
-| `[Link:ShareLink]` | Social share link |
-| `[Link:Signup]` | Sign-up link |
-
-**JSON:**
-
-```json
-{
-  "type": "placeholder",
-  "attrs": {
-    "type": "Link",
-    "name": "Unsubscribe",
-    "original": "[Link:Unsubscribe]",
-    "value": null,
-    "max-length": null
-  }
-}
+```typescript
+sms.createRemoteContentPlaceholder({ url: 'https://api.example.com/promo' })
+sms.createRemoteContentPlaceholder({ url: 'https://api.example.com/offer?id=[CustomField:Order.Id]' })
 ```
-
-**SMS RFM:**
-
-```
-Reply STOP or unsubscribe here: ::placeholder{type="Link" original="[Link:Unsubscribe]" name="Unsubscribe"}
-```
-
-### Link tokens in link marks
-
-A `[Link:…]` token is the correct form for the `href` attribute of a
-[`link` mark](../marks/link) — that is the second of the two valid locations
-for plain-text tokens described above:
-
-```
-Reply STOP or unsubscribe: :link[click here]{href="[Link:Unsubscribe]" track="true" shorten="false"}
-```
-
-Use the `::placeholder{…}` form when you want the URL rendered as plain text in the
-message body; use the link mark form when you want trackable linked text.
 
 ---
 
@@ -355,17 +334,14 @@ import { smsPlaceholderSpec } from '@rule/rcml';
 
 // All SMS-valid token types
 Object.keys(smsPlaceholderSpec.tokens)
-// → ['CustomField', 'Subscriber', 'User', 'Date', 'RemoteContent', 'Link']
+// → ['CustomField', 'Subscriber', 'User', 'Date', 'RemoteContent']
 
 // Token syntax and examples
 smsPlaceholderSpec.tokens['Subscriber'].syntax
 // '[Subscriber:<field>]'
-
-smsPlaceholderSpec.tokens['Link'].params?.['type'].allowedValues
-// → ['Optin', 'Unsubscribe', 'WebBrowser', 'ShareLink', 'Signup']
 ```
 
-`smsPlaceholderSpec` exposes the six token types available in SMS RFM, each with
+`smsPlaceholderSpec` exposes the token types available in SMS RFM, each with
 its full token syntax, parameter schema, allowed values, and examples — useful as
 machine-readable input to LLM-driven generation. See
 [Building with LLM](../../building-with-llm) for that workflow.

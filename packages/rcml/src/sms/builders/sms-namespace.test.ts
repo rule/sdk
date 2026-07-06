@@ -1,16 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import { sms } from './sms-namespace.js'
-import {
-  createContent,
-  createHardbreakNode,
-  createParagraphNode,
-  createTextNode,
-} from './nodes.js'
-import { createLinkMark } from './marks.js'
+import { createContent, createLinkNode, createMessageNode, createUnsubscribeNodes } from './nodes.js'
 import {
   createCustomFieldPlaceholder,
   createDatePlaceholder,
-  createLinkPlaceholder,
   createPlaceholderNode,
   createRemoteContentPlaceholder,
   createSubscriberPlaceholder,
@@ -23,12 +16,9 @@ describe('sms namespace identity', () => {
   it('exposes every builder as a property pointing at the underlying function', () => {
     // Nodes
     expect(sms.createContent).toBe(createContent)
-    expect(sms.createParagraphNode).toBe(createParagraphNode)
-    expect(sms.createTextNode).toBe(createTextNode)
-    expect(sms.createHardbreakNode).toBe(createHardbreakNode)
-
-    // Marks
-    expect(sms.createLinkMark).toBe(createLinkMark)
+    expect(sms.createMessageNode).toBe(createMessageNode)
+    expect(sms.createLinkNode).toBe(createLinkNode)
+    expect(sms.createUnsubscribeNodes).toBe(createUnsubscribeNodes)
 
     // Placeholders
     expect(sms.createPlaceholderNode).toBe(createPlaceholderNode)
@@ -37,7 +27,6 @@ describe('sms namespace identity', () => {
     expect(sms.createCustomFieldPlaceholder).toBe(createCustomFieldPlaceholder)
     expect(sms.createDatePlaceholder).toBe(createDatePlaceholder)
     expect(sms.createRemoteContentPlaceholder).toBe(createRemoteContentPlaceholder)
-    expect(sms.createLinkPlaceholder).toBe(createLinkPlaceholder)
   })
 
   it('exposes exactly the documented set of keys (no orphan exports)', () => {
@@ -45,14 +34,12 @@ describe('sms namespace identity', () => {
       'createContent',
       'createCustomFieldPlaceholder',
       'createDatePlaceholder',
-      'createHardbreakNode',
-      'createLinkMark',
-      'createLinkPlaceholder',
-      'createParagraphNode',
+      'createLinkNode',
+      'createMessageNode',
       'createPlaceholderNode',
       'createRemoteContentPlaceholder',
       'createSubscriberPlaceholder',
-      'createTextNode',
+      'createUnsubscribeNodes',
       'createUserPlaceholder',
     ])
   })
@@ -61,37 +48,14 @@ describe('sms namespace identity', () => {
 describe('sms namespace through createSmsDocument', () => {
   it('builds a complete document and round-trips cleanly', () => {
     const content = sms.createContent({
-      paragraphs: [
-        sms.createParagraphNode({
-          content: [
-            sms.createTextNode({ text: 'Hi ' }),
-            sms.createSubscriberPlaceholder({ field: 'FirstName' }),
-            sms.createTextNode({ text: ', your order ' }),
-            sms.createCustomFieldPlaceholder({ group: 'Order', name: 'Id' }),
-            sms.createTextNode({ text: ' has shipped.' }),
-          ],
-        }),
-        sms.createParagraphNode({
-          content: [
-            sms.createTextNode({ text: 'Track it: ' }),
-            sms.createTextNode({
-              text: 'click here',
-              marks: [
-                sms.createLinkMark({
-                  href: 'https://example.com/orders/[CustomField:Order.Id]',
-                  track: true,
-                  shorten: true,
-                }),
-              ],
-            }),
-          ],
-        }),
-        sms.createParagraphNode({
-          content: [
-            sms.createTextNode({ text: 'Reply STOP: ' }),
-            sms.createLinkPlaceholder({ link: 'Unsubscribe' }),
-          ],
-        }),
+      nodes: [
+        sms.createMessageNode({ text: 'Hi ' }),
+        sms.createSubscriberPlaceholder({ field: 'FirstName' }),
+        sms.createMessageNode({ text: ', your order ' }),
+        sms.createCustomFieldPlaceholder({ group: 'Order', name: 'Id' }),
+        sms.createMessageNode({ text: ' has shipped.\n' }),
+        sms.createLinkNode({ url: 'https://example.com/orders/[CustomField:Order.Id]', track: true, shorten: true }),
+        ...sms.createUnsubscribeNodes(),
       ],
     })
 
@@ -102,12 +66,12 @@ describe('sms namespace through createSmsDocument', () => {
     expect(doc.content).toBe(content)
 
     // Serializing the result back to SMS RFM produces a well-formed string
-    // exercising every node + mark kind we built.
+    // exercising every node kind we built.
     const rfm = jsonToSmsRfm(content)
 
     expect(rfm).toContain('[Subscriber:FirstName]')
     expect(rfm).toContain('[CustomField:Order.Id]')
-    expect(rfm).toContain('[Link:Unsubscribe]')
-    expect(rfm).toContain(':link[click here]{href="https://example.com/orders/[CustomField:Order.Id]" track="true" shorten="true"}')
+    expect(rfm).toContain('::unsubscribe')
+    expect(rfm).toContain(':link[https://example.com/orders/[CustomField:Order.Id]]{track="true" shorten="true"}')
   })
 })

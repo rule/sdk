@@ -2,6 +2,7 @@
  * Public API: factory for constructing SMS RCML documents.
  */
 
+import { randomUUID } from 'node:crypto'
 import type { SmsDocument } from './sms-types.js'
 import type { SmsContentJson } from './content/json-validator/types.js'
 import { smsRfmToJson } from './sms-rfm-to-json.js'
@@ -17,9 +18,9 @@ export interface CreateSmsDocumentOptions {
    * The SMS message body.
    *
    * Accepts either:
-   * - A **string** in SMS RFM (SMS Rule Flavor Markdown) — placeholders use `[Type:Name]`
-   *   syntax (e.g. `[Subscriber:FirstName]`), single `\n` becomes a hard break,
-   *   and double `\n\n` starts a new paragraph.
+   * - A **string** in SMS RFM (SMS Rule Flavor Markdown) — use `::placeholder{…}` for
+   *   dynamic values, `:link[url]{…}` for links, and `::unsubscribe` for the footer.
+   *   Both `\n` and `\n\n` are preserved as `\n` characters inside `message` node text.
    * - A pre-built {@link SmsContentJson} document — validated on the way in.
    */
   content: string | SmsContentJson
@@ -30,6 +31,9 @@ export interface CreateSmsDocumentOptions {
  *
  * Returns an {@link SmsDocument} that can be passed to
  * `client.templates.createSmsTemplate` or `client.templates.updateSmsTemplate`.
+ *
+ * A UUID is automatically generated for the `id` field. The Rule editor
+ * requires this identifier to open and save templates.
  *
  * @param options - SMS document options.
  * @returns A valid {@link SmsDocument}.
@@ -42,14 +46,14 @@ export interface CreateSmsDocumentOptions {
  *
  * // From an SMS RFM string
  * const doc = createSmsDocument({
- *   content: 'Hi [Subscriber:FirstName], your order has shipped!',
+ *   content: 'Your order has shipped!\nAccount: [Subscriber:email]',
  * });
  *
  * // From a pre-built content JSON document
  * const doc2 = createSmsDocument({
  *   content: {
- *     type: 'doc',
- *     content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Hello!' }] }],
+ *     type: 'sms',
+ *     content: [{ type: 'message', text: 'Hello!' }],
  *   },
  * });
  *
@@ -64,7 +68,19 @@ export function createSmsDocument(options: CreateSmsDocumentOptions): SmsDocumen
   let content: SmsContentJson
 
   if (typeof options.content === 'string') {
-    content = smsRfmToJson(options.content)
+    const parsed = safeParseSmsJson(smsRfmToJson(options.content))
+
+    if (!parsed.success) {
+      throw new SmsDocumentBuildError(
+        parsed.errors.map((e) => ({
+          code: SmsDocumentBuildErrorCodes.CONTENT_INVALID,
+          path: `content${e.path}`,
+          message: e.message,
+        })),
+      )
+    }
+
+    content = parsed.data
   } else {
     const result = safeParseSmsJson(options.content)
 
@@ -82,8 +98,8 @@ export function createSmsDocument(options: CreateSmsDocumentOptions): SmsDocumen
   }
 
   return {
+    id: randomUUID(),
     tagName: 'rc-sms',
-    attributes: {},
     content,
   }
 }
