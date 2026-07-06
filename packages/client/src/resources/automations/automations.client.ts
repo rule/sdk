@@ -298,8 +298,10 @@ export class AutomationsClient extends BaseResource {
     const { content: templateContentOverride, ...templateMetaOverrides } = params.template ?? {};
 
     let smsBody: string | undefined;
+
     if (!templateContentOverride) {
       const isMarketing = (params.sendoutType ?? 'marketing') !== 'transactional';
+
       smsBody = isMarketing
         ? buildDefaultSmsContent(params.unsubscriptionMethod !== 'stopWord')
         : 'Your message here.';
@@ -323,6 +325,7 @@ export class AutomationsClient extends BaseResource {
       if (messageResult.status === 'fulfilled' && messageResult.value.id) {
         createdResources.push({ type: 'message', id: messageResult.value.id });
       }
+
       if (templateResult.status === 'fulfilled' && templateResult.value.id) {
         createdResources.push({ type: 'template', id: templateResult.value.id });
       }
@@ -336,6 +339,7 @@ export class AutomationsClient extends BaseResource {
       if (!message.id) {
         throw new RuleApiError('Failed to create message — no ID returned.', 500);
       }
+
       if (!template.id) {
         throw new RuleApiError('Failed to create template — no ID returned.', 500);
       }

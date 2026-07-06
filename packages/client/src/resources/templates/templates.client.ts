@@ -123,6 +123,7 @@ export class TemplatesClient extends BaseResource {
    */
   async updateEmailTemplate(id: number, payload: UpdateEmailTemplatePayload): Promise<EmailTemplate> {
     const existing = await this.get(id);
+
     if (!existing) throw new RuleApiError(`Template ${id} not found`, 404);
 
     const res = await this.transport.put<TemplateResponse>(`/editor/template/${id}`, {
@@ -189,6 +190,7 @@ export class TemplatesClient extends BaseResource {
    */
   async updateSmsTemplate(id: number, payload: UpdateSmsTemplatePayload): Promise<SmsTemplate> {
     const existing = await this.get(id);
+
     if (!existing) throw new RuleApiError(`Template ${id} not found`, 404);
 
     const contentToSend = payload.content ?? (existing.content as SmsDocument | undefined);

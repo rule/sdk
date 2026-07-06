@@ -542,7 +542,7 @@ describe('CampaignsClient', () => {
   });
 
   describe('createDefaultSmsCampaign', () => {
-    const WIRE_SENDER = {
+    const _WIRE_SENDER = {
       status: 200,
       account_id: 1,
       name: 'Acme',
