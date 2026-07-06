@@ -8,6 +8,7 @@ import type { SmsContentJson } from './content/json-validator/types.js'
 import { smsRfmToJson } from './sms-rfm-to-json.js'
 import { safeParseSmsJson } from './validate-sms-json.js'
 import { SmsDocumentBuildError, SmsDocumentBuildErrorCodes } from './builders/errors.js'
+import { RcmlValidationError } from '../email/content/parser/parse.js'
 
 /**
  * Options for {@link createSmsDocument}.
@@ -68,7 +69,19 @@ export function createSmsDocument(options: CreateSmsDocumentOptions): SmsDocumen
   let content: SmsContentJson
 
   if (typeof options.content === 'string') {
-    const parsed = safeParseSmsJson(smsRfmToJson(options.content))
+    let rfmJson
+
+    try {
+      rfmJson = smsRfmToJson(options.content)
+    } catch (e) {
+      const message = e instanceof RcmlValidationError ? e.message : String(e)
+
+      throw new SmsDocumentBuildError([
+        { code: SmsDocumentBuildErrorCodes.CONTENT_INVALID, path: 'content', message },
+      ])
+    }
+
+    const parsed = safeParseSmsJson(rfmJson)
 
     if (!parsed.success) {
       throw new SmsDocumentBuildError(
