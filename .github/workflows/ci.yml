@@ -56,24 +56,24 @@ jobs:
           fail=0
           for pkg in packages/*/package.json; do
             name=$(jq -r '.name' "$pkg")
-            # Per-package allowlist of non-@rulecom/* runtime deps. Adding
+            # Per-package allowlist of non-@rule/* runtime deps. Adding
             # an entry here means we accept that the dep ships in the
             # published tarball and counts toward each consumer's install
             # footprint.
             case "$name" in
-              "@rulecom/rcml")
+              "@rule/rcml")
                 # sanitize-url: URL sanitisation used in RCML elements; ajv:
                 # JSON-schema validator; prosemirror-model: doc nodes;
                 # remark-* / unified / vfile / mdast-*: markdown→RCML pipeline;
                 # fast-xml-parser: RCML XML round-trip; zod: runtime schema.
                 allowed='["@braintree/sanitize-url","@types/mdast","@types/unist","ajv","fast-xml-parser","mdast-util-directive","prosemirror-model","remark-directive","remark-parse","unified","vfile","zod"]'
                 ;;
-              "@rulecom/client")
+              "@rule/client")
                 # sanitize-url: URL sanitisation used when constructing API requests.
                 allowed='["@braintree/sanitize-url"]'
                 ;;
-              "@rulecom/template-engine")
-                # No external runtime deps — only @rulecom/rcml (internal).
+              "@rule/template-engine")
+                # No external runtime deps — only @rule/rcml (internal).
                 allowed='[]'
                 ;;
               *)
@@ -83,7 +83,7 @@ jobs:
             bad=$(jq --argjson allowed "$allowed" -r '
               (.dependencies // {})
               | to_entries
-              | map(select(.key | startswith("@rulecom/") | not))
+              | map(select(.key | startswith("@rule/") | not))
               | map(select(.key as $k | ($allowed | index($k)) | not))
               | .[].key
             ' "$pkg")

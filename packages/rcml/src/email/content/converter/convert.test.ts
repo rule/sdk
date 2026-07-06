@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { parseRfm, parseInlineRfm } from '../parser/parse.js'
+import { parseEmailRfm, parseEmailInlineRfm } from '../parser/parse.js'
 import { transform } from '../transformer/transform.js'
 import { convert } from './convert.js'
 
@@ -9,14 +9,14 @@ import { convert } from './convert.js'
 type Json = Record<string, any>
 
 function rfm(input: string): Json {
-  const { ast } = parseRfm(input, { position: false })
+  const { ast } = parseEmailRfm(input, { position: false })
   const ir = transform(ast)
 
   return convert(ir).toJSON() as Json
 }
 
 function inlineRfm(input: string): Json {
-  const { ast } = parseInlineRfm(input, { position: false })
+  const { ast } = parseEmailInlineRfm(input, { position: false })
   const ir = transform(ast)
 
   return convert(ir).toJSON() as Json

@@ -1,5 +1,5 @@
 /**
- * Tags namespace client for the `@rulecom/client` package.
+ * Tags namespace client for the `@rule/client` package.
  *
  * Wraps the v2 `/tags` endpoints — there is no v3 equivalent.
  *

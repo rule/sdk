@@ -46,10 +46,10 @@ All children are optional.
 
 ## Building
 
-Templates can be built using factory functions from `@rulecom/rcml`, or the JSON structure above can be generated directly by an AI model — pass [`rcmlSpec`](/api/rcml/src/variables/rcmlSpec) as context when prompting.
+Templates can be built using factory functions from `@rule/rcml`, or the JSON structure above can be generated directly by an AI model — pass [`rcmlSpec`](/api/rcml/src/variables/rcmlSpec) as context when prompting.
 
 ```typescript
-import { createHeadElement, createBrandStyleElement, createPreviewElement } from '@rulecom/rcml';
+import { createHeadElement, createBrandStyleElement, createPreviewElement } from '@rule/rcml';
 
 const head = createHeadElement({
   children: [

@@ -1,5 +1,5 @@
 /**
- * Custom field schema types for the `@rulecom/client` customField namespace.
+ * Custom field schema types for the `@rule/client` customField namespace.
  *
  * These types wrap the v2 `/customizations` endpoints which manage the
  * structure of custom field groups and their fields. For reading and writing

@@ -16,7 +16,7 @@ import {
   EmailThemeFontStyleType,
   EmailThemeImageType,
   createEmailTheme,
-} from '@rulecom/rcml';
+} from '@rule/rcml';
 import type {
   EmailThemeColor,
   EmailThemeFont,
@@ -24,7 +24,7 @@ import type {
   EmailThemeImage,
   EmailThemeSocialLink,
   EmailThemeSocialLinkType,
-} from '@rulecom/rcml';
+} from '@rule/rcml';
 
 import { RuleClientError } from './errors.js';
 import { sanitizeUrl } from '@braintree/sanitize-url';

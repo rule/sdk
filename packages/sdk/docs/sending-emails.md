@@ -34,7 +34,7 @@ console.log(result.automationId, result.templateId);
 Both helpers accept either `brandStyleId` (auto-builds a branded template) or `template` (your own `RcmlDocument`). You can also pass custom `sections` to replace the default placeholder content when using `brandStyleId`:
 
 ```typescript
-import { createBrandTemplate, createContentSection, createBrandHeading, createTextNode } from '@rulecom/sdk';
+import { createBrandTemplate, createContentSection, createBrandHeading, createTextNode } from '@rule/sdk';
 
 const template = createBrandTemplate({
   brandStyle: myBrand,

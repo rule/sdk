@@ -25,15 +25,15 @@ import { rcmlSchema } from './schema.js'
  * @param schema - Defaults to `rcmlSchema`; pass a custom schema only for testing
  * @returns      A ProseMirror document Node — call `.toJSON()` for serializable JSON
  *
- * @internal — Stage 3 of the pipeline; use {@link rfmToJson} or {@link inlineRfmToJson} instead.
+ * @internal — Stage 3 of the pipeline; use {@link emailRfmToJson} or {@link emailInlineRfmToJson} instead.
  *
  * @example
  * ```ts
- * import { parseRfm } from '../parser/parse.js'
+ * import { parseEmailRfm } from '../parser/parse.js'
  * import { transform } from '../transformer/transform.js'
  * import { convert } from './convert.js'
  *
- * const { ast } = parseRfm(input)
+ * const { ast } = parseEmailRfm(input)
  * const ir      = transform(ast)
  * const doc     = convert(ir)
  * const json    = doc.toJSON()   // matches editor's doc.toJSON()

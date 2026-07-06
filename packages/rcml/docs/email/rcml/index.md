@@ -94,7 +94,7 @@ Attributes map directly to XML attributes. Child elements nest normally. Rich-te
 
 ## Building with factory functions
 
-The `@rulecom/rcml` package exports a factory function for every element:
+The `@rule/rcml` package exports a factory function for every element:
 
 ```typescript
 import {
@@ -104,7 +104,7 @@ import {
   createSectionElement,
   createColumnElement,
   createTextElement,
-} from '@rulecom/rcml';
+} from '@rule/rcml';
 
 const template = createRcmlDocumentElement({
   head: createHeadElement({ children: [] }),
@@ -136,7 +136,7 @@ const template = createRcmlDocumentElement({
 RCML JSON can also be generated directly by a language model. Pass [`rcmlSpec`](/api/rcml/src/variables/rcmlSpec) as context in your prompt — it contains the complete element schema with all tag names, allowed attributes, constraints, and parent-child relationships.
 
 ```typescript
-import { rcmlSpec } from '@rulecom/rcml';
+import { rcmlSpec } from '@rule/rcml';
 
 // Include rcmlSpec in your AI prompt context
 // The model can then produce valid RCML JSON directly

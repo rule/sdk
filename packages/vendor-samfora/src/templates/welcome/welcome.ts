@@ -1,7 +1,7 @@
 /**
  * Samfora welcome template factory.
  *
- * Thin wrapper over {@link createEmailTemplate} from `@rulecom/rcml`.
+ * Thin wrapper over {@link createEmailTemplate} from `@rule/rcml`.
  * Sent when a new donor creates a Samfora account. Default copy is
  * Swedish; pass `copy: { ... }` at render time to localise.
  *
@@ -13,8 +13,8 @@ import {
   createEmailTemplate,
   type EmailTemplate,
   type EmailTemplateRenderArgs,
-} from '@rulecom/template-engine'
-import type { CustomFieldRef } from '@rulecom/template-engine'
+} from '@rule/template-engine'
+import type { CustomFieldRef } from '@rule/template-engine'
 
 export interface SamforaWelcomeTemplateContext {
   recipient: {

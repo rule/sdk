@@ -31,10 +31,10 @@ None. Content is plain text set via the `content` field.
 
 ## Building
 
-Templates can be built using factory functions from `@rulecom/rcml`, or the JSON structure above can be generated directly by an AI model — pass [`rcmlSpec`](/api/rcml/src/variables/rcmlSpec) as context when prompting.
+Templates can be built using factory functions from `@rule/rcml`, or the JSON structure above can be generated directly by an AI model — pass [`rcmlSpec`](/api/rcml/src/variables/rcmlSpec) as context when prompting.
 
 ```typescript
-import { createPlainTextElement } from '@rulecom/rcml';
+import { createPlainTextElement } from '@rule/rcml';
 
 createPlainTextElement({ content: 'Hi — see the full offer at example.com/sale.' })
 ```

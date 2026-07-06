@@ -5,7 +5,7 @@
  *
  * @example
  * ```typescript
- * import { shopifyPreset, SHOPIFY_FIELDS } from '@rulecom/sdk';
+ * import { shopifyPreset, SHOPIFY_FIELDS } from '@rule/sdk';
  *
  * const config = {
  *   brandStyle: myBrandStyle,
@@ -22,14 +22,14 @@
  * ```
  */
 
-import type { AutomationConfigV2, VendorPreset, VendorConsumerConfig, VendorFieldInfo } from '@rulecom/vendor';
-import { resolveVendorAutomations } from '@rulecom/vendor';
+import type { AutomationConfigV2, VendorPreset, VendorConsumerConfig, VendorFieldInfo } from '@rule/vendor';
+import { resolveVendorAutomations } from '@rule/vendor';
 import type { ShopifyFieldSchema, ShopifyFieldNames } from './fields.js';
 import type { ShopifyTagSchema } from './tags.js';
 import { SHOPIFY_FIELDS } from './fields.js';
 import { SHOPIFY_TAGS } from './tags.js';
 import { createShopifyAutomations } from './automations.js';
-import { VendorPresetError } from '@rulecom/vendor';
+import { VendorPresetError } from '@rule/vendor';
 
 const FIELD_DESCRIPTIONS: Record<ShopifyFieldNames, string> = {
   // Subscriber

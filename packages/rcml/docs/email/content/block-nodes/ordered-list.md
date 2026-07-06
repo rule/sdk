@@ -20,7 +20,7 @@ A numbered list containing one or more `list-item` nodes rendered with sequentia
 
 ## Available in
 
-- Full RFM (`rc-text`, `rc-heading`)
+- Full Email RFM (`rc-text`, `rc-heading`)
 
 ## JSON
 
@@ -47,7 +47,7 @@ A numbered list containing one or more `list-item` nodes rendered with sequentia
 }
 ```
 
-## RFM syntax
+## Email RFM syntax
 
 Lines starting with `1. `, `2. `, etc. Each line becomes a `list-item` containing a `paragraph`.
 

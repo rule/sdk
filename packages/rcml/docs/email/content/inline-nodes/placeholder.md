@@ -22,8 +22,8 @@ None (inline atom, leaf node).
 
 ## Available in
 
-- Full RFM (`rc-text`, `rc-heading`)
-- Inline RFM (`rc-button`)
+- Full Email RFM (`rc-text`, `rc-heading`)
+- Email Inline RFM (`rc-button`)
 
 ## Subscriber
 
@@ -50,7 +50,7 @@ Inserts a standard subscriber profile field.
 }
 ```
 
-**RFM:**
+**Email RFM:**
 
 ```
 Dear ::placeholder{type="Subscriber" value="email" name="Email" original="[Subscriber:email]"},
@@ -91,7 +91,7 @@ Inserts a field from the sender (Rule.io account) profile.
 }
 ```
 
-**RFM:**
+**Email RFM:**
 
 ```
 Sent by ::placeholder{type="User" value="CompanyName" name="Company name" original="[User:CompanyName]"}
@@ -141,7 +141,7 @@ With truncation to 20 characters:
 }
 ```
 
-**RFM:**
+**Email RFM:**
 
 ```
 Your total: ::placeholder{type="CustomField" value="13" name="Order.Total" original="[CustomField:Order.Total]"}
@@ -188,7 +188,7 @@ Inserts a formatted date computed at send time. `value` is always `null`. The da
 }
 ```
 
-**RFM:**
+**Email RFM:**
 
 ```
 Offer valid until ::placeholder{type="Date" name="Tomorrow" original="[Date:tomorrow::d.m.Y]"}
@@ -238,7 +238,7 @@ With nested tokens in the URL:
 }
 ```
 
-**RFM:**
+**Email RFM:**
 
 ```
 ::placeholder{type="RemoteContent" value="https://api.example.com/banner" name="RemoteContent" original="[RemoteContent:https://api.example.com/banner]"}
@@ -255,16 +255,16 @@ With nested tokens in the URL:
 
 ## Plain-text tokens
 
-The bracket tokens that appear in `original` can also be used directly as plain strings in RCML attribute values, without wrapping them in a `::placeholder{...}` RFM node. For example:
+The bracket tokens that appear in `original` can also be used directly as plain strings in RCML attribute values, without wrapping them in a `::placeholder{...}` Email RFM node. For example:
 
 - As the `href` of a `:link` mark: `:link[Unsubscribe]{href="[Link:Unsubscribe]"}`
 - In `rc-raw` HTML content: `<p>[Subscriber:email]</p>`
 - In any RCML attribute that the backend renderer post-processes at send time
 
-The complete machine-readable token reference is available as `placeholderSpec` from `@rulecom/rcml`:
+The complete machine-readable token reference is available as `placeholderSpec` from `@rule/rcml`:
 
 ```typescript
-import { placeholderSpec } from '@rulecom/rcml';
+import { placeholderSpec } from '@rule/rcml';
 
 // All supported token types
 Object.keys(placeholderSpec.tokens)

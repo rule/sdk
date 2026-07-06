@@ -3,7 +3,7 @@
  * normalized, validated content `Json` doc.
  *
  * Accepts two input forms:
- * - `string` — treated as RFM markdown, routed through {@link rfmToJson}.
+ * - `string` — treated as RFM markdown, routed through {@link emailRfmToJson}.
  * - `Json` — a pre-built content doc (e.g. from {@link createInlineContent}).
  *
  * In both cases the result is passed through {@link normalizeJson} and
@@ -18,7 +18,7 @@ import {
   validateJson,
   type Json,
 } from '../validate-rcml-json.js'
-import { rfmToJson } from '../rfm-to-json.js'
+import { emailRfmToJson } from '../email-rfm-to-json.js'
 import { RcmlElementBuildErrorCodes, type RcmlElementBuildIssue } from './errors.js'
 
 export type ContentInput = string | Json
@@ -36,7 +36,7 @@ export function coerceContent(input: ContentInput): ContentCoerceResult {
   let doc: Json
 
   try {
-    doc = typeof input === 'string' ? rfmToJson(input) : input
+    doc = typeof input === 'string' ? emailRfmToJson(input) : input
   } catch (err) {
     return {
       issues: [

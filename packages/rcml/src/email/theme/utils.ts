@@ -1,6 +1,6 @@
 /**
  * Internal helpers shared across the theme submodule. Nothing here is
- * part of the public `@rulecom/rcml` surface.
+ * part of the public `@rule/rcml` surface.
  *
  * @internal
  */

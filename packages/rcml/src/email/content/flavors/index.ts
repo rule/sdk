@@ -1,3 +1,3 @@
-export { rfmConfig } from './rfm.js'
-export { inlineRfmConfig } from './inline-rfm.js'
+export { emailRfmConfig } from './email-rfm.js'
+export { emailInlineRfmConfig } from './email-inline-rfm.js'
 export type { FlavorConfig } from './types.js'

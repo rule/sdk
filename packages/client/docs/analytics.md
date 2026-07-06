@@ -22,7 +22,7 @@ Dates are required. The time portion is stripped automatically — `'2025-01-01T
 To drill into a specific campaign (or multiple campaigns), provide `objectType`, `objectIds`, and the `metrics` you want. Use the `AnalyticsObjectTypes` and `AnalyticsMetrics` constants for autocomplete:
 
 ```typescript
-import { AnalyticsMetrics, AnalyticsObjectTypes } from '@rulecom/client';
+import { AnalyticsMetrics, AnalyticsObjectTypes } from '@rule/client';
 
 const result = await client.analytics.get({
   dateFrom: '2025-01-01',
@@ -46,7 +46,7 @@ When `objectType` is provided, both `objectIds` and `metrics` must be non-empty 
 ## Getting metrics for automations
 
 ```typescript
-import { AnalyticsMetrics, AnalyticsObjectTypes } from '@rulecom/client';
+import { AnalyticsMetrics, AnalyticsObjectTypes } from '@rule/client';
 
 const result = await client.analytics.get({
   dateFrom: '2025-01-01',
@@ -62,7 +62,7 @@ const result = await client.analytics.get({
 Narrow results to a specific channel:
 
 ```typescript
-import { AnalyticsMessageTypes } from '@rulecom/client';
+import { AnalyticsMessageTypes } from '@rule/client';
 
 const result = await client.analytics.get({
   dateFrom: '2025-01-01',

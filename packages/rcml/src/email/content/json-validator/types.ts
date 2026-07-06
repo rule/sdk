@@ -183,8 +183,8 @@ export type BlockNode = ParagraphNode | BulletListNode | OrderedListNode | Align
 // ─── Root document type ───────────────────────────────────────────────────────
 
 /**
- * The root RCML document type. This is the shape returned by {@link rfmToJson}
- * and {@link inlineRfmToJson}, and accepted by {@link validateJson}.
+ * The root RCML document type. This is the shape returned by {@link emailRfmToJson}
+ * and {@link emailInlineRfmToJson}, and accepted by {@link validateJson}.
  */
 export type Json = {
   type: 'doc'

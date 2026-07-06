@@ -1,6 +1,6 @@
 {
   "private": true,
-  "name": "@rulecom/vendor-bookzen",
+  "name": "@rule/vendor-bookzen",
   "version": "0.4.0-beta.1",
   "description": "Bookzen preset for the Rule.io SDK \u2014 hospitality automation flows (reservation confirmation, cancellation, reminder, feedback, request).",
   "type": "module",
@@ -32,10 +32,10 @@
     "directory": "packages/vendor-bookzen"
   },
   "dependencies": {
-    "@rulecom/client": "*",
-    "@rulecom/rcml": "*",
-    "@rulecom/template-engine": "*",
-    "@rulecom/vendor": "*"
+    "@rule/client": "*",
+    "@rule/rcml": "*",
+    "@rule/template-engine": "*",
+    "@rule/vendor": "*"
   },
   "engines": {
     "node": ">=20"

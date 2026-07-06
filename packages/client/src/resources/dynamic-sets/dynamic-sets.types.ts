@@ -1,5 +1,5 @@
 /**
- * Dynamic-set types for the `@rulecom/client` dynamic-sets namespace.
+ * Dynamic-set types for the `@rule/client` dynamic-sets namespace.
  *
  * A dynamic set connects a template to a message. It sits in the middle of
  * the email chain:

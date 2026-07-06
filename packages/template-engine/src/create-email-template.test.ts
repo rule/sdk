@@ -3,8 +3,8 @@ import { describe, expect, it } from 'vitest'
 import { customField } from './refs/factories.js'
 import type { TemplateRefSerializer } from './refs/types.js'
 import { createEmailTemplate } from './create-email-template.js'
-import { createEmailTheme, EmailThemeImageType } from '@rulecom/rcml'
-import type { EmailTheme } from '@rulecom/rcml'
+import { createEmailTheme, EmailThemeImageType } from '@rule/rcml'
+import type { EmailTheme } from '@rule/rcml'
 
 interface FixtureCopy {
   greeting: string

@@ -1,14 +1,14 @@
 # Flavors
 
-RCML content fields accept text in one of two RFM dialects. The dialect is determined by the element — you do not choose it per field.
+RCML content fields accept text in one of two Email RFM dialects. The dialect is determined by the element — you do not choose it per field.
 
-## Full RFM
+## Full Email RFM
 
 Used by `rc-text` and `rc-heading`.
 
-**RFM** (Rule Flavor Markdown) is a directive-first markdown dialect. Block structure follows CommonMark (paragraphs, lists, hard breaks), extended with one container directive for alignment. All inline styling and linking is expressed through `remark-directive` span directives — there is no native `**bold**` or `[text](url)` syntax.
+**Email RFM** (Email Rule Flavor Markdown) is a directive-first markdown dialect. Block structure follows CommonMark (paragraphs, lists, hard breaks), extended with one container directive for alignment. All inline styling and linking is expressed through `remark-directive` span directives — there is no native `**bold**` or `[text](url)` syntax.
 
-Parsed and validated by `rfmToJson()`.
+Parsed and validated by `emailRfmToJson()`.
 
 ### Supported block elements
 
@@ -54,17 +54,17 @@ Centred text with a :link[:font[link]{color="#2e5bff" text-decoration="underline
 
 ---
 
-## Inline RFM
+## Email Inline RFM
 
 Used by `rc-button`.
 
-**Inline RFM** is a strict subset of Full RFM. It supports the same inline marks and atoms but restricts the content to exactly one paragraph — no lists, no hard breaks, no alignment. This maps to the `inline-rfm` ProseMirror schema used for button labels and other short single-line fields.
+**Email Inline RFM** is a strict subset of Full Email RFM. It supports the same inline marks and atoms but restricts the content to exactly one paragraph — no lists, no hard breaks, no alignment. This maps to the `inline-rfm` ProseMirror schema used for button labels and other short single-line fields.
 
-Parsed and validated by `inlineRfmToJson()`.
+Parsed and validated by `emailInlineRfmToJson()`.
 
 ### Supported elements
 
-| Element | Inline RFM | Full RFM |
+| Element | Email Inline RFM | Full Email RFM |
 |---------|-----------|---------|
 | Paragraph (single) | Yes | Yes |
 | Hard break | **No** | Yes |
@@ -86,13 +86,13 @@ Parsed and validated by `inlineRfmToJson()`.
 ## API
 
 ```typescript
-import { rfmToJson, inlineRfmToJson } from '@rulecom/rcml';
+import { emailRfmToJson, emailInlineRfmToJson } from '@rule/rcml';
 
-// Full RFM → doc node (rc-text, rc-heading)
-const doc = rfmToJson('Hello :font[world]{font-weight="bold"}');
+// Full Email RFM → doc node (rc-text, rc-heading)
+const doc = emailRfmToJson('Hello :font[world]{font-weight="bold"}');
 
-// Inline RFM → doc node (rc-button)
-const inlineDoc = inlineRfmToJson(':font[Click here]{color="#2e5bff"}');
+// Email Inline RFM → doc node (rc-button)
+const inlineDoc = emailInlineRfmToJson(':font[Click here]{color="#2e5bff"}');
 ```
 
 Both functions return a [`doc`](./block-nodes/doc) node. Pass the result directly as the `content` field of the corresponding RCML element.

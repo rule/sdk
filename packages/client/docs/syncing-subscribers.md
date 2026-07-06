@@ -62,7 +62,17 @@ See [Custom Fields](./custom-fields) for details on how fields, groups, and hist
 
 *→ [`SubscriberSyncPayload`](/api/client/src/interfaces/SubscriberSyncPayload) · [`CreateSubscriberPayload`](/api/client/src/interfaces/CreateSubscriberPayload)*
 
+## `sync()` vs `bulkCreateSubscribers()`
+
+The two methods solve different problems and call different endpoints:
+
+- `sync()` is a **single-subscriber upsert with side effects**. It creates or fetches one subscriber and writes that subscriber's custom-field values and tags in one logical step.
+- `bulkCreateSubscribers()` is a **multi-subscriber endpoint** geared at high-volume initial loads — up to 1000 subscribers per call against the v2 `POST /subscribers` "create multiple" endpoint. See [Bulk Create Subscribers](./bulk-create-subscribers).
+
+Pick `sync()` when you have one subscriber and need to ensure their fields and tags are in sync. Pick `bulkCreateSubscribers()` when you have many subscribers to import or upsert at once.
+
 ## See also
 
+- [Bulk Create Subscribers](./bulk-create-subscribers) — high-volume creation against the v2 endpoint
 - [Custom Fields](./custom-fields) — how field groups, value types, and historical fields work
 - [Organizing with Tags](./organizing-with-tags) — managing tags and segmenting subscribers

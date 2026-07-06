@@ -5,14 +5,14 @@ import { VFile } from 'vfile'
 import { preprocessMarkdown } from './preprocess.js'
 import { validate } from './validate.js'
 import { formatErrors } from './format.js'
-import { rfmConfig } from '../flavors/rfm.js'
-import { inlineRfmConfig } from '../flavors/inline-rfm.js'
+import { emailRfmConfig } from '../flavors/email-rfm.js'
+import { emailInlineRfmConfig } from '../flavors/email-inline-rfm.js'
 import type { RcmlParseOptions, RcmlParseResult, ValidationError } from './types.js'
 import type { FlavorConfig } from '../flavors/types.js'
 import type { Node } from 'unist'
 
 /**
- * Error thrown when `parseRfm()` or `parseInlineRfm()` (or any custom
+ * Error thrown when `parseEmailRfm()` or `parseEmailInlineRfm()` (or any custom
  * flavor-specific parse function) receives input that fails validation.
  *
  * The `message` property contains a numbered, human-readable list of all
@@ -31,10 +31,10 @@ export class RcmlValidationError extends Error {
 }
 
 /**
- * Parse a RFM or Inline RFM markdown string into a Remark AST.
+ * Parse an Email RFM or Email Inline RFM markdown string into a Remark AST.
  *
  * This is Stage 1 of the rcml-generator pipeline. The result is a raw MDAST
- * with no validation applied — use `parseRfm()` or `parseInlineRfm()` for
+ * with no validation applied — use `parseEmailRfm()` or `parseEmailInlineRfm()` for
  * validated parsing, or call `validate(ast, config)` separately.
  *
  * @param input - Raw markdown text
@@ -78,7 +78,7 @@ function stripPositions(node: Node): void {
 }
 
 /**
- * Options accepted by {@link parseRfm} and {@link parseInlineRfm}.
+ * Options accepted by {@link parseEmailRfm} and {@link parseEmailInlineRfm}.
  * @internal
  */
 export interface FlavorParseOptions {
@@ -106,35 +106,35 @@ function parseWithFlavor(input: string, options: FlavorParseOptions, config: Fla
 }
 
 /**
- * Parse and validate a full RFM markdown string.
+ * Parse and validate a full Email RFM markdown string.
  *
  * Throws `RcmlValidationError` if the input contains syntax not allowed by
- * the RFM flavor (e.g. headings, native bold, unknown directives).
+ * the Email RFM flavor (e.g. headings, native bold, unknown directives).
  *
  * @internal
  *
  * @example
  * ```ts
- * const { ast } = parseRfm('A :font[bold]{font-weight="bold"} paragraph.')
+ * const { ast } = parseEmailRfm('A :font[bold]{font-weight="bold"} paragraph.')
  * ```
  */
-export function parseRfm(input: string, options: FlavorParseOptions = {}): RcmlParseResult {
-  return parseWithFlavor(input, options, rfmConfig)
+export function parseEmailRfm(input: string, options: FlavorParseOptions = {}): RcmlParseResult {
+  return parseWithFlavor(input, options, emailRfmConfig)
 }
 
 /**
- * Parse and validate an Inline RFM markdown string.
+ * Parse and validate an Email Inline RFM markdown string.
  *
  * Throws `RcmlValidationError` if the input contains syntax not allowed by
- * the Inline RFM flavor (e.g. lists, :::align, hard breaks).
+ * the Email Inline RFM flavor (e.g. lists, :::align, hard breaks).
  *
  * @internal
  *
  * @example
  * ```ts
- * const { ast } = parseInlineRfm(':font[Click here]{font-weight="bold"}')
+ * const { ast } = parseEmailInlineRfm(':font[Click here]{font-weight="bold"}')
  * ```
  */
-export function parseInlineRfm(input: string, options: FlavorParseOptions = {}): RcmlParseResult {
-  return parseWithFlavor(input, options, inlineRfmConfig)
+export function parseEmailInlineRfm(input: string, options: FlavorParseOptions = {}): RcmlParseResult {
+  return parseWithFlavor(input, options, emailInlineRfmConfig)
 }

@@ -16,8 +16,8 @@
  * @internal
  */
 
-import { VendorPresetError } from '@rulecom/vendor'
-import type { CustomFieldMap } from '@rulecom/vendor'
+import { VendorPresetError } from '@rule/vendor'
+import type { CustomFieldMap } from '@rule/vendor'
 
 export interface TemplateHelpers {
   field: (logicalName: string) => string

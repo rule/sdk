@@ -1,5 +1,5 @@
 /**
- * Subscriber types for the `@rulecom/client` subscribers namespace.
+ * Subscriber types for the `@rule/client` subscribers namespace.
  */
 
 import type { RuleApiResponse, PagePaginationParams } from '../../shared.types.js';
@@ -163,6 +163,120 @@ export interface AddSubscriberTagOptions {
 export interface BulkTagsPayload {
   subscribers: SubscriberIdentifier[];
   tags: (string | number)[];
+}
+
+// ── Bulk subscriber create ────────────────────────────────────────────────────
+
+/**
+ * One custom-field value attached to a {@link BulkCreateSubscriberEntry}.
+ *
+ * The `key` follows `Group.Field` notation. The `value` shape depends on
+ * `type` — a string for `'text'`, `'date'`, `'datetime'`, `'time'`, and
+ * `'json'`; a string array for `'multiple'`.
+ */
+export interface BulkCreateSubscriberField {
+  /** Custom field identifier in `'Group.Field'` form, e.g. `'Order.Total'`. */
+  key: string;
+  /**
+   * Field value. Types align with `type`:
+   * - `'text'` / `'date'` / `'datetime'` / `'time'` / `'json'` — string.
+   * - `'multiple'` — string array.
+   * - Numbers are accepted by the API for numeric custom fields.
+   */
+  value: string | number | string[];
+  /** Defaults to `'text'` server-side when omitted. */
+  type?: 'text' | 'date' | 'datetime' | 'time' | 'multiple' | 'json';
+}
+
+/**
+ * One element of {@link BulkCreateSubscribersPayload.subscribers}.
+ *
+ * Provide at minimum an `email` or `phoneNumber`. Both may be supplied —
+ * Rule.io matches on either when `updateOnDuplicate` is set. Per-subscriber
+ * custom field values go on `fields` as an array of
+ * {@link BulkCreateSubscriberField} entries.
+ */
+export interface BulkCreateSubscriberEntry {
+  email?: string | null;
+  phoneNumber?: string | null;
+  /**
+   * Per-subscriber language override. ISO 639-1 (e.g. `'en'`, `'sv'`).
+   * Falls back to the batch-level `language` on
+   * {@link BulkCreateSubscribersPayload} when omitted.
+   */
+  language?: string;
+  /** Custom-field values for this subscriber. */
+  fields?: BulkCreateSubscriberField[];
+}
+
+/**
+ * Automation handling on existing subscribers matched in a bulk create:
+ * `false` (default) leaves them alone, `'reset'` and `'force'` are
+ * documented automation triggers — see the Rule.io API documentation for
+ * exact semantics.
+ */
+export type BulkCreateAutomationMode = false | 'reset' | 'force';
+
+/**
+ * Payload for `SubscribersClient.bulkCreateSubscribers`.
+ *
+ * Wraps the v2 `POST /subscribers` "create multiple" endpoint. Top-level
+ * fields apply to every subscriber in the batch; per-entry fields are set
+ * on each {@link BulkCreateSubscriberEntry}.
+ */
+export interface BulkCreateSubscribersPayload {
+  /** Up to 1000 entries per call. The API rejects larger batches with 413. */
+  subscribers: BulkCreateSubscriberEntry[];
+  /**
+   * Tags applied to every subscriber in the batch. Numeric IDs and string
+   * names may be mixed. Tags consisting only of digits are interpreted as
+   * IDs.
+   */
+  tags?: (string | number)[];
+  /**
+   * If `true`, existing subscribers (matched by email or phone) are
+   * updated rather than rejected with 409. Defaults to `false`.
+   */
+  updateOnDuplicate?: boolean;
+  /**
+   * Automation handling for matched subscribers. See
+   * {@link BulkCreateAutomationMode}.
+   */
+  automation?: BulkCreateAutomationMode;
+  /**
+   * Controls automation firing for the whole batch. `true` fires
+   * automations for every subscriber (capped server-side at 100). `false`
+   * disables automations for the batch. If omitted, automations fire only
+   * when the batch has fewer than 20 subscribers.
+   */
+  syncSubscribers?: boolean;
+  /** Default language applied to subscribers that omit `language`. */
+  language?: string;
+  /**
+   * If `true`, run the opt-in flow rather than creating subscribers
+   * directly.
+   */
+  requireOptIn?: boolean;
+}
+
+/**
+ * Return value of `SubscribersClient.bulkCreateSubscribers`.
+ *
+ * The v2 endpoint processes large batches asynchronously, so the
+ * synchronous response is an acknowledgement rather than the list of
+ * created subscribers. Numeric counters are populated when the API
+ * includes them in the response.
+ */
+export interface BulkCreateSubscribersResult {
+  success: true;
+  /** Optional success message echoed by the API. */
+  message?: string;
+  /** Number of subscribers created when reported by the API. */
+  subscribersCreated?: number;
+  /** Number of subscribers updated when reported by the API. */
+  subscribersUpdated?: number;
+  /** Number of suppressed addresses skipped, when reported. */
+  subscribersSuppressed?: number;
 }
 
 /**
@@ -411,6 +525,40 @@ export interface CreateSubscriberResponse {
     status?: string;
     language?: string;
   };
+}
+
+/** @internal */
+export interface BulkCreateSubscriberFieldBody {
+  key: string;
+  value: string | number | string[];
+  type?: string;
+}
+
+/** @internal */
+export interface BulkCreateSubscriberEntryBody {
+  email?: string | null;
+  phone_number?: string | null;
+  language?: string;
+  fields?: BulkCreateSubscriberFieldBody[];
+}
+
+/** @internal */
+export interface BulkCreateSubscribersBody {
+  subscribers: BulkCreateSubscriberEntryBody[];
+  tags?: (string | number)[];
+  update_on_duplicate?: boolean;
+  automation?: false | 'reset' | 'force';
+  sync_subscribers?: boolean;
+  language?: string;
+  require_opt_in?: boolean;
+}
+
+/** @internal */
+export interface BulkCreateSubscribersResponse extends RuleApiResponse {
+  message?: string;
+  subscribers_created?: number;
+  subscribers_updated?: number;
+  subscribers_suppressed?: number;
 }
 
 /**

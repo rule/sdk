@@ -23,7 +23,7 @@ import { DEFAULT_FONT_STYLES_MAP } from './theme-defaults.js'
 import {
   type AnyAttrChild,
   EmailThemeApplyError,
-  applyLogoSrcToBody,
+  applyBodyDefaults,
   cloneHead,
   findOrCreateAttributes,
   overlayFontsInHead,
@@ -109,7 +109,6 @@ export function applyTheme(
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (image.type === EmailThemeImageType.Logo) {
           upsertLogoClass(attrChildren, image.url)
-          updatedBody = applyLogoSrcToBody(updatedBody, image.url)
         }
       }
     }
@@ -131,6 +130,19 @@ export function applyTheme(
     if (patch.links && patch.links.length > 0) {
       upsertSocialOverlay(attrChildren, patch.links)
     }
+  }
+
+  {
+    const logoImages = patch.images?.filter(
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      (img) => img.type === EmailThemeImageType.Logo
+    )
+    const lastLogo = logoImages && logoImages.length > 0
+      ? logoImages[logoImages.length - 1]
+      : undefined
+    const logoUrl = lastLogo?.url
+
+    updatedBody = applyBodyDefaults(updatedBody, logoUrl)
   }
 
   if (patch.fonts && patch.fonts.length > 0) {

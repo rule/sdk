@@ -1,6 +1,6 @@
-# @rulecom/template-engine
+# @rule/template-engine
 
-Minimal, XML-native template engine that powers the ready-made email templates in the vendor packages (`@rulecom/vendor-shopify`, etc.). Pure, synchronous, no JS runtime inside templates, no filesystem access from the compiler itself.
+Minimal, XML-native template engine that powers the ready-made email templates in the vendor packages (`@rule/vendor-shopify`, etc.). Pure, synchronous, no JS runtime inside templates, no filesystem access from the compiler itself.
 
 ```ts
 import {
@@ -10,7 +10,7 @@ import {
   createEmailTemplate,
   customField,
   loopValue,
-} from '@rulecom/template-engine'
+} from '@rule/template-engine'
 ```
 
 This README is the entry-point **for template authors** — it explains the layers, the file pattern, and the authoring flow. For the low-level API surface, see the JSDoc on each export.
@@ -21,7 +21,7 @@ This README is the entry-point **for template authors** — it explains the laye
 
 A ready-made email template spans three packages:
 
-- **`@rulecom/template-engine`** (this package) — XML compiler, runtime loaders, and email template factory.
+- **`@rule/template-engine`** (this package) — XML compiler, runtime loaders, and email template factory.
   - `compileTemplate({ template, copy, context, serializer? })` → `{ xml }`.
   - `loadTemplate(import.meta.url, './foo.xml')` → XML source string.
   - `loadCopy<T>(import.meta.url, './foo.json')` → parsed JSON, typed as `T`.
@@ -29,8 +29,8 @@ A ready-made email template spans three packages:
   - Types: `EmailTemplate<TCopy, TContext>`, `EmailTemplateRenderArgs<TCopy, TContext>`.
   - Typed refs: `customField(group, name, id?)`, `loopValue(key)`; types `CustomFieldRef`, `LoopValueRef`, `TemplateRef`. Serializer surface: `TemplateRefSerializer`, `defaultTemplateRefSerializer`, `serializeRef`, `isTemplateRef`.
   - Errors: `TemplateCompileError`.
-- **`@rulecom/rcml`** — RCML element factories, validators, converters, and theme API.
-- **Vendor packages** (e.g. `@rulecom/vendor-shopify`) — one folder per template, each with four files.
+- **`@rule/rcml`** — RCML element factories, validators, converters, and theme API.
+- **Vendor packages** (e.g. `@rule/vendor-shopify`) — one folder per template, each with four files.
 
 ---
 
@@ -117,7 +117,7 @@ import {
   type EmailTemplateRenderArgs,
   type CustomFieldRef,
   type LoopValueRef,
-} from '@rulecom/template-engine'
+} from '@rule/template-engine'
 
 /**
  * Typed data the XML consumes. Structural presence is the contract:
@@ -182,8 +182,8 @@ Net effect: the caller-facing context is the **minimum data the template actuall
 ## Consuming a template
 
 ```ts
-import { createAbandonedCartTemplate } from '@rulecom/vendor-shopify'
-import { customField, loopValue } from '@rulecom/template-engine'
+import { createAbandonedCartTemplate } from '@rule/vendor-shopify'
+import { customField, loopValue } from '@rule/template-engine'
 
 const template = createAbandonedCartTemplate()
 
@@ -200,12 +200,12 @@ const doc = template.render({
     },
     footer: { fontSize: '10px', textColor: '#666666' },
   },
-  theme,                              // EmailTheme from @rulecom/core
+  theme,                              // EmailTheme from @rule/rcml
   copy: { ctaButton: 'Check out' },   // optional partial override
 })
 ```
 
-`doc` is an `RcmlDocument` — send it through `@rulecom/client` to create a campaign or automation email in Rule.io.
+`doc` is an `RcmlDocument` — send it through `@rule/client` to create a campaign or automation email in Rule.io.
 
 ---
 

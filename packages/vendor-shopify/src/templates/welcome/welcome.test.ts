@@ -8,7 +8,7 @@
 
 import { describe, expect, it } from 'vitest'
 
-import { customField } from '@rulecom/template-engine'
+import { customField } from '@rule/template-engine'
 
 import {
   TEST_THEME,

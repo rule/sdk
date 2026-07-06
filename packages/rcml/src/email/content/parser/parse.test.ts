@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-condition */
 import { describe, it, expect } from 'vitest'
-import { parse, parseRfm, parseInlineRfm, RcmlValidationError } from './parse.js'
+import { parse, parseEmailRfm, parseEmailInlineRfm, RcmlValidationError } from './parse.js'
 
 const rfmFullInput = `:::align{value="center"}
 
@@ -740,18 +740,18 @@ describe('parse()', () => {
   })
 })
 
-describe('parseRfm()', () => {
+describe('parseEmailRfm()', () => {
   it('does not throw for valid RFM content', () => {
-    expect(() => parseRfm(':font[bold]{font-weight="bold"}')).not.toThrow()
+    expect(() => parseEmailRfm(':font[bold]{font-weight="bold"}')).not.toThrow()
   })
 
   it('throws RcmlValidationError for invalid content', () => {
-    expect(() => parseRfm('# Heading')).toThrow(RcmlValidationError)
+    expect(() => parseEmailRfm('# Heading')).toThrow(RcmlValidationError)
   })
 
   it('error message lists all issues', () => {
     try {
-      parseRfm('# Heading\n\n> Quote')
+      parseEmailRfm('# Heading\n\n> Quote')
     } catch (err) {
       expect(err).toBeInstanceOf(RcmlValidationError)
 
@@ -763,18 +763,18 @@ describe('parseRfm()', () => {
   })
 })
 
-describe('parseInlineRfm()', () => {
+describe('parseEmailInlineRfm()', () => {
   it('does not throw for valid Inline RFM content', () => {
-    expect(() => parseInlineRfm(':font[label]{font-weight="bold"}')).not.toThrow()
+    expect(() => parseEmailInlineRfm(':font[label]{font-weight="bold"}')).not.toThrow()
   })
 
   it('throws RcmlValidationError for lists', () => {
-    expect(() => parseInlineRfm('- item')).toThrow(RcmlValidationError)
+    expect(() => parseEmailInlineRfm('- item')).toThrow(RcmlValidationError)
   })
 
   it('exposes structured errors on RcmlValidationError', () => {
     try {
-      parseInlineRfm(':font[text]{bad-attr="x"}')
+      parseEmailInlineRfm(':font[text]{bad-attr="x"}')
     } catch (err) {
       expect(err).toBeInstanceOf(RcmlValidationError)
 

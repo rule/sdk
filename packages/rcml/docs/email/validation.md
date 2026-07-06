@@ -20,7 +20,7 @@ immediate exception. Use `safeValidateEmailTemplate` when you need to inspect or
 the issue list.
 
 ```typescript
-import { validateEmailTemplate, safeValidateEmailTemplate } from '@rulecom/rcml';
+import { validateEmailTemplate, safeValidateEmailTemplate } from '@rule/rcml';
 
 // Throwing variant
 const doc = validateEmailTemplate(xmlString);
@@ -91,7 +91,7 @@ All codes are also available as the `EmailTemplateErrorCodes` constant so you ca
 without string literals:
 
 ```typescript
-import { EmailTemplateErrorCodes, safeValidateEmailTemplate } from '@rulecom/rcml';
+import { EmailTemplateErrorCodes, safeValidateEmailTemplate } from '@rule/rcml';
 
 const result = safeValidateEmailTemplate(doc);
 if (!result.success) {

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import type { Root, RootContent } from 'mdast'
-import { parseRfm, parseInlineRfm } from '../parser/parse.js'
+import { parseEmailRfm, parseEmailInlineRfm } from '../parser/parse.js'
 import { ATOM_TOKEN_DELIMITER, ATOM_TOKEN_SEPARATOR } from '../parser/preprocess.js'
 import { transform } from './transform.js'
 import type { IrDoc, IrParagraph, IrFont, IrLink, IrBulletList, IrOrderedList, IrAlign, IrPlaceholder, IrLoopValue } from './types.js'
@@ -8,13 +8,13 @@ import type { IrDoc, IrParagraph, IrFont, IrLink, IrBulletList, IrOrderedList, I
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function rfm(input: string): IrDoc {
-  const { ast } = parseRfm(input, { position: false })
+  const { ast } = parseEmailRfm(input, { position: false })
 
   return transform(ast)
 }
 
 function inlineRfm(input: string): IrDoc {
-  const { ast } = parseInlineRfm(input, { position: false })
+  const { ast } = parseEmailInlineRfm(input, { position: false })
 
   return transform(ast)
 }

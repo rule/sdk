@@ -2,20 +2,26 @@
  * Public API: RCML email-template validator.
  *
  * This file contains **only public exports**. Every symbol here is part of
- * the `@rulecom/rcml` contract and is marked `@public` in its JSDoc. All
+ * the `@rule/rcml` contract and is marked `@public` in its JSDoc. All
  * heavy lifting is delegated to the internal helpers under `./validator/`.
  *
- * The validator merges three passes into one unified issue list:
+ * The validator merges four passes into one unified issue list:
  *   1. AJV structural check (see `./validator/ajv-validate.ts`).
  *   2. Zod per-attribute value check (see `./validator/attr-value-validate.ts`).
  *   3. ProseMirror content delegation (see `./validator/content-validate.ts`).
+ *   4. Cross-element column-width check (see `./validator/column-width-validate.ts`).
  *
  * Input may be either an `RcmlDocument` JSON AST or an RCML XML string; XML
  * is parsed first via {@link safeXmlToRcml}.
  */
 
 import type { RcmlDocument } from './rcml-types.js'
-import { validateAttrValues, validateContent, validateStructure } from './validator/index.js'
+import {
+  validateAttrValues,
+  validateColumnWidths,
+  validateContent,
+  validateStructure,
+} from './validator/index.js'
 import { RcmlXmlErrorCodes, safeXmlToRcml } from './xml-to-rcml.js'
 
 // ─── Error codes ─────────────────────────────────────────────────────────────
@@ -155,7 +161,7 @@ export function safeValidateEmailTemplate(input: RcmlDocument | string): SafeVal
         errors: parsed.errors.map((e) => ({
           path: e.path,
           code:
-            e.code === RcmlXmlErrorCodes.RFM_PARSE_ERROR
+            e.code === RcmlXmlErrorCodes.EMAIL_RFM_PARSE_ERROR
               ? EmailTemplateErrorCodes.CONTENT_INVALID
               : e.code === RcmlXmlErrorCodes.ROOT_INVALID
                 ? EmailTemplateErrorCodes.ROOT_INVALID
@@ -173,6 +179,7 @@ export function safeValidateEmailTemplate(input: RcmlDocument | string): SafeVal
   issues.push(...validateStructure(json))
   issues.push(...validateAttrValues(json))
   issues.push(...validateContent(json))
+  issues.push(...validateColumnWidths(json))
 
   if (issues.length > 0) {
     return { success: false, errors: issues }

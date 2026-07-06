@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 /**
  * Attribute schema for the `:::align` container directive.
- * RFM only — not valid in Inline RFM.
+ * Email RFM only — not valid in Email Inline RFM.
  *
  * @internal
  */

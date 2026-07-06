@@ -54,13 +54,13 @@ describe('safeXmlToRcml (non-throwing)', () => {
     expect(['XML_PARSE_ERROR', 'ROOT_INVALID']).toContain(result.errors[0]?.code)
   })
 
-  it('surfaces RFM_PARSE_ERROR when a text element contains invalid RFM', () => {
+  it('surfaces EMAIL_RFM_PARSE_ERROR when a text element contains invalid RFM', () => {
     // Unclosed directive inside rc-text — the RFM parser rejects it.
     const xml = '<rcml><rc-head></rc-head><rc-body><rc-section><rc-column><rc-text>:font[hi</rc-text></rc-column></rc-section></rc-body></rcml>'
     const result = safeXmlToRcml(xml)
 
     if (!result.success) {
-      expect(result.errors.some((e) => e.code === 'RFM_PARSE_ERROR')).toBe(true)
+      expect(result.errors.some((e) => e.code === 'EMAIL_RFM_PARSE_ERROR')).toBe(true)
     }
   })
 })

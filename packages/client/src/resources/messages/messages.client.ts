@@ -1,5 +1,5 @@
 /**
- * Messages namespace client for the `@rulecom/client` package.
+ * Messages namespace client for the `@rule/client` package.
  *
  * Wraps the v3 `/editor/message` endpoints. A message belongs to a single
  * dispatcher (campaign or automation) and holds the subject, sender settings,
@@ -20,6 +20,8 @@ import type {
   CreateEmailAutomationMessagePayload,
   CreateEmailCampaignMessagePayload,
   CreateMessageBody,
+  CreateSmsAutomationMessagePayload,
+  CreateSmsCampaignMessagePayload,
   EmailAutomationMessage,
   EmailCampaignMessage,
   Message,
@@ -27,9 +29,13 @@ import type {
   MessageResponse,
   MessageSenderWire,
   MessageWire,
+  SmsAutomationMessage,
+  SmsCampaignMessage,
   UpdateEmailAutomationMessagePayload,
   UpdateEmailCampaignMessagePayload,
   UpdateMessageBody,
+  UpdateSmsAutomationMessagePayload,
+  UpdateSmsCampaignMessagePayload,
 } from './messages.types.js';
 
 // ── Client ────────────────────────────────────────────────────────────────────
@@ -178,6 +184,146 @@ export class MessagesClient extends BaseResource {
     payload: UpdateEmailAutomationMessagePayload
   ): Promise<EmailAutomationMessage> {
     const body = mapUpdatePayloadToBody(payload);
+    const res = await this.transport.put<MessageResponse>(`/editor/message/${id}`, {
+      body: JSON.stringify(body),
+    });
+
+    return mapMessageWireToEntity(res.data);
+  }
+
+  /**
+   * Create an SMS message attached to a campaign.
+   *
+   * The `subject` field holds the SMS body text. After creating a message,
+   * create an SMS template and link them with a dynamic set to complete the
+   * SMS chain.
+   *
+   * @param campaignId - ID of the SMS campaign this message belongs to.
+   * @param payload - Optional UTM tracking fields.
+   * @returns The created campaign SMS message.
+   *
+   * @example
+   * ```typescript
+   * const message = await client.messages.createSmsCampaignMessage(campaignId, {
+   *   utmCampaign: 'spring-sale',
+   * });
+   * ```
+   */
+  async createSmsCampaignMessage(
+    campaignId: number,
+    payload: CreateSmsCampaignMessagePayload
+  ): Promise<SmsCampaignMessage> {
+    const body: CreateMessageBody = {
+      dispatcher: { id: campaignId, type: 'campaign' },
+      type: 2,
+      utm_campaign: payload.utmCampaign,
+      utm_term: payload.utmTerm,
+    };
+    const res = await this.transport.post<MessageResponse>('/editor/message', {
+      body: JSON.stringify(body),
+    });
+
+    return mapMessageWireToEntity(res.data);
+  }
+
+  /**
+   * Create an SMS message attached to an automation.
+   *
+   * After creating a message, create an SMS template and link them with a
+   * dynamic set to complete the SMS chain.
+   *
+   * @param automationId - ID of the SMS automation this message belongs to.
+   * @param payload - Optional UTM fields and automail delivery settings (active
+   *   flag and delay).
+   * @returns The created automation SMS message.
+   *
+   * @example
+   * ```typescript
+   * const message = await client.messages.createSmsAutomationMessage(automationId, {
+   *   utmCampaign: 'welcome-flow',
+   *   automailSetting: { active: true, delayInSeconds: '0' },
+   * });
+   * ```
+   */
+  async createSmsAutomationMessage(
+    automationId: number,
+    payload: CreateSmsAutomationMessagePayload
+  ): Promise<SmsAutomationMessage> {
+    const body: CreateMessageBody = {
+      dispatcher: { id: automationId, type: 'automail' },
+      type: 2,
+      utm_campaign: payload.utmCampaign,
+      utm_term: payload.utmTerm,
+      automail_setting: payload.automailSetting
+        ? mapAutomailSetting(payload.automailSetting)
+        : undefined,
+    };
+    const res = await this.transport.post<MessageResponse>('/editor/message', {
+      body: JSON.stringify(body),
+    });
+
+    return mapMessageWireToEntity(res.data);
+  }
+
+  /**
+   * Update an SMS campaign message.
+   *
+   * Only the fields you include are changed — omitted fields are left as-is.
+   *
+   * @param id - Message ID.
+   * @param payload - Fields to update. All fields are optional.
+   * @returns The updated campaign SMS message.
+   *
+   * @example
+   * ```typescript
+   * await client.messages.updateSmsCampaignMessage(messageId, {
+   *   utmCampaign: 'spring-sale',
+   * });
+   * ```
+   */
+  async updateSmsCampaignMessage(
+    id: number,
+    payload: UpdateSmsCampaignMessagePayload
+  ): Promise<SmsCampaignMessage> {
+    const body: UpdateMessageBody = {
+      utm_campaign: payload.utmCampaign,
+      utm_term: payload.utmTerm,
+    };
+    const res = await this.transport.put<MessageResponse>(`/editor/message/${id}`, {
+      body: JSON.stringify(body),
+    });
+
+    return mapMessageWireToEntity(res.data);
+  }
+
+  /**
+   * Update an SMS automation message.
+   *
+   * Only the fields you include are changed — omitted fields are left as-is.
+   * Use `automailSetting` to change the active flag or send delay.
+   *
+   * @param id - Message ID.
+   * @param payload - Fields to update. All fields are optional.
+   * @returns The updated automation SMS message.
+   *
+   * @example
+   * ```typescript
+   * await client.messages.updateSmsAutomationMessage(messageId, {
+   *   automailSetting: { active: true, delayInSeconds: '3600' },
+   * });
+   * ```
+   */
+  async updateSmsAutomationMessage(
+    id: number,
+    payload: UpdateSmsAutomationMessagePayload
+  ): Promise<SmsAutomationMessage> {
+    const body: UpdateMessageBody = {
+      utm_campaign: payload.utmCampaign,
+      utm_term: payload.utmTerm,
+      automail_setting: payload.automailSetting
+        ? mapAutomailSetting(payload.automailSetting)
+        : undefined,
+    };
     const res = await this.transport.put<MessageResponse>(`/editor/message/${id}`, {
       body: JSON.stringify(body),
     });

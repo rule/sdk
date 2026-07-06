@@ -1,5 +1,5 @@
 /**
- * Automations namespace client for the `@rulecom/client` package.
+ * Automations namespace client for the `@rule/client` package.
  *
  * Wraps the v3 `/editor/automail` endpoints. The "Automail" terminology used
  * by the underlying API is hidden — consumers see only "Automation".
@@ -24,10 +24,13 @@ import type {
   AutomationWire,
   CreateAutomationBody,
   CreateEmailAutomationPayload,
+  CreateSmsAutomationPayload,
   ListAutomationsParams,
   SetEmailAutomationPayload,
+  SetSmsAutomationPayload,
   UpdateAutomationBody,
   UpdateEmailAutomationPayload,
+  UpdateSmsAutomationPayload,
 } from './automations.types.js';
 
 // ── Client ────────────────────────────────────────────────────────────────────
@@ -216,6 +219,108 @@ export class AutomationsClient extends BaseResource {
     });
 
     return mapAutomationWireToEntity(res.data as AutomationWire);
+  }
+
+  /**
+   * Create an SMS automation.
+   *
+   * At minimum, provide a `name`. The trigger can be set at creation time or
+   * added later with {@link updateSmsAutomation}.
+   *
+   * @param payload - Automation creation options.
+   * @returns The created automation.
+   *
+   * @example
+   * ```typescript
+   * const automation = await client.automations.createSmsAutomation({
+   *   name: 'Order shipped SMS',
+   *   trigger: { type: 'TAG', id: tagId },
+   *   sendoutType: 'transactional',
+   * });
+   * ```
+   */
+  async createSmsAutomation(payload: CreateSmsAutomationPayload): Promise<Automation> {
+    const body: CreateAutomationBody = {
+      name: payload.name,
+      description: payload.description,
+      trigger: payload.trigger,
+      sendout_type: payload.sendoutType
+        ? mapSendoutTypeToWire(payload.sendoutType)
+        : undefined,
+      message_type: 2,
+    };
+    const res = await this.transport.post<AutomationResponse>('/editor/automail', {
+      body: JSON.stringify(body),
+    });
+
+    return mapAutomationWireToEntity(res.data as AutomationWire);
+  }
+
+  /**
+   * Set (upsert) an SMS automation — fully replaces it if it exists, creates
+   * it if not.
+   *
+   * All four fields are required and fully replace the existing values. If the
+   * automation does not exist, it is created as an SMS automation.
+   *
+   * @param id - Automation ID.
+   * @param payload - Full replacement body. No `messageType` field — fixed to
+   *   `'text_message'` by the method.
+   * @returns The updated or newly created automation.
+   *
+   * @example
+   * ```typescript
+   * await client.automations.setSmsAutomation(automationId, {
+   *   name: 'Order shipped SMS',
+   *   active: true,
+   *   trigger: { type: 'TAG', id: tagId },
+   *   sendoutType: 'transactional',
+   * });
+   * ```
+   */
+  async setSmsAutomation(id: number, payload: SetSmsAutomationPayload): Promise<Automation> {
+    const body: UpdateAutomationBody = {
+      name: payload.name,
+      active: payload.active,
+      trigger: payload.trigger,
+      sendout_type: mapSendoutTypeToWire(payload.sendoutType),
+    };
+
+    try {
+      const res = await this.transport.put<AutomationResponse>(`/editor/automail/${id}`, {
+        body: JSON.stringify(body),
+      });
+
+      return mapAutomationWireToEntity(res.data as AutomationWire);
+    } catch (error) {
+      if (!(error instanceof RuleApiError) || error.statusCode !== 404) throw error;
+
+      const createRes = await this.transport.post<AutomationResponse>('/editor/automail', {
+        body: JSON.stringify({ ...body, message_type: 2 }),
+      });
+
+      return mapAutomationWireToEntity(createRes.data as AutomationWire);
+    }
+  }
+
+  /**
+   * Update an SMS automation.
+   *
+   * Only the fields you include are changed — omitted fields are preserved
+   * from the existing record.
+   *
+   * @param id - Automation ID.
+   * @param partial - Fields to update. All fields are optional.
+   * @returns The updated automation.
+   * @throws `RuleApiError` with 404 if the automation does not exist.
+   *
+   * @example
+   * ```typescript
+   * await client.automations.updateSmsAutomation(automationId, { active: false });
+   * ```
+   */
+  updateSmsAutomation(id: number, partial: UpdateSmsAutomationPayload): Promise<Automation> {
+    return this.updateEmailAutomation(id, partial);
   }
 
   /**

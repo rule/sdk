@@ -172,16 +172,16 @@ describe('convertXmlToRcml — whitespace + text handling', () => {
     expect(textNode.content).toEqual({ type: 'doc', content: [] })
   })
 
-  it('surfaces RFM_PARSE_ERROR when rc-text contains invalid RFM', () => {
+  it('surfaces EMAIL_RFM_PARSE_ERROR when rc-text contains invalid RFM', () => {
     // Unclosed `:font[` directive — RFM parser rejects.
     const xml =
       '<rcml><rc-head></rc-head><rc-body><rc-section><rc-column><rc-text>:font[hi</rc-text></rc-column></rc-section></rc-body></rcml>'
     const result = convertXmlToRcml(xml)
 
     if (!result.success) {
-      expect(result.errors.some((e) => e.code === 'RFM_PARSE_ERROR')).toBe(true)
+      expect(result.errors.some((e) => e.code === 'EMAIL_RFM_PARSE_ERROR')).toBe(true)
       // Path should point at the rc-text node's content
-      expect(result.errors.find((e) => e.code === 'RFM_PARSE_ERROR')?.path).toContain('/content')
+      expect(result.errors.find((e) => e.code === 'EMAIL_RFM_PARSE_ERROR')?.path).toContain('/content')
     }
   })
 

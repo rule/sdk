@@ -18,8 +18,8 @@ Inline nodes — `text`, `hardbreak`, `placeholder`, `loop-value`
 
 ## Available in
 
-- Full RFM (`rc-text`, `rc-heading`)
-- Inline RFM (`rc-button`)
+- Full Email RFM (`rc-text`, `rc-heading`)
+- Email Inline RFM (`rc-button`)
 
 ## JSON
 
@@ -30,7 +30,7 @@ Inline nodes — `text`, `hardbreak`, `placeholder`, `loop-value`
 }
 ```
 
-## RFM syntax
+## Email RFM syntax
 
 Plain text on its own line. A blank line separates paragraphs.
 

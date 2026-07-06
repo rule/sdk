@@ -3,8 +3,8 @@
  *
  * Wraps the v2 and v3 endpoints of the Rule.io email-marketing API. Use this
  * package to create subscribers, manage automations, send campaign emails,
- * and read analytics. Composes with `@rulecom/rcml` to build templates and
- * with the `@rulecom/vendor-*` preset packages for platform-specific flows.
+ * and read analytics. Composes with `@rule/rcml` to build templates and
+ * with the `@rule/vendor-*` preset packages for platform-specific flows.
  */
 
 export { RuleClient } from './client.js';
@@ -16,6 +16,11 @@ export { AnalyticsMetrics, AnalyticsObjectTypes, AnalyticsMessageTypes } from '.
 export type * from './types.js';
 export * from './brand-style-to-theme.js';
 export { findTemplateOwner } from './find-template-owner.js';
+export {
+  resolvePreferredBrandStyle,
+  type ResolvePreferredBrandStyleResult,
+  type ResolvePreferredBrandStyleSource,
+} from './resolve-preferred-brand-style.js';
 export { formatDateForRule } from './utils/index.js';
 export type {
   TemplateOwner,
@@ -25,3 +30,4 @@ export type {
   FindTemplateOwnerOptions,
   FindTemplateOwnerResult,
 } from './find-template-owner.js';
+export { parseWebhookEvent, markTagDirection } from './webhooks/index.js';

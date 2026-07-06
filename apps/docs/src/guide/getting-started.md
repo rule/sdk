@@ -3,10 +3,10 @@
 ## Installation
 
 ```bash
-npm install @rulecom/sdk
+npm install @rule/sdk
 ```
 
-`@rulecom/sdk` is the recommended entry point. It re-exports everything from `@rulecom/client` and `@rulecom/rcml` so you only need one install.
+`@rule/sdk` is the recommended entry point. It re-exports everything from `@rule/client` and `@rule/rcml` so you only need one install.
 
 ## Authentication
 
@@ -15,7 +15,7 @@ Get your API key from [Rule.io Settings → API](https://app.rule.io/v5/#/app/se
 ## Quick Start
 
 ```typescript
-import { RuleClient } from '@rulecom/sdk';
+import { RuleClient } from '@rule/sdk';
 
 const client = new RuleClient({ apiKey: process.env.RULE_API_KEY! });
 
@@ -54,7 +54,7 @@ Throws `RuleClientError` if the API key is missing, or `RuleApiError` with statu
 ## Error Handling
 
 ```typescript
-import { RuleApiError, RuleClientError } from '@rulecom/sdk';
+import { RuleApiError, RuleClientError } from '@rule/sdk';
 
 try {
   await client.createSubscriberV3({ email: 'user@example.com' });

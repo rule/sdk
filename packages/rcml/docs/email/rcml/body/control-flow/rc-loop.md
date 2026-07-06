@@ -47,10 +47,10 @@ Repeating section driven by a data feed. Renders its child `<rc-section>` once p
 
 ## Building
 
-Templates can be built using factory functions from `@rulecom/rcml`, or the JSON structure above can be generated directly by an AI model — pass [`rcmlSpec`](/api/rcml/src/variables/rcmlSpec) as context when prompting.
+Templates can be built using factory functions from `@rule/rcml`, or the JSON structure above can be generated directly by an AI model — pass [`rcmlSpec`](/api/rcml/src/variables/rcmlSpec) as context when prompting.
 
 ```typescript
-import { createLoopElement, createSectionElement } from '@rulecom/rcml';
+import { createLoopElement, createSectionElement } from '@rule/rcml';
 
 createLoopElement({
   attrs: { 'loop-type': 'news-feed', 'loop-value': '42', 'loop-max-iterations': '5' },

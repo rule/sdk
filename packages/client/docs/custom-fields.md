@@ -288,4 +288,4 @@ await client.subscribers.deleteCustomFieldDataByGroup(subscriberId, 169233); // 
 
 - Write custom fields alongside subscriber upsert: [Syncing Subscribers](./syncing-subscribers)
 - Assign and remove tags: [Organizing with Tags](./organizing-with-tags)
-- Use custom fields in email templates: [@rulecom/rcml](/packages/rcml/)
+- Use custom fields in email templates: [@rule/rcml](/packages/rcml/)

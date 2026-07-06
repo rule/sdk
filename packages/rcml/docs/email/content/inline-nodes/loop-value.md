@@ -20,7 +20,7 @@ None (inline atom, leaf node).
 
 ## Available in
 
-- Full RFM (`rc-text`, `rc-heading`)
+- Full Email RFM (`rc-text`, `rc-heading`)
 
 ## JSON
 
@@ -54,7 +54,7 @@ In context — a `paragraph` inside an `rc-loop` that renders each order's item 
 }
 ```
 
-## RFM syntax
+## Email RFM syntax
 
 Loop values are written as leaf directives using `::loop-value{…}`:
 

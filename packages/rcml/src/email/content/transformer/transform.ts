@@ -29,14 +29,14 @@ import type {
  * @param ast - Validated MDAST Root produced by `parse()`
  * @returns The root IR document node
  *
- * @internal — Stage 2 of the pipeline; use {@link rfmToJson} or {@link inlineRfmToJson} instead.
+ * @internal — Stage 2 of the pipeline; use {@link emailRfmToJson} or {@link emailInlineRfmToJson} instead.
  *
  * @example
  * ```ts
- * import { parseRfm } from '../parser/parse.js'
+ * import { parseEmailRfm } from '../parser/parse.js'
  * import { transform } from './transform.js'
  *
- * const { ast } = parseRfm('Hello :font[world]{font-weight="bold"}')
+ * const { ast } = parseEmailRfm('Hello :font[world]{font-weight="bold"}')
  * const ir = transform(ast)
  * ```
  */

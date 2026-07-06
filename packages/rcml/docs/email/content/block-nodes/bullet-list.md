@@ -19,7 +19,7 @@ An unordered list containing one or more `list-item` nodes rendered with bullet 
 
 ## Available in
 
-- Full RFM (`rc-text`, `rc-heading`)
+- Full Email RFM (`rc-text`, `rc-heading`)
 
 ## JSON
 
@@ -46,7 +46,7 @@ An unordered list containing one or more `list-item` nodes rendered with bullet 
 }
 ```
 
-## RFM syntax
+## Email RFM syntax
 
 Lines starting with `- ` or `* `. Each line becomes a `list-item` containing a `paragraph`.
 

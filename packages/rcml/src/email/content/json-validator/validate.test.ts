@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { validateJson, safeParseJson, JsonParseError } from '../../validate-rcml-json.js'
-import { rfmToJson, inlineRfmToJson } from '../../rfm-to-json.js'
-import { rfmConfig } from '../flavors/rfm.js'
-import { inlineRfmConfig } from '../flavors/inline-rfm.js'
+import { emailRfmToJson, emailInlineRfmToJson } from '../../email-rfm-to-json.js'
+import { emailRfmConfig } from '../flavors/email-rfm.js'
+import { emailInlineRfmConfig } from '../flavors/email-inline-rfm.js'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -577,55 +577,55 @@ describe('JsonParseError', () => {
 
 describe('integration — full pipeline output passes validateJson', () => {
   it('plain text', () => {
-    const json = rfmToJson('Hello world')
+    const json = emailRfmToJson('Hello world')
 
     expect(() => validateJson(json)).not.toThrow()
   })
 
   it('bold text via :font', () => {
-    const json = rfmToJson(':font[bold]{font-weight="bold"}')
+    const json = emailRfmToJson(':font[bold]{font-weight="bold"}')
 
     expect(() => validateJson(json)).not.toThrow()
   })
 
   it('italic text', () => {
-    const json = rfmToJson(':font[italic]{font-style="italic"}')
+    const json = emailRfmToJson(':font[italic]{font-style="italic"}')
 
     expect(() => validateJson(json)).not.toThrow()
   })
 
   it('link', () => {
-    const json = rfmToJson(':link[click]{href="https://example.com"}')
+    const json = emailRfmToJson(':link[click]{href="https://example.com"}')
 
     expect(() => validateJson(json)).not.toThrow()
   })
 
   it('link with target and no-tracked', () => {
-    const json = rfmToJson(':link[click]{href="https://x.com" target="_blank" no-tracked="true"}')
+    const json = emailRfmToJson(':link[click]{href="https://x.com" target="_blank" no-tracked="true"}')
 
     expect(() => validateJson(json)).not.toThrow()
   })
 
   it('bullet list', () => {
-    const json = rfmToJson('- one\n- two\n- three')
+    const json = emailRfmToJson('- one\n- two\n- three')
 
     expect(() => validateJson(json)).not.toThrow()
   })
 
   it('ordered list', () => {
-    const json = rfmToJson('1. first\n2. second')
+    const json = emailRfmToJson('1. first\n2. second')
 
     expect(() => validateJson(json)).not.toThrow()
   })
 
   it('align block', () => {
-    const json = rfmToJson(':::align{value="center"}\nCentered text\n:::')
+    const json = emailRfmToJson(':::align{value="center"}\nCentered text\n:::')
 
     expect(() => validateJson(json)).not.toThrow()
   })
 
   it('placeholder', () => {
-    const json = rfmToJson(
+    const json = emailRfmToJson(
       '::placeholder{type="Subscriber" value="first_name" name="First name" original="[sub:fn]"}',
     )
 
@@ -633,13 +633,13 @@ describe('integration — full pipeline output passes validateJson', () => {
   })
 
   it('loop-value', () => {
-    const json = rfmToJson('::loop-value{original="orig" value="val" index="0"}')
+    const json = emailRfmToJson('::loop-value{original="orig" value="val" index="0"}')
 
     expect(() => validateJson(json)).not.toThrow()
   })
 
   it('multiple paragraphs', () => {
-    const json = rfmToJson('First paragraph\n\nSecond paragraph\n\nThird paragraph')
+    const json = emailRfmToJson('First paragraph\n\nSecond paragraph\n\nThird paragraph')
 
     expect(() => validateJson(json)).not.toThrow()
   })
@@ -652,13 +652,13 @@ describe('integration — full pipeline output passes validateJson', () => {
       ':::',
     ].join('\n')
 
-    const json = rfmToJson(input)
+    const json = emailRfmToJson(input)
 
     expect(() => validateJson(json)).not.toThrow()
   })
 
   it('safeParseJson wraps pipeline output successfully', () => {
-    const json = rfmToJson('Hello world')
+    const json = emailRfmToJson('Hello world')
     const result = safeParseJson(json)
 
     expect(result.success).toBe(true)
@@ -667,24 +667,24 @@ describe('integration — full pipeline output passes validateJson', () => {
 
 // ─── Flavor-aware structural validation ───────────────────────────────────────
 
-describe('validateJson — inlineRfmConfig rejects disallowed nodes', () => {
+describe('validateJson — emailInlineRfmConfig rejects disallowed nodes', () => {
   it('rejects a bullet-list', () => {
-    const json = rfmToJson('- one\n- two')
-    const result = safeParseJson(json, inlineRfmConfig)
+    const json = emailRfmToJson('- one\n- two')
+    const result = safeParseJson(json, emailInlineRfmConfig)
 
     expect(result.success).toBe(false)
   })
 
   it('rejects an ordered-list', () => {
-    const json = rfmToJson('1. first\n2. second')
-    const result = safeParseJson(json, inlineRfmConfig)
+    const json = emailRfmToJson('1. first\n2. second')
+    const result = safeParseJson(json, emailInlineRfmConfig)
 
     expect(result.success).toBe(false)
   })
 
   it('rejects an align block', () => {
-    const json = rfmToJson(':::align{value="center"}\nHello\n:::')
-    const result = safeParseJson(json, inlineRfmConfig)
+    const json = emailRfmToJson(':::align{value="center"}\nHello\n:::')
+    const result = safeParseJson(json, emailInlineRfmConfig)
 
     expect(result.success).toBe(false)
   })
@@ -705,81 +705,81 @@ describe('validateJson — inlineRfmConfig rejects disallowed nodes', () => {
       ],
     }
 
-    expect(safeParseJson(doc, inlineRfmConfig).success).toBe(false)
+    expect(safeParseJson(doc, emailInlineRfmConfig).success).toBe(false)
   })
 })
 
-describe('validateJson — inlineRfmConfig accepts allowed nodes', () => {
+describe('validateJson — emailInlineRfmConfig accepts allowed nodes', () => {
   it('accepts a plain paragraph', () => {
-    const json = inlineRfmToJson('Hello world')
+    const json = emailInlineRfmToJson('Hello world')
 
-    expect(safeParseJson(json, inlineRfmConfig).success).toBe(true)
+    expect(safeParseJson(json, emailInlineRfmConfig).success).toBe(true)
   })
 
   it('accepts text with a font mark', () => {
-    const json = inlineRfmToJson(':font[bold]{font-weight="bold"}')
+    const json = emailInlineRfmToJson(':font[bold]{font-weight="bold"}')
 
-    expect(safeParseJson(json, inlineRfmConfig).success).toBe(true)
+    expect(safeParseJson(json, emailInlineRfmConfig).success).toBe(true)
   })
 
   it('accepts text with a link mark', () => {
-    const json = inlineRfmToJson(':link[click]{href="https://example.com"}')
+    const json = emailInlineRfmToJson(':link[click]{href="https://example.com"}')
 
-    expect(safeParseJson(json, inlineRfmConfig).success).toBe(true)
+    expect(safeParseJson(json, emailInlineRfmConfig).success).toBe(true)
   })
 
   it('accepts a placeholder', () => {
-    const json = inlineRfmToJson(
+    const json = emailInlineRfmToJson(
       '::placeholder{type="Subscriber" value="fn" name="First name" original="[sub:fn]"}',
     )
 
-    expect(safeParseJson(json, inlineRfmConfig).success).toBe(true)
+    expect(safeParseJson(json, emailInlineRfmConfig).success).toBe(true)
   })
 
   it('accepts a loop-value', () => {
-    const json = inlineRfmToJson('::loop-value{original="o" value="v" index="0"}')
+    const json = emailInlineRfmToJson('::loop-value{original="o" value="v" index="0"}')
 
-    expect(safeParseJson(json, inlineRfmConfig).success).toBe(true)
+    expect(safeParseJson(json, emailInlineRfmConfig).success).toBe(true)
   })
 })
 
-describe('validateJson — rfmConfig accepts all node types', () => {
+describe('validateJson — emailRfmConfig accepts all node types', () => {
   it('accepts a bullet-list', () => {
-    const json = rfmToJson('- one\n- two')
+    const json = emailRfmToJson('- one\n- two')
 
-    expect(safeParseJson(json, rfmConfig).success).toBe(true)
+    expect(safeParseJson(json, emailRfmConfig).success).toBe(true)
   })
 
   it('accepts an ordered-list', () => {
-    const json = rfmToJson('1. first\n2. second')
+    const json = emailRfmToJson('1. first\n2. second')
 
-    expect(safeParseJson(json, rfmConfig).success).toBe(true)
+    expect(safeParseJson(json, emailRfmConfig).success).toBe(true)
   })
 
   it('accepts an align block', () => {
-    const json = rfmToJson(':::align{value="center"}\nHello\n:::')
+    const json = emailRfmToJson(':::align{value="center"}\nHello\n:::')
 
-    expect(safeParseJson(json, rfmConfig).success).toBe(true)
+    expect(safeParseJson(json, emailRfmConfig).success).toBe(true)
   })
 
   it('accepts a placeholder', () => {
-    const json = rfmToJson(
+    const json = emailRfmToJson(
       '::placeholder{type="Date" value="v" name="n" original="o"}',
     )
 
-    expect(safeParseJson(json, rfmConfig).success).toBe(true)
+    expect(safeParseJson(json, emailRfmConfig).success).toBe(true)
   })
 })
 
 describe('validateJson — no config falls back to full schema', () => {
   it('accepts a bullet-list without config', () => {
-    const json = rfmToJson('- item')
+    const json = emailRfmToJson('- item')
 
     expect(safeParseJson(json).success).toBe(true)
   })
 
   it('accepts align without config', () => {
-    const json = rfmToJson(':::align{value="left"}\ntext\n:::')
+    const json = emailRfmToJson(':::align{value="left"}\ntext\n:::')
 
     expect(safeParseJson(json).success).toBe(true)
   })
@@ -787,38 +787,38 @@ describe('validateJson — no config falls back to full schema', () => {
 
 describe('validateJson — validator is cached per FlavorConfig reference', () => {
   it('calling twice with same config object does not throw', () => {
-    const json = rfmToJson('Hello')
+    const json = emailRfmToJson('Hello')
 
     expect(() => {
-      safeParseJson(json, inlineRfmConfig)
-      safeParseJson(json, inlineRfmConfig)
+      safeParseJson(json, emailInlineRfmConfig)
+      safeParseJson(json, emailInlineRfmConfig)
     }).not.toThrow()
   })
 })
 
-describe('validateJson — inlineRfmConfig rejects multiple paragraphs', () => {
+describe('validateJson — emailInlineRfmConfig rejects multiple paragraphs', () => {
   it('rejects two paragraphs', () => {
     const doc = validDoc(paragraph(text('one')), paragraph(text('two')))
 
-    expect(safeParseJson(doc, inlineRfmConfig).success).toBe(false)
+    expect(safeParseJson(doc, emailInlineRfmConfig).success).toBe(false)
   })
 
   it('rejects three paragraphs', () => {
     const doc = validDoc(paragraph(text('a')), paragraph(text('b')), paragraph(text('c')))
 
-    expect(safeParseJson(doc, inlineRfmConfig).success).toBe(false)
+    expect(safeParseJson(doc, emailInlineRfmConfig).success).toBe(false)
   })
 
   it('accepts a single paragraph', () => {
     const doc = validDoc(paragraph(text('Hello')))
 
-    expect(safeParseJson(doc, inlineRfmConfig).success).toBe(true)
+    expect(safeParseJson(doc, emailInlineRfmConfig).success).toBe(true)
   })
 
-  it('rfmConfig still accepts multiple paragraphs', () => {
+  it('emailRfmConfig still accepts multiple paragraphs', () => {
     const doc = validDoc(paragraph(text('one')), paragraph(text('two')))
 
-    expect(safeParseJson(doc, rfmConfig).success).toBe(true)
+    expect(safeParseJson(doc, emailRfmConfig).success).toBe(true)
   })
 })
 

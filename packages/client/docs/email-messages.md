@@ -1,5 +1,7 @@
 # Email Messages
 
+> Channel: **email**. For SMS, see [SMS Messages](./sms-messages).
+
 A message holds the subject line, sender settings, and delivery configuration for an email. It sits between a dispatcher and a template in the email chain:
 
 ```

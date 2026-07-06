@@ -63,10 +63,10 @@ None. Content is a rich-text document set via the `content` field. See [Content 
 
 ## Building
 
-Templates can be built using factory functions from `@rulecom/rcml`, or the JSON structure above can be generated directly by an AI model — pass [`rcmlSpec`](/api/rcml/src/variables/rcmlSpec) as context when prompting.
+Templates can be built using factory functions from `@rule/rcml`, or the JSON structure above can be generated directly by an AI model — pass [`rcmlSpec`](/api/rcml/src/variables/rcmlSpec) as context when prompting.
 
 ```typescript
-import { createHeadingElement } from '@rulecom/rcml';
+import { createHeadingElement } from '@rule/rcml';
 
 createHeadingElement({
   attrs: { color: '#1a1a2e', 'font-size': '32px', 'font-weight': '700' },

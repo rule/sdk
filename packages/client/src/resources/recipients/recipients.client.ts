@@ -1,5 +1,5 @@
 /**
- * Recipients namespace client for the `@rulecom/client` package.
+ * Recipients namespace client for the `@rule/client` package.
  *
  * Wraps the v3 `/editor/recipients/*` endpoints which return lightweight lists
  * of segments, tags, and subscribers for use when setting up recipient targeting

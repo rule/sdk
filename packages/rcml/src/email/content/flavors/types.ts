@@ -4,7 +4,7 @@ import type { ZodType } from 'zod'
  * Configuration object that fully describes a RFM markdown flavor.
  *
  * Pass an instance to `validate()` or create flavor-specific parse functions
- * using `parseRfm()` / `parseInlineRfm()` as a reference.
+ * using `parseEmailRfm()` / `parseEmailInlineRfm()` as a reference.
  *
  * To add a new flavor, create a `FlavorConfig` — no changes to the parser
  * or validator are required.

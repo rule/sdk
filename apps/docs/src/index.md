@@ -3,7 +3,7 @@ layout: home
 
 hero:
   name: Rule.io SDK
-  tagline: '@rulecom/client · @rulecom/rcml · @rulecom/sdk'
+  tagline: '@rule/client · @rule/rcml · @rule/sdk'
   actions:
     - theme: brand
       text: Get Started

@@ -12,12 +12,12 @@ alignment, social blocks, placeholders, merge fields, custom fonts, or the full 
 attributes each element accepts.
 
 Pasting this documentation into a system prompt solves that, but at the cost of a large
-token budget on every call. `@rulecom/rcml` exports three purpose-built, machine-readable
+token budget on every call. `@rule/rcml` exports three purpose-built, machine-readable
 spec constants that describe the schema concisely. Each is a plain object — serialize it
 to JSON and include it in the system prompt once, at the start of a session.
 
 ```typescript
-import { rcmlSpec, rfmSpec, placeholderSpec } from '@rulecom/rcml';
+import { rcmlSpec, emailRfmSpec, placeholderSpec } from '@rule/rcml';
 
 const systemPrompt = `
 You generate RCML email templates.
@@ -25,14 +25,14 @@ You generate RCML email templates.
 RCML element schema:
 ${JSON.stringify(rcmlSpec)}
 
-Rich-text content (RFM) syntax:
-${JSON.stringify(rfmSpec)}
+Rich-text content (Email RFM) syntax:
+${JSON.stringify(emailRfmSpec)}
 
 Placeholder and merge-field tokens:
 ${JSON.stringify(placeholderSpec)}
 
-Output valid RCML XML. Text content inside rc-text, rc-heading, and rc-button uses RFM
-markdown syntax as described in the RFM spec above.
+Output valid RCML XML. Text content inside rc-text, rc-heading, and rc-button uses Email RFM
+markdown syntax as described in the Email RFM spec above.
 `;
 ```
 
@@ -43,7 +43,7 @@ maximum child count, and the full attribute table for each element (type, requir
 default value, allowed values, description, examples). This is the primary reference the
 LLM needs to produce structurally correct XML.
 
-**`rfmSpec`** — the two RFM content flavors (`rcml-content` for full blocks and
+**`emailRfmSpec`** — the two RFM content flavors (`rcml-content` for full blocks and
 `inline-rcml-content` for buttons), every node type (paragraph, lists, alignment,
 hard break, placeholder, loop-value), and every mark (font styling, links) with their
 attributes. Without this the LLM won't know it can produce multi-paragraph blocks,
@@ -61,7 +61,7 @@ XML is often the better format to request from an LLM:
 
 - Tag-based structure is similar to HTML, which is well-represented in LLM training data.
 - Rich-text content inside text elements (`rc-text`, `rc-heading`, `rc-button`) is written
-  in **RFM** — a compact markdown dialect — rather than verbose ProseMirror JSON nodes.
+  in **Email RFM** — a compact markdown dialect — rather than verbose ProseMirror JSON nodes.
 
 Example of what LLM-generated XML looks like:
 
@@ -93,7 +93,7 @@ Example of what LLM-generated XML looks like:
 Convert and validate before submitting:
 
 ```typescript
-import { safeXmlToRcml, safeValidateEmailTemplate } from '@rulecom/rcml';
+import { safeXmlToRcml, safeValidateEmailTemplate } from '@rule/rcml';
 
 // 1. LLM produces XML
 const xmlString = await llm.generate(prompt);
@@ -114,20 +114,20 @@ if (!validated.success) {
 // validated.data is the RcmlDocument, ready to submit
 ```
 
-`safeXmlToRcml` parses RFM content inside text elements into ProseMirror JSON
+`safeXmlToRcml` parses Email RFM content inside text elements into ProseMirror JSON
 automatically — no separate step is needed.
 
 ## Generating JSON directly
 
 LLMs can also be prompted to output the JSON AST (`RcmlDocument`) directly, skipping
 the conversion step. The trade-off is that the prompt must describe the ProseMirror
-content structure for text nodes — more verbose than the equivalent RFM markdown.
-Pass `rfmSpec` anyway so the LLM understands how content nodes are shaped.
+content structure for text nodes — more verbose than the equivalent Email RFM markdown.
+Pass `emailRfmSpec` anyway so the LLM understands how content nodes are shaped.
 
 Validate before using regardless of format:
 
 ```typescript
-import { safeValidateEmailTemplate } from '@rulecom/rcml';
+import { safeValidateEmailTemplate } from '@rule/rcml';
 
 const doc = JSON.parse(await llm.generate(jsonPrompt));
 const result = safeValidateEmailTemplate(doc);
@@ -146,7 +146,7 @@ if (result.success) {
 - Letting users edit a template in XML before it is re-submitted.
 
 ```typescript
-import { rcmlToXml } from '@rulecom/rcml';
+import { rcmlToXml } from '@rule/rcml';
 
 const xml = rcmlToXml(validated.data, { prettyPrint: true });
 // display, store, or return xml to the user
@@ -155,7 +155,7 @@ const xml = rcmlToXml(validated.data, { prettyPrint: true });
 ## Related
 
 - [`rcmlSpec`](/api/rcml/src/variables/rcmlSpec) — RCML element schema for system prompts
-- [`rfmSpec`](/api/rcml/src/variables/rfmSpec) — RFM content syntax for system prompts
+- [`emailRfmSpec`](/api/rcml/src/variables/emailRfmSpec) — RFM content syntax for system prompts
 - [`placeholderSpec`](/api/rcml/src/variables/placeholderSpec) — merge-field token syntax for system prompts
 - [Validation](/packages/rcml/email/validation) — structured error feedback for LLM correction
 - [Building programmatically](/packages/rcml/email/building-programmatically) — builder-based workflow

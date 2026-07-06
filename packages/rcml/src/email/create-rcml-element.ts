@@ -18,7 +18,7 @@
  *   {@link createButtonElement}.
  */
 
-import { rfmToJson } from './rfm-to-json.js'
+import { emailRfmToJson } from './email-rfm-to-json.js'
 import type {
   RcmlAttributes,
   RcmlBody,
@@ -1331,7 +1331,7 @@ export function createInlineContent(nodes: readonly InlineNode[]): Json {
 
 /**
  * Convert an RFM markdown string into a validated content `Json` doc.
- * Thin wrapper around {@link rfmToJson} + {@link normalizeJson} +
+ * Thin wrapper around {@link emailRfmToJson} + {@link normalizeJson} +
  * {@link validateJson} — useful when you want the normalized + validated
  * form up front (e.g. to pass the same content into multiple factories or
  * to inspect the result before assembling the surrounding element).
@@ -1339,7 +1339,7 @@ export function createInlineContent(nodes: readonly InlineNode[]): Json {
  * @param rfm - RFM markdown source string.
  * @returns A normalized + structurally validated {@link Json} content doc.
  * @throws `RcmlValidationError` when the input is not valid RFM (bubbled
- *   from {@link rfmToJson}).
+ *   from {@link emailRfmToJson}).
  * @throws {JsonParseError} When the produced doc fails structural validation.
  *
  * @example
@@ -1350,5 +1350,5 @@ export function createInlineContent(nodes: readonly InlineNode[]): Json {
  * @public
  */
 export function createTextContent(rfm: string): Json {
-  return validateJson(normalizeJson(rfmToJson(rfm)))
+  return validateJson(normalizeJson(emailRfmToJson(rfm)))
 }

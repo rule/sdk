@@ -2,9 +2,9 @@ import { describe, it, expect } from 'vitest'
 import { parse } from './parse.js'
 import { validate } from './validate.js'
 import { formatErrors } from './format.js'
-import { rfmConfig, inlineRfmConfig } from '../flavors/index.js'
+import { emailRfmConfig, emailInlineRfmConfig } from '../flavors/index.js'
 
-const parseAndValidate = (input: string, config: typeof rfmConfig) => {
+const parseAndValidate = (input: string, config: typeof emailRfmConfig) => {
   const { ast } = parse(input)
 
   return validate(ast, config)
@@ -13,86 +13,86 @@ const parseAndValidate = (input: string, config: typeof rfmConfig) => {
 describe('validate()', () => {
   describe('valid content', () => {
     it('accepts empty input for both configs', () => {
-      expect(parseAndValidate('', rfmConfig).valid).toBe(true)
-      expect(parseAndValidate('', inlineRfmConfig).valid).toBe(true)
+      expect(parseAndValidate('', emailRfmConfig).valid).toBe(true)
+      expect(parseAndValidate('', emailInlineRfmConfig).valid).toBe(true)
     })
 
     it('accepts plain paragraph', () => {
-      expect(parseAndValidate('Hello world.', inlineRfmConfig).valid).toBe(true)
+      expect(parseAndValidate('Hello world.', emailInlineRfmConfig).valid).toBe(true)
     })
 
     it('accepts multiple plain paragraphs', () => {
-      expect(parseAndValidate('First.\n\nSecond.\n\nThird.', rfmConfig).valid).toBe(true)
+      expect(parseAndValidate('First.\n\nSecond.\n\nThird.', emailRfmConfig).valid).toBe(true)
     })
 
     it('accepts :font with valid attributes', () => {
-      expect(parseAndValidate(':font[bold]{font-weight="bold"}', rfmConfig).valid).toBe(true)
+      expect(parseAndValidate(':font[bold]{font-weight="bold"}', emailRfmConfig).valid).toBe(true)
     })
 
     it('accepts :font with multiple valid attributes', () => {
       const result = parseAndValidate(
         ':font[styled]{font-weight="bold" font-style="italic" color="#ff0000"}',
-        rfmConfig,
+        emailRfmConfig,
       )
 
       expect(result.valid).toBe(true)
     })
 
     it('accepts :font font-style="normal"', () => {
-      expect(parseAndValidate(':font[t]{font-style="normal"}', rfmConfig).valid).toBe(true)
+      expect(parseAndValidate(':font[t]{font-style="normal"}', emailRfmConfig).valid).toBe(true)
     })
 
     it('accepts :font font-style="italic"', () => {
-      expect(parseAndValidate(':font[t]{font-style="italic"}', rfmConfig).valid).toBe(true)
+      expect(parseAndValidate(':font[t]{font-style="italic"}', emailRfmConfig).valid).toBe(true)
     })
 
     it('accepts :font text-decoration="none"', () => {
-      expect(parseAndValidate(':font[t]{text-decoration="none"}', rfmConfig).valid).toBe(true)
+      expect(parseAndValidate(':font[t]{text-decoration="none"}', emailRfmConfig).valid).toBe(true)
     })
 
     it('accepts :font text-decoration="underline"', () => {
-      expect(parseAndValidate(':font[t]{text-decoration="underline"}', rfmConfig).valid).toBe(true)
+      expect(parseAndValidate(':font[t]{text-decoration="underline"}', emailRfmConfig).valid).toBe(true)
     })
 
     it('accepts :font text-decoration="line-through"', () => {
-      expect(parseAndValidate(':font[t]{text-decoration="line-through"}', rfmConfig).valid).toBe(true)
+      expect(parseAndValidate(':font[t]{text-decoration="line-through"}', emailRfmConfig).valid).toBe(true)
     })
 
     it('accepts :link with href', () => {
-      expect(parseAndValidate(':link[click]{href="https://example.com"}', inlineRfmConfig).valid).toBe(true)
+      expect(parseAndValidate(':link[click]{href="https://example.com"}', emailInlineRfmConfig).valid).toBe(true)
     })
 
     it('accepts :link with target="_blank"', () => {
       expect(
-        parseAndValidate(':link[click]{href="https://x.com" target="_blank"}', rfmConfig).valid,
+        parseAndValidate(':link[click]{href="https://x.com" target="_blank"}', emailRfmConfig).valid,
       ).toBe(true)
     })
 
     it('accepts :link with no-tracked="true"', () => {
       expect(
-        parseAndValidate(':link[click]{href="https://x.com" no-tracked="true"}', rfmConfig).valid,
+        parseAndValidate(':link[click]{href="https://x.com" no-tracked="true"}', emailRfmConfig).valid,
       ).toBe(true)
     })
 
     it('accepts :link with no-tracked="false"', () => {
       expect(
-        parseAndValidate(':link[click]{href="https://x.com" no-tracked="false"}', rfmConfig).valid,
+        parseAndValidate(':link[click]{href="https://x.com" no-tracked="false"}', emailRfmConfig).valid,
       ).toBe(true)
     })
 
     it('accepts :link wrapping :font', () => {
       const result = parseAndValidate(
         ':link[:font[click]{color="#2e5bff"}]{href="https://example.com"}',
-        rfmConfig,
+        emailRfmConfig,
       )
 
       expect(result.valid).toBe(true)
     })
 
-    it('accepts :link wrapping :font in inlineRfmConfig', () => {
+    it('accepts :link wrapping :font in emailInlineRfmConfig', () => {
       const result = parseAndValidate(
         ':link[:font[click]{font-weight="bold"}]{href="https://example.com"}',
-        inlineRfmConfig,
+        emailInlineRfmConfig,
       )
 
       expect(result.valid).toBe(true)
@@ -101,7 +101,7 @@ describe('validate()', () => {
     it('accepts ::placeholder with required attributes', () => {
       const result = parseAndValidate(
         '::placeholder{type="Subscriber" value="first_name" name="First name" original="[subscriber:first_name]"}\n:::',
-        rfmConfig,
+        emailRfmConfig,
       )
 
       expect(result.valid).toBe(true)
@@ -113,7 +113,7 @@ describe('validate()', () => {
       for (const type of types) {
         const result = parseAndValidate(
           `::placeholder{type="${type}" value="x" name="X" original="[x]"}\n:::`,
-          rfmConfig,
+          emailRfmConfig,
         )
 
         expect(result.valid).toBe(true)
@@ -123,7 +123,7 @@ describe('validate()', () => {
     it('accepts ::placeholder with optional max-length', () => {
       const result = parseAndValidate(
         '::placeholder{type="Subscriber" value="x" name="X" original="[x]" max-length="100"}\n:::',
-        rfmConfig,
+        emailRfmConfig,
       )
 
       expect(result.valid).toBe(true)
@@ -132,32 +132,32 @@ describe('validate()', () => {
     it('accepts ::loop-value in both configs', () => {
       const input = '::loop-value{original="orders.name" value="orders" index="name"}\n:::'
 
-      expect(parseAndValidate(input, rfmConfig).valid).toBe(true)
-      expect(parseAndValidate(input, inlineRfmConfig).valid).toBe(true)
+      expect(parseAndValidate(input, emailRfmConfig).valid).toBe(true)
+      expect(parseAndValidate(input, emailInlineRfmConfig).valid).toBe(true)
     })
 
-    it('accepts :::align in rfmConfig', () => {
-      const result = parseAndValidate(':::align{value="center"}\n\nA paragraph.\n\n:::', rfmConfig)
+    it('accepts :::align in emailRfmConfig', () => {
+      const result = parseAndValidate(':::align{value="center"}\n\nA paragraph.\n\n:::', emailRfmConfig)
 
       expect(result.valid).toBe(true)
     })
 
     it('accepts :::align with value="left"', () => {
-      expect(parseAndValidate(':::align{value="left"}\n\nText.\n\n:::', rfmConfig).valid).toBe(true)
+      expect(parseAndValidate(':::align{value="left"}\n\nText.\n\n:::', emailRfmConfig).valid).toBe(true)
     })
 
     it('accepts :::align with value="right"', () => {
-      expect(parseAndValidate(':::align{value="right"}\n\nText.\n\n:::', rfmConfig).valid).toBe(true)
+      expect(parseAndValidate(':::align{value="right"}\n\nText.\n\n:::', emailRfmConfig).valid).toBe(true)
     })
 
-    it('accepts bullet and ordered lists in rfmConfig', () => {
-      const result = parseAndValidate('- Item one\n- Item two\n\n1. Step one\n2. Step two', rfmConfig)
+    it('accepts bullet and ordered lists in emailRfmConfig', () => {
+      const result = parseAndValidate('- Item one\n- Item two\n\n1. Step one\n2. Step two', emailRfmConfig)
 
       expect(result.valid).toBe(true)
     })
 
     it('accepts :font inside a list item', () => {
-      const result = parseAndValidate('- :font[bold]{font-weight="bold"}', rfmConfig)
+      const result = parseAndValidate('- :font[bold]{font-weight="bold"}', emailRfmConfig)
 
       expect(result.valid).toBe(true)
     })
@@ -165,7 +165,7 @@ describe('validate()', () => {
     it('accepts :font inside :::align block', () => {
       const result = parseAndValidate(
         ':::align{value="center"}\n\n:font[big]{font-size="24px"}\n\n:::',
-        rfmConfig,
+        emailRfmConfig,
       )
 
       expect(result.valid).toBe(true)
@@ -174,7 +174,7 @@ describe('validate()', () => {
 
   describe('unsupported block node types', () => {
     it('rejects headings', () => {
-      const result = parseAndValidate('# Hello', rfmConfig)
+      const result = parseAndValidate('# Hello', emailRfmConfig)
 
       expect(result.valid).toBe(false)
       expect(result.errors[0]?.message).toMatch(/heading/)
@@ -182,7 +182,7 @@ describe('validate()', () => {
 
     it('rejects h2–h6 headings', () => {
       for (let depth = 2; depth <= 6; depth++) {
-        const result = parseAndValidate(`${'#'.repeat(depth)} Heading`, rfmConfig)
+        const result = parseAndValidate(`${'#'.repeat(depth)} Heading`, emailRfmConfig)
 
         expect(result.valid).toBe(false)
         expect(result.errors[0]?.message).toMatch(/heading/)
@@ -190,28 +190,28 @@ describe('validate()', () => {
     })
 
     it('rejects blockquotes', () => {
-      const result = parseAndValidate('> A quote', rfmConfig)
+      const result = parseAndValidate('> A quote', emailRfmConfig)
 
       expect(result.valid).toBe(false)
       expect(result.errors[0]?.message).toMatch(/blockquote/)
     })
 
     it('rejects fenced code blocks', () => {
-      const result = parseAndValidate('```js\nconst x = 1\n```', rfmConfig)
+      const result = parseAndValidate('```js\nconst x = 1\n```', emailRfmConfig)
 
       expect(result.valid).toBe(false)
       expect(result.errors[0]?.message).toMatch(/fenced code block/)
     })
 
     it('rejects thematic breaks', () => {
-      const result = parseAndValidate('---', rfmConfig)
+      const result = parseAndValidate('---', emailRfmConfig)
 
       expect(result.valid).toBe(false)
       expect(result.errors[0]?.message).toMatch(/thematic break/)
     })
 
     it('rejects raw HTML blocks', () => {
-      const result = parseAndValidate('<div>hello</div>', rfmConfig)
+      const result = parseAndValidate('<div>hello</div>', emailRfmConfig)
 
       expect(result.valid).toBe(false)
       expect(result.errors[0]?.message).toMatch(/raw HTML/)
@@ -220,85 +220,85 @@ describe('validate()', () => {
 
   describe('unsupported inline marks', () => {
     it('rejects native bold', () => {
-      const result = parseAndValidate('**bold**', rfmConfig)
+      const result = parseAndValidate('**bold**', emailRfmConfig)
 
       expect(result.valid).toBe(false)
       expect(result.errors[0]?.message).toMatch(/native bold/)
     })
 
     it('rejects native italic', () => {
-      const result = parseAndValidate('*italic*', rfmConfig)
+      const result = parseAndValidate('*italic*', emailRfmConfig)
 
       expect(result.valid).toBe(false)
       expect(result.errors[0]?.message).toMatch(/native italic/)
     })
 
     it('rejects native links', () => {
-      const result = parseAndValidate('[click](https://example.com)', rfmConfig)
+      const result = parseAndValidate('[click](https://example.com)', emailRfmConfig)
 
       expect(result.valid).toBe(false)
       expect(result.errors[0]?.message).toMatch(/native link/)
     })
 
     it('rejects inline code', () => {
-      const result = parseAndValidate('some `code` here', rfmConfig)
+      const result = parseAndValidate('some `code` here', emailRfmConfig)
 
       expect(result.valid).toBe(false)
       expect(result.errors[0]?.message).toMatch(/inline code/)
     })
 
     it('rejects images', () => {
-      const result = parseAndValidate('![alt](https://example.com/img.png)', rfmConfig)
+      const result = parseAndValidate('![alt](https://example.com/img.png)', emailRfmConfig)
 
       expect(result.valid).toBe(false)
       expect(result.errors[0]?.message).toMatch(/image/)
     })
 
-    it('rejects native bold in inlineRfmConfig too', () => {
-      const result = parseAndValidate('**bold**', inlineRfmConfig)
+    it('rejects native bold in emailInlineRfmConfig too', () => {
+      const result = parseAndValidate('**bold**', emailInlineRfmConfig)
 
       expect(result.valid).toBe(false)
       expect(result.errors[0]?.message).toMatch(/native bold/)
     })
 
-    it('accepts inline hard break in rfmConfig', () => {
-      const result = parseAndValidate('line one\\\nline two', rfmConfig)
+    it('accepts inline hard break in emailRfmConfig', () => {
+      const result = parseAndValidate('line one\\\nline two', emailRfmConfig)
 
       expect(result.valid).toBe(true)
     })
   })
 
-  describe('inlineRfmConfig restrictions', () => {
+  describe('emailInlineRfmConfig restrictions', () => {
     it('rejects bullet lists', () => {
-      const result = parseAndValidate('- Item', inlineRfmConfig)
+      const result = parseAndValidate('- Item', emailInlineRfmConfig)
 
       expect(result.valid).toBe(false)
       expect(result.errors[0]?.message).toMatch(/Inline RFM/)
     })
 
     it('rejects ordered lists', () => {
-      const result = parseAndValidate('1. Step', inlineRfmConfig)
+      const result = parseAndValidate('1. Step', emailInlineRfmConfig)
 
       expect(result.valid).toBe(false)
       expect(result.errors[0]?.message).toMatch(/Inline RFM/)
     })
 
     it('rejects :::align', () => {
-      const result = parseAndValidate(':::align{value="center"}\n\nText.\n\n:::', inlineRfmConfig)
+      const result = parseAndValidate(':::align{value="center"}\n\nText.\n\n:::', emailInlineRfmConfig)
 
       expect(result.valid).toBe(false)
       expect(result.errors[0]?.message).toMatch(/:::align/)
     })
 
     it('rejects headings', () => {
-      const result = parseAndValidate('# Hello', inlineRfmConfig)
+      const result = parseAndValidate('# Hello', emailInlineRfmConfig)
 
       expect(result.valid).toBe(false)
       expect(result.errors[0]?.message).toMatch(/heading/)
     })
 
-    it('rejects hard break in inlineRfmConfig', () => {
-      const result = parseAndValidate('line one\\\nline two', inlineRfmConfig)
+    it('rejects hard break in emailInlineRfmConfig', () => {
+      const result = parseAndValidate('line one\\\nline two', emailInlineRfmConfig)
 
       expect(result.valid).toBe(false)
       expect(result.errors[0]?.message).toMatch(/hard break/)
@@ -307,35 +307,35 @@ describe('validate()', () => {
 
   describe(':font attribute validation', () => {
     it('rejects :font with no attributes', () => {
-      const result = parseAndValidate(':font[text]{}', rfmConfig)
+      const result = parseAndValidate(':font[text]{}', emailRfmConfig)
 
       expect(result.valid).toBe(false)
       expect(result.errors[0]?.message).toMatch(/at least one attribute/)
     })
 
     it('rejects :font with unknown attribute', () => {
-      const result = parseAndValidate(':font[text]{font-weiht="bold"}', rfmConfig)
+      const result = parseAndValidate(':font[text]{font-weiht="bold"}', emailRfmConfig)
 
       expect(result.valid).toBe(false)
       expect(result.errors[0]?.message).toMatch(/font-weiht/)
     })
 
     it('rejects :font with invalid font-style value', () => {
-      const result = parseAndValidate(':font[text]{font-style="oblique"}', rfmConfig)
+      const result = parseAndValidate(':font[text]{font-style="oblique"}', emailRfmConfig)
 
       expect(result.valid).toBe(false)
       expect(result.errors[0]?.message).toMatch(/font-style/)
     })
 
     it('rejects :font with invalid text-decoration value', () => {
-      const result = parseAndValidate(':font[text]{text-decoration="blink"}', rfmConfig)
+      const result = parseAndValidate(':font[text]{text-decoration="blink"}', emailRfmConfig)
 
       expect(result.valid).toBe(false)
       expect(result.errors[0]?.message).toMatch(/text-decoration/)
     })
 
     it('rejects :font with multiple unknown attributes', () => {
-      const result = parseAndValidate(':font[text]{foo="1" bar="2"}', rfmConfig)
+      const result = parseAndValidate(':font[text]{foo="1" bar="2"}', emailRfmConfig)
 
       expect(result.valid).toBe(false)
       expect(result.errors.length).toBeGreaterThanOrEqual(1)
@@ -344,35 +344,35 @@ describe('validate()', () => {
 
   describe(':link attribute validation', () => {
     it('rejects :link without href', () => {
-      const result = parseAndValidate(':link[click]{target="_blank"}', rfmConfig)
+      const result = parseAndValidate(':link[click]{target="_blank"}', emailRfmConfig)
 
       expect(result.valid).toBe(false)
       expect(result.errors[0]?.message).toMatch(/href/)
     })
 
     it('rejects :link with empty href', () => {
-      const result = parseAndValidate(':link[click]{href=""}', rfmConfig)
+      const result = parseAndValidate(':link[click]{href=""}', emailRfmConfig)
 
       expect(result.valid).toBe(false)
       expect(result.errors[0]?.message).toMatch(/href/)
     })
 
     it('rejects :link with unknown attribute', () => {
-      const result = parseAndValidate(':link[click]{href="https://x.com" rel="noopener"}', rfmConfig)
+      const result = parseAndValidate(':link[click]{href="https://x.com" rel="noopener"}', emailRfmConfig)
 
       expect(result.valid).toBe(false)
       expect(result.errors[0]?.message).toMatch(/rel/)
     })
 
     it('rejects :link with invalid target value', () => {
-      const result = parseAndValidate(':link[click]{href="https://x.com" target="_self"}', rfmConfig)
+      const result = parseAndValidate(':link[click]{href="https://x.com" target="_self"}', emailRfmConfig)
 
       expect(result.valid).toBe(false)
       expect(result.errors[0]?.message).toMatch(/target/)
     })
 
     it('rejects :link with invalid no-tracked value', () => {
-      const result = parseAndValidate(':link[click]{href="https://x.com" no-tracked="yes"}', rfmConfig)
+      const result = parseAndValidate(':link[click]{href="https://x.com" no-tracked="yes"}', emailRfmConfig)
 
       expect(result.valid).toBe(false)
       expect(result.errors[0]?.message).toMatch(/no-tracked/)
@@ -381,7 +381,7 @@ describe('validate()', () => {
     it('rejects invalid :font nested inside :link', () => {
       const result = parseAndValidate(
         ':link[:font[click]{}]{href="https://example.com"}',
-        rfmConfig,
+        emailRfmConfig,
       )
 
       expect(result.valid).toBe(false)
@@ -391,27 +391,27 @@ describe('validate()', () => {
 
   describe(':::align attribute validation', () => {
     it('rejects :::align with invalid value', () => {
-      const result = parseAndValidate(':::align{value="justify"}\n\nText.\n\n:::', rfmConfig)
+      const result = parseAndValidate(':::align{value="justify"}\n\nText.\n\n:::', emailRfmConfig)
 
       expect(result.valid).toBe(false)
       expect(result.errors[0]?.message).toMatch(/value/)
     })
 
     it('rejects :::align with unknown attribute', () => {
-      const result = parseAndValidate(':::align{value="center" side="left"}\n\nText.\n\n:::', rfmConfig)
+      const result = parseAndValidate(':::align{value="center" side="left"}\n\nText.\n\n:::', emailRfmConfig)
 
       expect(result.valid).toBe(false)
     })
 
     it('rejects unknown directive inside :::align block', () => {
-      const result = parseAndValidate(':::align{value="center"}\n\n:::callout{}\n\nText.\n\n:::\n\n:::', rfmConfig)
+      const result = parseAndValidate(':::align{value="center"}\n\n:::callout{}\n\nText.\n\n:::\n\n:::', emailRfmConfig)
 
       expect(result.valid).toBe(false)
       expect(result.errors[0]?.message).toMatch(/:::callout/)
     })
 
     it('rejects native bold inside :::align block', () => {
-      const result = parseAndValidate(':::align{value="center"}\n\n**bold**\n\n:::', rfmConfig)
+      const result = parseAndValidate(':::align{value="center"}\n\n**bold**\n\n:::', emailRfmConfig)
 
       expect(result.valid).toBe(false)
       expect(result.errors[0]?.message).toMatch(/native bold/)
@@ -420,21 +420,21 @@ describe('validate()', () => {
 
   describe('::loop-value attribute validation', () => {
     it('rejects ::loop-value missing original', () => {
-      const result = parseAndValidate('::loop-value{value="orders" index="name"}\n:::', rfmConfig)
+      const result = parseAndValidate('::loop-value{value="orders" index="name"}\n:::', emailRfmConfig)
 
       expect(result.valid).toBe(false)
       expect(result.errors[0]?.message).toMatch(/original/)
     })
 
     it('rejects ::loop-value missing value', () => {
-      const result = parseAndValidate('::loop-value{original="orders.name" index="name"}\n:::', rfmConfig)
+      const result = parseAndValidate('::loop-value{original="orders.name" index="name"}\n:::', emailRfmConfig)
 
       expect(result.valid).toBe(false)
       expect(result.errors[0]?.message).toMatch(/value/)
     })
 
     it('rejects ::loop-value missing index', () => {
-      const result = parseAndValidate('::loop-value{original="orders.name" value="orders"}\n:::', rfmConfig)
+      const result = parseAndValidate('::loop-value{original="orders.name" value="orders"}\n:::', emailRfmConfig)
 
       expect(result.valid).toBe(false)
       expect(result.errors[0]?.message).toMatch(/index/)
@@ -443,7 +443,7 @@ describe('validate()', () => {
     it('rejects ::loop-value with unknown attribute', () => {
       const result = parseAndValidate(
         '::loop-value{original="orders.name" value="orders" index="name" extra="x"}\n:::',
-        rfmConfig,
+        emailRfmConfig,
       )
 
       expect(result.valid).toBe(false)
@@ -454,7 +454,7 @@ describe('validate()', () => {
     it('rejects ::placeholder with invalid type', () => {
       const result = parseAndValidate(
         '::placeholder{type="Unknown" value="x" name="X" original="[x]"}\n:::',
-        rfmConfig,
+        emailRfmConfig,
       )
 
       expect(result.valid).toBe(false)
@@ -464,7 +464,7 @@ describe('validate()', () => {
     it('rejects ::placeholder missing required name', () => {
       const result = parseAndValidate(
         '::placeholder{type="Subscriber" value="x" original="[x]"}\n:::',
-        rfmConfig,
+        emailRfmConfig,
       )
 
       expect(result.valid).toBe(false)
@@ -474,7 +474,7 @@ describe('validate()', () => {
     it('accepts ::placeholder without value (value is optional)', () => {
       const result = parseAndValidate(
         '::placeholder{type="Subscriber" name="X" original="[x]"}\n:::',
-        rfmConfig,
+        emailRfmConfig,
       )
 
       expect(result.valid).toBe(true)
@@ -483,7 +483,7 @@ describe('validate()', () => {
     it('rejects ::placeholder missing required original', () => {
       const result = parseAndValidate(
         '::placeholder{type="Subscriber" value="x" name="X"}\n:::',
-        rfmConfig,
+        emailRfmConfig,
       )
 
       expect(result.valid).toBe(false)
@@ -493,7 +493,7 @@ describe('validate()', () => {
     it('rejects ::placeholder with empty name', () => {
       const result = parseAndValidate(
         '::placeholder{type="Subscriber" value="x" name="" original="[x]"}\n:::',
-        rfmConfig,
+        emailRfmConfig,
       )
 
       expect(result.valid).toBe(false)
@@ -503,7 +503,7 @@ describe('validate()', () => {
     it('rejects ::placeholder with unknown attribute', () => {
       const result = parseAndValidate(
         '::placeholder{type="Subscriber" value="x" name="X" original="[x]" extra="y"}\n:::',
-        rfmConfig,
+        emailRfmConfig,
       )
 
       expect(result.valid).toBe(false)
@@ -512,41 +512,41 @@ describe('validate()', () => {
 
   describe('unknown directives', () => {
     it('rejects unknown text directive', () => {
-      const result = parseAndValidate(':badge[NEW]{}', rfmConfig)
+      const result = parseAndValidate(':badge[NEW]{}', emailRfmConfig)
 
       expect(result.valid).toBe(false)
       expect(result.errors[0]?.message).toMatch(/:badge/)
     })
 
-    it('rejects unknown text directive in inlineRfmConfig', () => {
-      const result = parseAndValidate(':badge[NEW]{}', inlineRfmConfig)
+    it('rejects unknown text directive in emailInlineRfmConfig', () => {
+      const result = parseAndValidate(':badge[NEW]{}', emailInlineRfmConfig)
 
       expect(result.valid).toBe(false)
       expect(result.errors[0]?.message).toMatch(/:badge/)
     })
 
     it('rejects unknown container directive', () => {
-      const result = parseAndValidate(':::callout{}\n\nContent.\n\n:::', rfmConfig)
+      const result = parseAndValidate(':::callout{}\n\nContent.\n\n:::', emailRfmConfig)
 
       expect(result.valid).toBe(false)
       expect(result.errors[0]?.message).toMatch(/:::callout/)
     })
 
     it('error message for unknown text directive lists supported directives', () => {
-      const result = parseAndValidate(':badge[NEW]{}', rfmConfig)
+      const result = parseAndValidate(':badge[NEW]{}', emailRfmConfig)
 
       expect(result.errors[0]?.message).toMatch(/:font/)
       expect(result.errors[0]?.message).toMatch(/:link/)
     })
 
     it('error message for unknown container directive lists supported directives', () => {
-      const result = parseAndValidate(':::callout{}\n\nContent.\n\n:::', rfmConfig)
+      const result = parseAndValidate(':::callout{}\n\nContent.\n\n:::', emailRfmConfig)
 
       expect(result.errors[0]?.message).toMatch(/:::align/)
     })
 
     it('rejects unknown leaf directive', () => {
-      const result = parseAndValidate('::unknown{}', rfmConfig)
+      const result = parseAndValidate('::unknown{}', emailRfmConfig)
 
       expect(result.valid).toBe(false)
       expect(result.errors[0]?.message).toMatch(/::unknown/)
@@ -572,7 +572,7 @@ describe('validate()', () => {
         ],
       }
 
-      const result = validate(ast as Parameters<typeof validate>[0], rfmConfig)
+      const result = validate(ast as Parameters<typeof validate>[0], emailRfmConfig)
 
       expect(result.valid).toBe(false)
     })
@@ -596,7 +596,7 @@ describe('validate()', () => {
         ],
       }
 
-      const result = validate(ast as Parameters<typeof validate>[0], rfmConfig)
+      const result = validate(ast as Parameters<typeof validate>[0], emailRfmConfig)
 
       expect(result.valid).toBe(true)
     })
@@ -621,7 +621,7 @@ describe('validate()', () => {
         ],
       }
 
-      const result = validate(ast as Parameters<typeof validate>[0], rfmConfig)
+      const result = validate(ast as Parameters<typeof validate>[0], emailRfmConfig)
 
       expect(result.valid).toBe(false)
       expect(result.errors[0]?.message).toContain('"imageReference"')
@@ -639,7 +639,7 @@ describe('validate()', () => {
         ],
       }
 
-      const result = validate(ast as Parameters<typeof validate>[0], rfmConfig)
+      const result = validate(ast as Parameters<typeof validate>[0], emailRfmConfig)
 
       expect(result.valid).toBe(false)
       expect(result.errors[0]?.message).toContain('"yaml"')
@@ -648,40 +648,40 @@ describe('validate()', () => {
 
   describe('error structure', () => {
     it('error has a path property', () => {
-      const result = parseAndValidate('# Heading', rfmConfig)
+      const result = parseAndValidate('# Heading', emailRfmConfig)
 
       expect(result.errors[0]).toHaveProperty('path')
       expect(typeof result.errors[0]?.path).toBe('string')
     })
 
     it('error path includes node type', () => {
-      const result = parseAndValidate('# Heading', rfmConfig)
+      const result = parseAndValidate('# Heading', emailRfmConfig)
 
       expect(result.errors[0]?.path).toMatch(/heading/)
     })
 
     it('error has line number', () => {
-      const result = parseAndValidate('# Heading', rfmConfig)
+      const result = parseAndValidate('# Heading', emailRfmConfig)
 
       expect(result.errors[0]?.line).toBe(1)
     })
 
     it('includes line number in errors', () => {
-      const result = parseAndValidate('Hello.\n\n# Heading', rfmConfig)
+      const result = parseAndValidate('Hello.\n\n# Heading', emailRfmConfig)
       const headingError = result.errors.find((e) => e.message.includes('heading'))
 
       expect(headingError?.line).toBe(3)
     })
 
     it('includes column number in errors', () => {
-      const result = parseAndValidate('**bold**', rfmConfig)
+      const result = parseAndValidate('**bold**', emailRfmConfig)
 
       expect(result.errors[0]?.column).toBeDefined()
       expect(result.errors[0]?.column).toBe(1)
     })
 
     it('errors from multiple paragraphs are all collected', () => {
-      const result = parseAndValidate('**bold**\n\n*italic*\n\n`code`', rfmConfig)
+      const result = parseAndValidate('**bold**\n\n*italic*\n\n`code`', emailRfmConfig)
 
       expect(result.errors.length).toBe(3)
     })
@@ -689,13 +689,13 @@ describe('validate()', () => {
 
   describe('multiple errors', () => {
     it('collects all errors in one pass', () => {
-      const result = parseAndValidate('# Heading\n\n> Blockquote', rfmConfig)
+      const result = parseAndValidate('# Heading\n\n> Blockquote', emailRfmConfig)
 
       expect(result.errors.length).toBeGreaterThanOrEqual(2)
     })
 
     it('collects errors from both block and inline violations', () => {
-      const result = parseAndValidate('# Heading\n\n**bold text**', rfmConfig)
+      const result = parseAndValidate('# Heading\n\n**bold text**', emailRfmConfig)
 
       expect(result.errors.length).toBeGreaterThanOrEqual(2)
     })
@@ -705,14 +705,14 @@ describe('validate()', () => {
 describe('formatErrors()', () => {
   it('returns null for valid content', () => {
     const { ast } = parse('Hello.')
-    const result = validate(ast, rfmConfig)
+    const result = validate(ast, emailRfmConfig)
 
     expect(formatErrors(result)).toBeNull()
   })
 
   it('returns a numbered list of errors', () => {
     const { ast } = parse('# Heading\n\n> Quote')
-    const result = validate(ast, rfmConfig)
+    const result = validate(ast, emailRfmConfig)
     const formatted = formatErrors(result)
 
     expect(formatted).toMatch(/Found \d+ validation error/)
@@ -722,7 +722,7 @@ describe('formatErrors()', () => {
 
   it('includes line numbers in formatted output', () => {
     const { ast } = parse('# Heading')
-    const result = validate(ast, rfmConfig)
+    const result = validate(ast, emailRfmConfig)
     const formatted = formatErrors(result)
 
     expect(formatted).toMatch(/\[line \d+/)
@@ -730,7 +730,7 @@ describe('formatErrors()', () => {
 
   it('includes column numbers in formatted output', () => {
     const { ast } = parse('**bold**')
-    const result = validate(ast, rfmConfig)
+    const result = validate(ast, emailRfmConfig)
     const formatted = formatErrors(result)
 
     expect(formatted).toMatch(/col \d+/)
@@ -738,7 +738,7 @@ describe('formatErrors()', () => {
 
   it('formats a single error correctly', () => {
     const { ast } = parse('# Heading')
-    const result = validate(ast, rfmConfig)
+    const result = validate(ast, emailRfmConfig)
     const formatted = formatErrors(result)
 
     expect(formatted).toMatch(/^Found 1 validation error/)
@@ -748,7 +748,7 @@ describe('formatErrors()', () => {
 
   it('error count matches number of violations', () => {
     const { ast } = parse('# H1\n\n## H2\n\n### H3')
-    const result = validate(ast, rfmConfig)
+    const result = validate(ast, emailRfmConfig)
     const formatted = formatErrors(result)
 
     expect(formatted).toMatch(/Found 3 validation error/)
@@ -839,7 +839,7 @@ describe('custom FlavorConfig', () => {
         },
       ],
     } as ReturnType<typeof parse>['ast']
-    const result = validate(ast, rfmConfig)
+    const result = validate(ast, emailRfmConfig)
 
     // null attrs → normaliseAttrs returns {} → Zod fails (no attributes set)
     expect(result.valid).toBe(false)
@@ -865,7 +865,7 @@ describe('custom FlavorConfig', () => {
         },
       ],
     } as ReturnType<typeof parse>['ast']
-    const result = validate(ast, rfmConfig)
+    const result = validate(ast, emailRfmConfig)
 
     // null attr → undefined → Zod sees no attrs set → fails the refine
     expect(result.valid).toBe(false)

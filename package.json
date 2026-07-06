@@ -2,7 +2,7 @@
   "name": "rule-io-sdk",
   "version": "0.4.0-beta.0",
   "private": true,
-  "description": "Rule.io SDK monorepo \u2014 publishable packages under @rulecom/*",
+  "description": "Rule.io SDK monorepo \u2014 publishable packages under @rule/*",
   "workspaces": [
     "packages/*"
   ],
@@ -19,6 +19,7 @@
     "release": "nx release",
     "local-registry": "nx run rule-io-sdk:local-registry",
     "publish:local": "nx run-many -t build && nx release publish --registry http://localhost:4873",
+    "republish:local": "rm -rf tmp/local-registry/storage/@rule && npm run publish:local",
     "daemon:restart": "nx daemon --stop && nx daemon --start",
     "docs:generate": "nx run docs:generate",
     "docs:check": "nx run docs:check",

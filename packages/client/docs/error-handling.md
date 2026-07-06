@@ -5,7 +5,7 @@ The client uses two error classes and a consistent `null`-for-404 pattern. Under
 ## The two error classes
 
 ```typescript
-import { RuleApiError, RuleClientError } from '@rulecom/client';
+import { RuleApiError, RuleClientError } from '@rule/client';
 ```
 
 ### `RuleApiError`

@@ -21,7 +21,7 @@ Block nodes — `paragraph`, `bullet-list`, `ordered-list` (one or more)
 
 ## Available in
 
-- Full RFM (`rc-text`, `rc-heading`)
+- Full Email RFM (`rc-text`, `rc-heading`)
 
 ## JSON
 
@@ -48,9 +48,9 @@ Block nodes — `paragraph`, `bullet-list`, `ordered-list` (one or more)
 }
 ```
 
-## RFM syntax
+## Email RFM syntax
 
-`list-item` nodes are not written directly in RFM. They are produced automatically by the `- ` / `* ` (bullet) and `1. ` / `2. ` (ordered) list syntax. Indent list lines by two or more spaces to create nested items.
+`list-item` nodes are not written directly in Email RFM. They are produced automatically by the `- ` / `* ` (bullet) and `1. ` / `2. ` (ordered) list syntax. Indent list lines by two or more spaces to create nested items.
 
 Example:
 

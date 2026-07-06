@@ -6,10 +6,10 @@ You can manage brand styles through the API or in the Rule.io UI under **Setting
 
 ## Finding the account's default brand style
 
-Use `resolvePreferredBrandStyle()` from `@rulecom/sdk` — it returns the style flagged `isDefault` on the account, falling back to the first in the list if none is marked default. Do not hardcode brand style IDs; a customer's preferred style can change:
+Use `resolvePreferredBrandStyle()` from `@rule/sdk` — it returns the style flagged `isDefault` on the account, falling back to the first in the list if none is marked default. Do not hardcode brand style IDs; a customer's preferred style can change:
 
 ```typescript
-import { resolvePreferredBrandStyle } from '@rulecom/sdk';
+import { resolvePreferredBrandStyle } from '@rule/sdk';
 
 const { id: brandStyleId, brandStyle, source } =
   await resolvePreferredBrandStyle(client);
@@ -112,5 +112,5 @@ await client.brandStyles.delete(brandStyleId);
 
 ## Next steps
 
-- Pass `brandStyleId` to the RCML template builders: [@rulecom/rcml documentation](/packages/rcml/)
+- Pass `brandStyleId` to the RCML template builders: [@rule/rcml documentation](/packages/rcml/)
 - Build a complete campaign email: [Email Campaigns](./email-campaigns)

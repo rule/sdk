@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import { placeholderSpec } from './placeholder-spec.js'
 import { rcmlSpec } from './rcml-spec.js'
-import { rfmSpec } from './rfm-spec.js'
+import { emailRfmSpec } from './email-rfm-spec.js'
 
 // ---------------------------------------------------------------------------
 // rcmlSpec
@@ -51,26 +51,26 @@ describe('rcmlSpec', () => {
 })
 
 // ---------------------------------------------------------------------------
-// rfmSpec
+// emailRfmSpec
 // ---------------------------------------------------------------------------
 
-describe('rfmSpec', () => {
+describe('emailRfmSpec', () => {
   it('exports a version string', () => {
-    expect(typeof rfmSpec.version).toBe('string')
-    expect(rfmSpec.version.length).toBeGreaterThan(0)
+    expect(typeof emailRfmSpec.version).toBe('string')
+    expect(emailRfmSpec.version.length).toBeGreaterThan(0)
   })
 
   it('contains both content flavors', () => {
-    expect(rfmSpec.flavors).toHaveProperty('rcml-content')
-    expect(rfmSpec.flavors).toHaveProperty('inline-rcml-content')
+    expect(emailRfmSpec.flavors).toHaveProperty('rcml-content')
+    expect(emailRfmSpec.flavors).toHaveProperty('inline-rcml-content')
   })
 
   it('inline-rcml-content is a single-paragraph flavor', () => {
-    expect(rfmSpec.flavors['inline-rcml-content'].singleParagraph).toBe(true)
+    expect(emailRfmSpec.flavors['inline-rcml-content'].singleParagraph).toBe(true)
   })
 
   it('rcml-content supports block and inline nodes', () => {
-    const { blockNodes, inlineNodes } = rfmSpec.flavors['rcml-content']
+    const { blockNodes, inlineNodes } = emailRfmSpec.flavors['rcml-content']
 
     expect(blockNodes).toContain('paragraph')
     expect(blockNodes).toContain('bullet-list')
@@ -80,7 +80,7 @@ describe('rfmSpec', () => {
   })
 
   it('placeholder node has correct required attrs', () => {
-    const attrs = rfmSpec.nodes['placeholder'].attrs!
+    const attrs = emailRfmSpec.nodes['placeholder'].attrs!
 
     expect(attrs['type'].required).toBe(true)
     expect(attrs['value'].required).toBe(true)
@@ -90,11 +90,11 @@ describe('rfmSpec', () => {
   })
 
   it('placeholder node value attr accepts null', () => {
-    expect(rfmSpec.nodes['placeholder'].attrs!['value'].type).toContain('null')
+    expect(emailRfmSpec.nodes['placeholder'].attrs!['value'].type).toContain('null')
   })
 
   it('placeholder node type has correct allowedValues', () => {
-    expect(rfmSpec.nodes['placeholder'].attrs!['type'].allowedValues).toEqual([
+    expect(emailRfmSpec.nodes['placeholder'].attrs!['type'].allowedValues).toEqual([
       'CustomField',
       'Subscriber',
       'User',
@@ -104,7 +104,7 @@ describe('rfmSpec', () => {
   })
 
   it('link mark has all required attrs', () => {
-    const attrs = rfmSpec.marks['link'].attrs
+    const attrs = emailRfmSpec.marks['link'].attrs
 
     expect(attrs['href'].required).toBe(true)
     expect(attrs['target'].required).toBe(true)
@@ -112,7 +112,7 @@ describe('rfmSpec', () => {
   })
 
   it('loop-value node index examples are 1-based', () => {
-    const examples = rfmSpec.nodes['loop-value'].attrs!['index'].examples ?? []
+    const examples = emailRfmSpec.nodes['loop-value'].attrs!['index'].examples ?? []
 
     for (const ex of examples) {
       expect(Number(ex)).toBeGreaterThanOrEqual(1)
@@ -153,8 +153,8 @@ describe('placeholderSpec', () => {
     }
   })
 
-  it('tokens with rfmPlaceholderType cross-reference rfmSpec allowedValues', () => {
-    const rfmAllowed = rfmSpec.nodes['placeholder'].attrs!['type'].allowedValues ?? []
+  it('tokens with rfmPlaceholderType cross-reference emailRfmSpec allowedValues', () => {
+    const rfmAllowed = emailRfmSpec.nodes['placeholder'].attrs!['type'].allowedValues ?? []
 
     for (const [, token] of Object.entries(placeholderSpec.tokens)) {
       if (token.rfmPlaceholderType !== undefined) {

@@ -5,14 +5,14 @@
  * @see https://help.rule.io/en/articles/349484-shopify-integration
  */
 
-import type { VendorTagSchema } from '@rulecom/vendor';
+import type { VendorTagSchema } from '@rule/vendor';
 
 /**
  * Shopify tags for Rule.io automations.
  *
  * @example
  * ```typescript
- * import { SHOPIFY_TAGS } from '@rulecom/sdk';
+ * import { SHOPIFY_TAGS } from '@rule/sdk';
  *
  * await client.syncSubscriber({
  *   email: 'customer@example.com',

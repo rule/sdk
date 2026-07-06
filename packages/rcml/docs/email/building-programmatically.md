@@ -1,6 +1,6 @@
 # Building programmatically
 
-The `@rulecom/rcml` package exports a set of typed factory functions that build an
+The `@rule/rcml` package exports a set of typed factory functions that build an
 `RcmlDocument` JSON AST bottom-up. Each factory validates its inputs immediately and
 throws `RcmlElementBuildError` if something is wrong — errors surface at the call site,
 not at render time.
@@ -24,7 +24,7 @@ import {
   createSpacerElement,
   createPreviewElement,
   createTextContent,
-} from '@rulecom/rcml';
+} from '@rule/rcml';
 
 // 1. Head — preheader text shown in inbox previews
 const head = createHeadElement({
@@ -63,10 +63,10 @@ const doc = createRcmlDocumentElement({ head, body: emailBody });
 
 Text inside `rc-text`, `rc-heading`, and `rc-button` elements is always stored as a
 ProseMirror JSON document. The easiest way to produce one is `createTextContent()`,
-which accepts an RFM string — a compact markdown dialect designed for email copy.
+which accepts an Email RFM string — a compact markdown dialect designed for email copy.
 
 ```typescript
-import { createTextContent } from '@rulecom/rcml';
+import { createTextContent } from '@rule/rcml';
 
 // Plain text
 createTextContent('Hello world')
@@ -92,7 +92,7 @@ import {
   createInlineContent,
   createTextNode,
   createPlaceholderNode,
-} from '@rulecom/rcml';
+} from '@rule/rcml';
 
 const content = createInlineContent([
   createTextNode('Hi '),
@@ -136,7 +136,7 @@ import {
   EmailThemeImageType,
   EmailThemeFontStyleType,
   EmailThemeSocialLinkType,
-} from '@rulecom/rcml';
+} from '@rule/rcml';
 
 const theme = createEmailTheme({
   // Link to the Rule brand profile that owns this template.
@@ -186,7 +186,7 @@ after the template is created.
 are filled with defaults:
 
 ```typescript
-import { getTheme } from '@rulecom/rcml';
+import { getTheme } from '@rule/rcml';
 
 const theme = getTheme(themedDoc);
 console.log(theme.colors); // [{ type: 'Primary', hex: '#05CC87' }, ...]
@@ -198,10 +198,10 @@ and writing it back.
 ## Exporting as XML
 
 `rcmlToXml()` converts a JSON document to an XML string. The ProseMirror content inside
-text elements is serialised back to RFM, making the output easy to read and diff.
+text elements is serialised back to Email RFM, making the output easy to read and diff.
 
 ```typescript
-import { rcmlToXml } from '@rulecom/rcml';
+import { rcmlToXml } from '@rule/rcml';
 
 const xml = rcmlToXml(themedDoc, { prettyPrint: true });
 console.log(xml);
@@ -217,7 +217,7 @@ Common uses:
 If a template is stored as XML, convert it back to JSON and validate before use:
 
 ```typescript
-import { safeXmlToRcml, safeValidateEmailTemplate } from '@rulecom/rcml';
+import { safeXmlToRcml, safeValidateEmailTemplate } from '@rule/rcml';
 
 const parsed = safeXmlToRcml(xmlString);
 if (!parsed.success) {

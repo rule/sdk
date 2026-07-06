@@ -7,7 +7,7 @@ const srcDir = resolve(dirname(fileURLToPath(import.meta.url)), '../src');
 
 export default defineConfig({
   title: 'Rule.io SDK',
-  description: 'Documentation for @rulecom/client, @rulecom/rcml, and @rulecom/sdk',
+  description: 'Documentation for @rule/client, @rule/rcml, and @rule/sdk',
   srcDir: 'src',
   base: (process.env['DOCS_BASE'] ?? '/rule-io-sdk/') as `/${string}/`,
 

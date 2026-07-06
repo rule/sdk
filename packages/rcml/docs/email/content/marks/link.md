@@ -16,8 +16,8 @@ A mark that wraps a [`text`](../inline-nodes/text) node in a hyperlink. The link
 
 ## Available in
 
-- Full RFM (`rc-text`, `rc-heading`)
-- Inline RFM (`rc-button`)
+- Full Email RFM (`rc-text`, `rc-heading`)
+- Email Inline RFM (`rc-button`)
 
 ## JSON
 
@@ -55,7 +55,7 @@ A link with a `font` mark — the typical pattern for styled anchor text:
 }
 ```
 
-## RFM syntax
+## Email RFM syntax
 
 Use the `:link[…]{…}` span directive. The content between `[…]` is the linked text (which may itself contain a `:font` directive for styling).
 

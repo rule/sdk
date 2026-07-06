@@ -279,10 +279,11 @@ describe('validateEmailTemplate — XML string input', () => {
   })
 
   it('propagates CONTENT_INVALID when RFM inside rc-text fails to parse', () => {
-    // Use a string that (if parsed as RFM) would emit an RFM_PARSE_ERROR at
-    // the xml-to-rcml layer. The xml→rcml path uses rfmToJson on the text
-    // content; malformed RFM surfaces as RFM_PARSE_ERROR, which
-    // validate-email-template translates to CONTENT_INVALID.
+    // Use a string that (if parsed as Email RFM) would emit an
+    // EMAIL_RFM_PARSE_ERROR at the xml-to-rcml layer. The xml→rcml path uses
+    // emailRfmToJson on the text content; malformed Email RFM surfaces as
+    // EMAIL_RFM_PARSE_ERROR, which validate-email-template translates to
+    // CONTENT_INVALID.
     const xml = `<rcml><rc-head></rc-head><rc-body width="600px"><rc-section><rc-column><rc-text>:font[</rc-text></rc-column></rc-section></rc-body></rcml>`
     const result = safeValidateEmailTemplate(xml)
 
@@ -300,6 +301,70 @@ describe('validateEmailTemplate — XML string input', () => {
           EmailTemplateErrorCodes.ATTR_UNKNOWN,
         ]).toContain(err.code)
       }
+    }
+  })
+})
+
+describe('validateColumnWidths integration via safeValidateEmailTemplate', () => {
+  it('flags a multi-column section whose percentage widths do not sum to 100%', () => {
+    const doc: RcmlDocument = {
+      tagName: 'rcml',
+      children: [
+        { tagName: 'rc-head', children: [] },
+        {
+          tagName: 'rc-body',
+          attributes: { width: '600px' },
+          children: [
+            {
+              tagName: 'rc-section',
+              children: [
+                { tagName: 'rc-column', attributes: { width: '40%' }, children: [] },
+                { tagName: 'rc-column', attributes: { width: '40%' }, children: [] },
+              ],
+            },
+          ],
+        },
+      ],
+    } as unknown as RcmlDocument
+    const result = safeValidateEmailTemplate(doc)
+
+    expect(result.success).toBe(false)
+
+    if (!result.success) {
+      expect(result.errors.some(
+        (e) => e.code === EmailTemplateErrorCodes.ATTR_INVALID_VALUE && e.message.includes('sum to')
+      )).toBe(true)
+    }
+  })
+
+  it('accepts a multi-column section whose percentage widths sum to 100%', () => {
+    const doc: RcmlDocument = {
+      tagName: 'rcml',
+      children: [
+        { tagName: 'rc-head', children: [] },
+        {
+          tagName: 'rc-body',
+          attributes: { width: '600px' },
+          children: [
+            {
+              tagName: 'rc-section',
+              children: [
+                { tagName: 'rc-column', attributes: { width: '50%' }, children: [] },
+                { tagName: 'rc-column', attributes: { width: '50%' }, children: [] },
+              ],
+            },
+          ],
+        },
+      ],
+    } as unknown as RcmlDocument
+    const result = safeValidateEmailTemplate(doc)
+
+    if (!result.success) {
+      const columnSumErrors = result.errors.filter(
+        (e) => e.code === EmailTemplateErrorCodes.ATTR_INVALID_VALUE && e.message.includes('sum to')
+      )
+
+      expect(columnSumErrors).toHaveLength(0)
     }
   })
 })

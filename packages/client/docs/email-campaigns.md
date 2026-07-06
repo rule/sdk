@@ -1,5 +1,7 @@
 # Email Campaigns
 
+> Channel: **email**. For SMS, see [SMS Campaigns](./sms-campaigns).
+
 A campaign is a one-time or scheduled email blast sent to a defined set of recipients. The full lifecycle has four stages:
 
 1. **Create** the campaign shell
@@ -21,6 +23,48 @@ const campaignId = campaign.id!;
 ```
 
 *→ [`CreateEmailCampaignPayload`](/api/client/src/interfaces/CreateEmailCampaignPayload)*
+
+## Default campaign
+
+Use `createDefaultEmailCampaign()` to create a campaign with all required content in a single call. The method creates the campaign, message, and a branded email template in parallel, then links them together with a dynamic set. If any step fails, all already-created resources are automatically rolled back.
+
+```typescript
+import { resolvePreferredBrandStyle } from '@rule/sdk';
+
+const { id: brandStyleId } = await resolvePreferredBrandStyle(client);
+
+const result = await client.campaigns.createDefaultEmailCampaign({ brandStyleId });
+// result: { campaignId, messageId, templateId, dynamicSetId }
+```
+
+The template is built automatically from the brand style — logo, brand colours, and a placeholder content section. See [Brand Styles](./brand-styles) for how to look up the account's preferred brand style.
+
+Pass `message` and `template` to override the auto-generated defaults:
+
+```typescript
+const result = await client.campaigns.createDefaultEmailCampaign({
+  brandStyleId,
+  message: {
+    subject: 'Summer sale — 20% off everything',
+    preheader: 'Shop now before it ends',
+    fromName: 'Acme Store',
+  },
+  template: { name: 'Summer Sale 2025' },
+});
+```
+
+Supply a fully custom RCML document via `template.content` to skip the brand style fetch entirely:
+
+```typescript
+const result = await client.campaigns.createDefaultEmailCampaign({
+  brandStyleId,   // still required by type; not fetched when template.content is provided
+  template: { content: myRcmlDocument },
+});
+```
+
+An optional `name` and `sendoutType` (`'marketing'` or `'transactional'`) can be passed as well.
+
+*→ [`CreateDefaultEmailCampaignParams`](/api/client/src/interfaces/CreateDefaultEmailCampaignParams), [`CreateDefaultCampaignResult`](/api/client/src/interfaces/CreateDefaultCampaignResult)*
 
 ## Attaching email content
 

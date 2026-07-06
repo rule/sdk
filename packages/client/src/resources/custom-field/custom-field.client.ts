@@ -1,5 +1,5 @@
 /**
- * Custom field schema client for the `@rulecom/client` package.
+ * Custom field schema client for the `@rule/client` package.
  *
  * Wraps the v2 `/customizations` endpoints for managing custom field group
  * schemas — creating groups and fields, listing them, and fetching a single

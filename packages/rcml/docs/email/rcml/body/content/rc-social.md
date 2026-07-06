@@ -71,10 +71,10 @@ Social media links container. Holds `<rc-social-element>` children representing 
 
 ## Building
 
-Templates can be built using factory functions from `@rulecom/rcml`, or the JSON structure above can be generated directly by an AI model — pass [`rcmlSpec`](/api/rcml/src/variables/rcmlSpec) as context when prompting.
+Templates can be built using factory functions from `@rule/rcml`, or the JSON structure above can be generated directly by an AI model — pass [`rcmlSpec`](/api/rcml/src/variables/rcmlSpec) as context when prompting.
 
 ```typescript
-import { createSocialElement, createSocialChildElement } from '@rulecom/rcml';
+import { createSocialElement, createSocialChildElement } from '@rule/rcml';
 
 createSocialElement({
   attrs: { mode: 'horizontal', align: 'center' },

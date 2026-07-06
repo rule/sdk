@@ -16,8 +16,8 @@ None. `doc` is always the root.
 
 ## Available in
 
-- Full RFM (`rc-text`, `rc-heading`)
-- Inline RFM (`rc-button`)
+- Full Email RFM (`rc-text`, `rc-heading`)
+- Email Inline RFM (`rc-button`)
 
 ## JSON
 
@@ -42,13 +42,13 @@ A `doc` with multiple paragraphs:
 }
 ```
 
-## RFM syntax
+## Email RFM syntax
 
-The `doc` node is the implicit wrapper for all RFM content. It is never written directly — the RFM parser and the `rfmToJson` / `inlineRfmToJson` functions always return a `doc` node as the top-level result.
+The `doc` node is the implicit wrapper for all Email RFM content. It is never written directly — the Email RFM parser and the `emailRfmToJson` / `emailInlineRfmToJson` functions always return a `doc` node as the top-level result.
 
 ```typescript
-import { rfmToJson } from '@rulecom/rcml';
+import { emailRfmToJson } from '@rule/rcml';
 
-const doc = rfmToJson('Hello world');
+const doc = emailRfmToJson('Hello world');
 // { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Hello world' }] }] }
 ```

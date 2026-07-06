@@ -3,9 +3,9 @@ import { join } from 'node:path';
 import type { DefaultTheme } from 'vitepress';
 
 const API_PACKAGES: { dir: string; label: string }[] = [
-  { dir: 'client/src', label: '@rulecom/client' },
-  { dir: 'rcml/src', label: '@rulecom/rcml' },
-  { dir: 'sdk/src', label: '@rulecom/sdk' },
+  { dir: 'client/src', label: '@rule/client' },
+  { dir: 'rcml/src', label: '@rule/rcml' },
+  { dir: 'sdk/src', label: '@rule/sdk' },
 ];
 
 const CATEGORIES: { dir: string; label: string }[] = [
@@ -56,14 +56,21 @@ export const guideSidebar: DefaultTheme.SidebarItem[] = [
     ],
   },
   {
-    text: '@rulecom/sdk',
+    text: 'Migration',
+    collapsed: false,
+    items: [
+      { text: '@rulecom → @rule', link: '/guide/migration' },
+    ],
+  },
+  {
+    text: '@rule/sdk',
     collapsed: false,
     items: [
       { text: 'Overview', link: '/packages/sdk/' },
     ],
   },
   {
-    text: '@rulecom/client',
+    text: '@rule/client',
     collapsed: false,
     items: [
       { text: 'Overview', link: '/packages/client/' },
@@ -72,6 +79,7 @@ export const guideSidebar: DefaultTheme.SidebarItem[] = [
         collapsed: false,
         items: [
           { text: 'Asynchronous Operations', link: '/packages/client/async-operations' },
+          { text: 'Webhooks', link: '/packages/client/webhooks' },
         ],
       },
       { text: 'Tags', link: '/packages/client/tags' },
@@ -87,25 +95,43 @@ export const guideSidebar: DefaultTheme.SidebarItem[] = [
           { text: 'Blocking Subscribers', link: '/packages/client/blocking-subscribers' },
           { text: 'Managing Suppressions', link: '/packages/client/managing-suppressions' },
           { text: 'Syncing Subscribers', link: '/packages/client/syncing-subscribers' },
+          { text: 'Bulk Create Subscribers', link: '/packages/client/bulk-create-subscribers' },
         ],
       },
       { text: 'Brand Styles', link: '/packages/client/brand-styles' },
       { text: 'Recipients', link: '/packages/client/recipients' },
-      { text: 'Email Campaigns', link: '/packages/client/email-campaigns' },
-      { text: 'Email Automations', link: '/packages/client/email-automations' },
-      { text: 'Email Messages', link: '/packages/client/email-messages' },
-      { text: 'Email Templates', link: '/packages/client/email-templates' },
+      {
+        text: 'Email',
+        collapsed: false,
+        items: [
+          { text: 'Campaigns', link: '/packages/client/email-campaigns' },
+          { text: 'Automations', link: '/packages/client/email-automations' },
+          { text: 'Messages', link: '/packages/client/email-messages' },
+          { text: 'Templates', link: '/packages/client/email-templates' },
+        ],
+      },
+      {
+        text: 'SMS',
+        collapsed: false,
+        items: [
+          { text: 'Campaigns', link: '/packages/client/sms-campaigns' },
+          { text: 'Automations', link: '/packages/client/sms-automations' },
+          { text: 'Messages', link: '/packages/client/sms-messages' },
+          { text: 'Templates', link: '/packages/client/sms-templates' },
+        ],
+      },
       { text: 'Dynamic Sets', link: '/packages/client/dynamic-sets' },
       { text: 'Analytics', link: '/packages/client/analytics' },
       { text: 'Exports', link: '/packages/client/exports' },
       { text: 'Custom Field Schema', link: '/packages/client/custom-fields-schema' },
       { text: 'API Keys', link: '/packages/client/api-keys' },
+      { text: 'Account', link: '/packages/client/account' },
       { text: 'Error Handling', link: '/packages/client/error-handling' },
 
     ],
   },
   {
-    text: '@rulecom/rcml',
+    text: '@rule/rcml',
     collapsed: false,
     items: [
       { text: 'Overview', link: '/packages/rcml/' },
@@ -249,6 +275,55 @@ export const guideSidebar: DefaultTheme.SidebarItem[] = [
           { text: 'Validation', link: '/packages/rcml/email/validation' },
           { text: 'Building programmatically', link: '/packages/rcml/email/building-programmatically' },
           { text: 'Building with LLM', link: '/packages/rcml/email/building-with-llm' },
+        ],
+      },
+      {
+        text: 'SMS',
+        collapsed: false,
+        items: [
+          { text: 'Overview', link: '/packages/rcml/sms/' },
+          {
+            text: 'Concepts',
+            collapsed: false,
+            items: [
+              { text: 'Template', link: '/packages/rcml/sms/concepts/template' },
+              { text: 'Content', link: '/packages/rcml/sms/concepts/content' },
+              { text: 'Unsubscription', link: '/packages/rcml/sms/concepts/unsubscription' },
+            ],
+          },
+          {
+            text: 'SMS RCML',
+            collapsed: false,
+            items: [
+              { text: 'rc-sms', link: '/packages/rcml/sms/rcml/rc-sms' },
+            ],
+          },
+          {
+            text: 'RCML Content',
+            collapsed: false,
+            items: [
+              { text: 'Flavors', link: '/packages/rcml/sms/content/flavors' },
+              {
+                text: 'Block nodes',
+                collapsed: true,
+                items: [
+                  { text: 'sms', link: '/packages/rcml/sms/content/nodes/sms' },
+                ],
+              },
+              {
+                text: 'Inline nodes',
+                collapsed: true,
+                items: [
+                  { text: 'message', link: '/packages/rcml/sms/content/nodes/message' },
+                  { text: 'link', link: '/packages/rcml/sms/content/nodes/link' },
+                  { text: 'placeholder', link: '/packages/rcml/sms/content/nodes/placeholder' },
+                ],
+              },
+            ],
+          },
+          { text: 'Building programmatically', link: '/packages/rcml/sms/building-programmatically' },
+          { text: 'Validation', link: '/packages/rcml/sms/validation' },
+          { text: 'Building with LLM', link: '/packages/rcml/sms/building-with-llm' },
         ],
       },
     ],

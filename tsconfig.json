@@ -19,14 +19,14 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "paths": {
-      "@rulecom/sdk": ["./packages/sdk/src/index.ts"],
-      "@rulecom/rcml": ["./packages/rcml/src/index.ts"],
-      "@rulecom/template-engine": ["./packages/template-engine/src/index.ts"],
-      "@rulecom/client": ["./packages/client/src/index.ts"],
-      "@rulecom/vendor-shopify": ["./packages/vendor-shopify/src/index.ts"],
-      "@rulecom/vendor-bookzen": ["./packages/vendor-bookzen/src/index.ts"],
-      "@rulecom/vendor-samfora": ["./packages/vendor-samfora/src/index.ts"],
-      "@rulecom/vendor": ["./packages/vendor/src/index.ts"]
+      "@rule/sdk": ["./packages/sdk/src/index.ts"],
+      "@rule/rcml": ["./packages/rcml/src/index.ts"],
+      "@rule/template-engine": ["./packages/template-engine/src/index.ts"],
+      "@rule/client": ["./packages/client/src/index.ts"],
+      "@rule/vendor-shopify": ["./packages/vendor-shopify/src/index.ts"],
+      "@rule/vendor-bookzen": ["./packages/vendor-bookzen/src/index.ts"],
+      "@rule/vendor-samfora": ["./packages/vendor-samfora/src/index.ts"],
+      "@rule/vendor": ["./packages/vendor/src/index.ts"]
     }
   },
   "files": [],

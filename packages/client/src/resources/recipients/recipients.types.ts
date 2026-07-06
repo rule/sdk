@@ -1,5 +1,5 @@
 /**
- * Recipients types for the `@rulecom/client` recipients namespace.
+ * Recipients types for the `@rule/client` recipients namespace.
  *
  * These endpoints return lightweight lists of segments, tags, and subscribers
  * for use when setting up campaign or automation recipient targeting. They are

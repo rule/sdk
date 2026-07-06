@@ -3,9 +3,9 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { VendorPresetError } from '@rulecom/vendor';
-import type { CustomFieldMap, VendorConsumerConfig } from '@rulecom/vendor';
-import type { RcmlDocument } from '@rulecom/rcml';
+import { VendorPresetError } from '@rule/vendor';
+import type { CustomFieldMap, VendorConsumerConfig } from '@rule/vendor';
+import type { RcmlDocument } from '@rule/rcml';
 import { samforaPreset, SAMFORA_FIELDS, SAMFORA_TAGS } from '../src/index.js';
 import { TEST_THEME, themeWithoutLogo, assertValidRCMLDocument, docToString } from './helpers.js';
 

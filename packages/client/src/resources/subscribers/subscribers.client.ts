@@ -21,6 +21,12 @@ import type {
   AddSubscriberTagsOptions,
   CreateSubscriberPayload,
   CreateSubscriberResponse,
+  BulkCreateSubscriberEntry,
+  BulkCreateSubscriberEntryBody,
+  BulkCreateSubscribersBody,
+  BulkCreateSubscribersPayload,
+  BulkCreateSubscribersResponse,
+  BulkCreateSubscribersResult,
   SubscribersListResponse,
   SubscriberListWire,
   ListSubscribersByTagIdsParams,
@@ -111,6 +117,67 @@ export class SubscribersClient extends BaseResource {
     });
 
     return mapCreateDataToEntity(response.data);
+  }
+
+  /**
+   * Create up to 1000 subscribers in a single request.
+   *
+   * Wraps Rule.io's v2 `POST /subscribers` "create multiple" endpoint.
+   * Large batches are processed asynchronously by the platform; the
+   * synchronous response is an acknowledgement, not the list of created
+   * subscribers. Use {@link create} for single-subscriber creation against
+   * the v3 endpoint.
+   *
+   * Top-level fields apply to every subscriber in the batch:
+   * - `tags` is applied to every subscriber.
+   * - `updateOnDuplicate: true` updates existing subscribers (matched by
+   *   email or phone) instead of returning 409.
+   * - `syncSubscribers: true` forces automations to fire for every entry
+   *   (capped at 100 server-side); `false` disables them.
+   *
+   * Per-entry fields go on each {@link BulkCreateSubscriberEntry}: `email`,
+   * `phoneNumber`, optional `language`, and an array of
+   * `{ key, value, type }` custom-field values.
+   *
+   * @throws {RuleApiError} `400` on invalid field shapes, `409` on
+   *   duplicates when `updateOnDuplicate` is not set, `413` if more than
+   *   1000 subscribers are submitted in one call.
+   *
+   * @example
+   * ```typescript
+   * const result = await client.subscribers.bulkCreateSubscribers({
+   *   subscribers: [
+   *     { email: 'jane@example.com' },
+   *     { email: 'john@example.com', phoneNumber: '+46701234567' },
+   *   ],
+   *   tags: ['newsletter'],
+   *   updateOnDuplicate: true,
+   * });
+   * console.log(result.subscribersCreated, result.subscribersUpdated);
+   * ```
+   */
+  async bulkCreateSubscribers(
+    payload: BulkCreateSubscribersPayload,
+  ): Promise<BulkCreateSubscribersResult> {
+    const wireBody = mapBulkCreateSubscribersToWire(payload);
+    const response = await this.transport.post<BulkCreateSubscribersResponse>(
+      '/subscribers',
+      { body: JSON.stringify(wireBody), version: 'v2' },
+    );
+
+    return {
+      success: true,
+      ...(response.message !== undefined ? { message: response.message } : {}),
+      ...(response.subscribers_created !== undefined
+        ? { subscribersCreated: response.subscribers_created }
+        : {}),
+      ...(response.subscribers_updated !== undefined
+        ? { subscribersUpdated: response.subscribers_updated }
+        : {}),
+      ...(response.subscribers_suppressed !== undefined
+        ? { subscribersSuppressed: response.subscribers_suppressed }
+        : {}),
+    };
   }
 
   // ── Look up ────────────────────────────────────────────────────────────────
@@ -738,7 +805,6 @@ export class SubscribersClient extends BaseResource {
     );
 
     return {
-      success: wire.success,
       data: wire.data?.map(mapCustomFieldDataRecord) ?? [],
       meta: wire.meta ? { page: wire.meta.page, pageSize: wire.meta.per_page } : undefined,
     };
@@ -1000,7 +1066,6 @@ export class SubscribersClient extends BaseResource {
     );
 
     return {
-      success: wire.success,
       data: wire.data?.map(mapCustomFieldDataRecord) ?? [],
       meta: wire.meta ? { page: wire.meta.page, pageSize: wire.meta.per_page } : undefined,
     };
@@ -1856,6 +1921,45 @@ function mapCreateRequestToWire(payload: CreateSubscriberPayload): object {
     ...(payload.customIdentifier !== undefined ? { custom_identifier: payload.customIdentifier } : {}),
     ...(payload.status !== undefined ? { status: payload.status } : {}),
     ...(payload.language !== undefined ? { language: payload.language } : {}),
+  };
+}
+
+/** @internal */
+function mapBulkCreateSubscribersToWire(
+  payload: BulkCreateSubscribersPayload,
+): BulkCreateSubscribersBody {
+  return {
+    subscribers: payload.subscribers.map(mapBulkCreateEntryToWire),
+    ...(payload.tags !== undefined ? { tags: payload.tags } : {}),
+    ...(payload.updateOnDuplicate !== undefined
+      ? { update_on_duplicate: payload.updateOnDuplicate }
+      : {}),
+    ...(payload.automation !== undefined ? { automation: payload.automation } : {}),
+    ...(payload.syncSubscribers !== undefined
+      ? { sync_subscribers: payload.syncSubscribers }
+      : {}),
+    ...(payload.language !== undefined ? { language: payload.language } : {}),
+    ...(payload.requireOptIn !== undefined ? { require_opt_in: payload.requireOptIn } : {}),
+  };
+}
+
+/** @internal */
+function mapBulkCreateEntryToWire(
+  entry: BulkCreateSubscriberEntry,
+): BulkCreateSubscriberEntryBody {
+  return {
+    ...(entry.email !== undefined ? { email: entry.email } : {}),
+    ...(entry.phoneNumber !== undefined ? { phone_number: entry.phoneNumber } : {}),
+    ...(entry.language !== undefined ? { language: entry.language } : {}),
+    ...(entry.fields !== undefined && entry.fields.length > 0
+      ? {
+          fields: entry.fields.map((f) => ({
+            key: f.key,
+            value: f.value,
+            ...(f.type !== undefined ? { type: f.type } : {}),
+          })),
+        }
+      : {}),
   };
 }
 

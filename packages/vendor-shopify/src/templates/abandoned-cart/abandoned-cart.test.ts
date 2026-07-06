@@ -12,7 +12,7 @@
 
 import { describe, expect, it } from 'vitest'
 
-import { customField, loopValue } from '@rulecom/template-engine'
+import { customField, loopValue } from '@rule/template-engine'
 
 import {
   TEST_THEME,

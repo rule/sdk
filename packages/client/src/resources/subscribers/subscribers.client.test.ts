@@ -553,6 +553,132 @@ describe('SubscribersClient', () => {
     });
   });
 
+  describe('bulkCreateSubscribers', () => {
+    it('POSTs to v2 /subscribers with an array of entries plus batch flags', async () => {
+      fetchMock.mockResolvedValueOnce(
+        createMockResponse({
+          message: 'Success',
+          subscribers_created: 1,
+          subscribers_updated: 1,
+        })
+      );
+      const client = createClient(fetchMock);
+
+      const result = await client.bulkCreateSubscribers({
+        subscribers: [
+          { email: 'jane@example.com' },
+          { email: 'john@example.com', phoneNumber: '+46701234567' },
+        ],
+        tags: ['newsletter'],
+        updateOnDuplicate: true,
+      });
+
+      expect(result).toEqual({
+        success: true,
+        message: 'Success',
+        subscribersCreated: 1,
+        subscribersUpdated: 1,
+      });
+
+      const [url, init] = fetchMock.mock.calls[0]!;
+
+      expect(url).toBe('https://app.rule.io/api/v2/subscribers');
+      expect((init as RequestInit).method).toBe('POST');
+
+      const body = JSON.parse((init as RequestInit).body as string);
+
+      expect(body).toEqual({
+        subscribers: [
+          { email: 'jane@example.com' },
+          { email: 'john@example.com', phone_number: '+46701234567' },
+        ],
+        tags: ['newsletter'],
+        update_on_duplicate: true,
+      });
+    });
+
+    it('maps phoneNumber to phone_number on every entry', async () => {
+      fetchMock.mockResolvedValueOnce(createMockResponse({}));
+      const client = createClient(fetchMock);
+
+      await client.bulkCreateSubscribers({
+        subscribers: [
+          { phoneNumber: '+46700000001' },
+          { phoneNumber: '+46700000002' },
+        ],
+      });
+
+      const body = JSON.parse((fetchMock.mock.calls[0]![1] as RequestInit).body as string);
+
+      expect(body.subscribers).toEqual([
+        { phone_number: '+46700000001' },
+        { phone_number: '+46700000002' },
+      ]);
+    });
+
+    it('emits per-entry fields as { key, value, type } arrays and omits type when undefined', async () => {
+      fetchMock.mockResolvedValueOnce(createMockResponse({}));
+      const client = createClient(fetchMock);
+
+      await client.bulkCreateSubscribers({
+        subscribers: [
+          {
+            email: 'a@example.com',
+            fields: [
+              { key: 'Group.FirstName', value: 'Jane', type: 'text' },
+              { key: 'Group.Items', value: ['Item1', 'Item2'], type: 'multiple' },
+              { key: 'Group.Note', value: 'no type set' },
+            ],
+          },
+        ],
+      });
+
+      const body = JSON.parse((fetchMock.mock.calls[0]![1] as RequestInit).body as string);
+
+      expect(body.subscribers[0].fields).toEqual([
+        { key: 'Group.FirstName', value: 'Jane', type: 'text' },
+        { key: 'Group.Items', value: ['Item1', 'Item2'], type: 'multiple' },
+        { key: 'Group.Note', value: 'no type set' },
+      ]);
+    });
+
+    it('surfaces every counter the API includes in the response', async () => {
+      fetchMock.mockResolvedValueOnce(
+        createMockResponse({
+          subscribers_created: 5,
+          subscribers_updated: 2,
+          subscribers_suppressed: 1,
+        })
+      );
+      const client = createClient(fetchMock);
+
+      const result = await client.bulkCreateSubscribers({
+        subscribers: [{ email: 'a@example.com' }],
+      });
+
+      expect(result).toEqual({
+        success: true,
+        subscribersCreated: 5,
+        subscribersUpdated: 2,
+        subscribersSuppressed: 1,
+      });
+    });
+
+    it('omits undefined batch-level fields from the wire body', async () => {
+      fetchMock.mockResolvedValueOnce(createMockResponse({}));
+      const client = createClient(fetchMock);
+
+      await client.bulkCreateSubscribers({
+        subscribers: [{ email: 'a@example.com' }],
+      });
+
+      const body = JSON.parse((fetchMock.mock.calls[0]![1] as RequestInit).body as string);
+
+      expect(body).toEqual({ subscribers: [{ email: 'a@example.com' }] });
+      expect(Object.keys(body)).toEqual(['subscribers']);
+    });
+  });
+
   describe('deleteByEmail', () => {
     it('DELETEs by email', async () => {
       fetchMock.mockResolvedValueOnce(createMock204Response());

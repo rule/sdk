@@ -18,8 +18,8 @@ None (inline leaf node)
 
 ## Available in
 
-- Full RFM (`rc-text`, `rc-heading`)
-- Inline RFM (`rc-button`)
+- Full Email RFM (`rc-text`, `rc-heading`)
+- Email Inline RFM (`rc-button`)
 
 ## JSON
 
@@ -34,7 +34,7 @@ None (inline leaf node)
 }
 ```
 
-## RFM syntax
+## Email RFM syntax
 
 Two trailing spaces at the end of a line, or a backslash `\` immediately before the newline.
 

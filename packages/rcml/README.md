@@ -1,12 +1,12 @@
-# @rulecom/rcml
+# @rule/rcml
 
-RCML (Rule Campaign Markup Language) template builders and type definitions. Use this package to compose email templates that you can send through the Rule.io API via `@rulecom/client` (or one of the vendor presets).
+RCML (Rule Campaign Markup Language) template builders and type definitions. Use this package to compose email templates that you can send through the Rule.io API via `@rule/client` (or one of the vendor presets).
 
 ```ts
 import {
   createRCMLDocument,
   createBrandTemplate,
-} from '@rulecom/rcml';
+} from '@rule/rcml';
 ```
 
 ## What's included
@@ -16,4 +16,4 @@ import {
 - **Types**: full RCML structural type hierarchy (`RCMLDocument`, `RCMLSection`, `RCMLProseMirrorDoc`, etc.)
 - **Automation config schema**: `AutomationConfigV2`, `TemplateConfigV2`, `getAutomationByIdV2`, `getAutomationByTriggerV2`
 
-See the [main `@rulecom/sdk` README](../sdk/README.md) for end-to-end usage examples.
+See the [main `@rule/sdk` README](../sdk/README.md) for end-to-end usage examples.

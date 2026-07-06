@@ -23,8 +23,8 @@ None (leaf node).
 
 ## Available in
 
-- Full RFM (`rc-text`, `rc-heading`)
-- Inline RFM (`rc-button`)
+- Full Email RFM (`rc-text`, `rc-heading`)
+- Email Inline RFM (`rc-button`)
 
 ## JSON
 
@@ -57,7 +57,7 @@ Linked text using a `link` mark wrapping a `font` mark:
 }
 ```
 
-## RFM syntax
+## Email RFM syntax
 
 Plain text is written as-is. Styled text uses the `:font[…]{…}` span directive; linked text uses the `:link[…]{…}` directive.
 

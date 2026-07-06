@@ -29,6 +29,7 @@ import { BaseResource } from './core/base-resource.js';
 import { HttpTransport } from './core/transport.js';
 import { resolveConfig, type ResolvedClientConfig, type RuleClientConfig } from './config.js';
 
+import { AccountClient } from './resources/account/account.client.js';
 import { AnalyticsClient } from './resources/analytics/analytics.client.js';
 import { ApiKeysClient } from './resources/api-keys/api-keys.client.js';
 import { AutomationsClient } from './resources/automations/automations.client.js';
@@ -116,6 +117,10 @@ export class RuleClient extends BaseResource {
   }
 
   // ── Namespaced API (lazy singletons) ───────────────────────────────────────
+
+  get account(): AccountClient {
+    return this.lazy('account', () => new AccountClient(this.transport));
+  }
 
   get subscribers(): SubscribersClient {
     return this.lazy(
@@ -209,7 +214,7 @@ export class RuleClient extends BaseResource {
 
   /** @deprecated Use `client.subscribers.getSubscriberTags()` instead. */
   getSubscriberTags(email: string): Promise<SubscriberTag[] | null> {
-    return this.subscribers.getSubscriberTags(email);
+    return this.subscribers.getSubscriberTags({ email });
   }
 
   /**

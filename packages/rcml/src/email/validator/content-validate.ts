@@ -9,7 +9,7 @@
  * `EmailTemplateValidationIssue[]` form with the embedding path prefixed.
  */
 
-import { inlineRfmConfig, rfmConfig } from '../content/flavors/index.js'
+import { emailInlineRfmConfig, emailRfmConfig } from '../content/flavors/index.js'
 import { safeParseJson } from '../validate-rcml-json.js'
 import { RcmlTagNamesEnum } from '../schema/index.js'
 import { EmailTemplateErrorCodes, type EmailTemplateValidationIssue } from '../validate-email-template.js'
@@ -55,7 +55,7 @@ function visit(node: unknown, path: string, issues: EmailTemplateValidationIssue
     // inside <rc-attributes>; AJV already enforces presence in normal
     // positions, so skip content validation here.
     if (n.content !== undefined) {
-      const flavor = tagName === RcmlTagNamesEnum.Button ? inlineRfmConfig : rfmConfig
+      const flavor = tagName === RcmlTagNamesEnum.Button ? emailInlineRfmConfig : emailRfmConfig
       const result = safeParseJson(n.content, flavor)
 
       if (!result.success) {

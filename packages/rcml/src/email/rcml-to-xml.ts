@@ -2,7 +2,7 @@
  * Public API: `RcmlDocument` JSON AST → RCML XML string conversion.
  *
  * This file contains **only public exports**. Every symbol here is part of
- * the `@rulecom/rcml` contract and is marked `@public` in its JSDoc. All
+ * the `@rule/rcml` contract and is marked `@public` in its JSDoc. All
  * implementation details live in `./xml/serialize-helpers.ts`.
  */
 

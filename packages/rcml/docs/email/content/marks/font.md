@@ -21,8 +21,8 @@ A mark that applies typographic styling to a [`text`](../inline-nodes/text) node
 
 ## Available in
 
-- Full RFM (`rc-text`, `rc-heading`)
-- Inline RFM (`rc-button`)
+- Full Email RFM (`rc-text`, `rc-heading`)
+- Email Inline RFM (`rc-button`)
 
 ## JSON
 
@@ -55,9 +55,9 @@ Bold, italic, and coloured text — multiple attributes on one mark:
 }
 ```
 
-The RFM converter emits `null` for every unset attribute. Programmatically constructed JSON may omit unset attributes instead.
+The Email RFM converter emits `null` for every unset attribute. Programmatically constructed JSON may omit unset attributes instead.
 
-## RFM syntax
+## Email RFM syntax
 
 Use the `:font[text]{…}` span directive. Include only the attributes you want to set.
 

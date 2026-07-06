@@ -5,7 +5,7 @@
  *
  * @example
  * ```typescript
- * import { samforaPreset, SAMFORA_FIELDS } from '@rulecom/sdk';
+ * import { samforaPreset, SAMFORA_FIELDS } from '@rule/sdk';
  *
  * const config = {
  *   brandStyle: myBrandStyle,
@@ -28,14 +28,14 @@
  * ```
  */
 
-import type { AutomationConfigV2, VendorPreset, VendorConsumerConfig, VendorFieldInfo } from '@rulecom/vendor';
-import { resolveVendorAutomations } from '@rulecom/vendor';
+import type { AutomationConfigV2, VendorPreset, VendorConsumerConfig, VendorFieldInfo } from '@rule/vendor';
+import { resolveVendorAutomations } from '@rule/vendor';
 import type { SamforaFieldSchema, SamforaFieldNames } from './fields.js';
 import type { SamforaTagSchema } from './tags.js';
 import { SAMFORA_FIELDS } from './fields.js';
 import { SAMFORA_TAGS } from './tags.js';
 import { createSamforaAutomations } from './automations.js';
-import { VendorPresetError } from '@rulecom/vendor';
+import { VendorPresetError } from '@rule/vendor';
 
 const FIELD_DESCRIPTIONS: Record<SamforaFieldNames, string> = {
   // Subscriber (standard Rule.io fields)

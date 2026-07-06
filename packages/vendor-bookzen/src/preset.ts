@@ -1,5 +1,5 @@
-import type { VendorConsumerConfig, VendorFieldInfo, AutomationConfigV2 } from '@rulecom/vendor';
-import { VendorPresetError } from '@rulecom/vendor';
+import type { VendorConsumerConfig, VendorFieldInfo, AutomationConfigV2 } from '@rule/vendor';
+import { VendorPresetError } from '@rule/vendor';
 import type { BookzenFieldSchema } from './fields.js';
 import type { BookzenTagSchema } from './tags.js';
 import { BOOKZEN_FIELD_SCHEMA } from './fields.js';

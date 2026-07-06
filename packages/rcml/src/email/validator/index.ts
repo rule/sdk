@@ -13,4 +13,5 @@
 
 export { validateStructure } from './ajv-validate.js'
 export { validateAttrValues } from './attr-value-validate.js'
+export { validateColumnWidths } from './column-width-validate.js'
 export { validateContent } from './content-validate.js'

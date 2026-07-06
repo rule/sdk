@@ -3,7 +3,7 @@
  *
  * Vertical-agnostic template for newsletter signups, account
  * creation, or any opt-in acknowledgement. Thin wrapper over
- * {@link createEmailTemplate} from `@rulecom/rcml`.
+ * {@link createEmailTemplate} from `@rule/rcml`.
  *
  * Context is fully structural: optional sections are controlled by
  * the presence of their backing fields (omit `benefits` to skip the
@@ -15,8 +15,8 @@ import {
   createEmailTemplate,
   type EmailTemplate,
   type EmailTemplateRenderArgs,
-} from '@rulecom/template-engine'
-import type { CustomFieldRef } from '@rulecom/template-engine'
+} from '@rule/template-engine'
+import type { CustomFieldRef } from '@rule/template-engine'
 
 /**
  * Typed data context consumed by `welcome.xml`.

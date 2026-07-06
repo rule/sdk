@@ -47,10 +47,10 @@
 
 ## Building
 
-Templates can be built using factory functions from `@rulecom/rcml`, or the JSON structure above can be generated directly by an AI model — pass [`rcmlSpec`](/api/rcml/src/variables/rcmlSpec) as context when prompting.
+Templates can be built using factory functions from `@rule/rcml`, or the JSON structure above can be generated directly by an AI model — pass [`rcmlSpec`](/api/rcml/src/variables/rcmlSpec) as context when prompting.
 
 ```typescript
-import { createBodyElement, createSectionElement } from '@rulecom/rcml';
+import { createBodyElement, createSectionElement } from '@rule/rcml';
 
 const body = createBodyElement({
   attrs: { 'background-color': '#f5f5f5', width: '600px' },

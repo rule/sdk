@@ -743,11 +743,13 @@ describe('applyTheme — logo src propagation to body', () => {
     expect(logo?.attributes?.['src']).toBeUndefined()
   })
 
-  it('does not modify the body when no logo image is in the patch', () => {
+  it('does not mutate the original body even when no logo image is in the patch', () => {
     const doc = docWithLogoInBody()
-    const result = applyTheme(doc, { brandStyleId: 1 })
+    const bodySnapshot = JSON.stringify(doc.children[1])
 
-    expect(doc.children[1]).toBe(result.children[1])
+    applyTheme(doc, { brandStyleId: 1 })
+
+    expect(JSON.stringify(doc.children[1])).toBe(bodySnapshot)
   })
 
   it('does not mutate the input body', () => {

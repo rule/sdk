@@ -1,10 +1,10 @@
 /**
- * Public type barrel for `@rulecom/client`.
+ * Public type barrel for `@rule/client`.
  *
  * Every type previously declared in this file lives next to its namespace
  * client (under `resources/<namespace>/<namespace>.types.ts`); this barrel
  * re-exports them all under their original names so `import type { ... }
- * from '@rulecom/client'` keeps working unchanged for downstream consumers.
+ * from '@rule/client'` keeps working unchanged for downstream consumers.
  *
  * The `RuleTag` v2 entity historically defined here is now exported as
  * `RuleTagEntity` to avoid colliding with the `RuleTag` string-literal union
@@ -43,6 +43,11 @@ export type {
   SubscriberSegment,
   CreateSubscriberPayload,
   BulkTagsPayload,
+  BulkCreateSubscriberEntry,
+  BulkCreateSubscriberField,
+  BulkCreateAutomationMode,
+  BulkCreateSubscribersPayload,
+  BulkCreateSubscribersResult,
   SuppressOptions,
   TagRef,
   TagAutomationMode,
@@ -66,9 +71,12 @@ export type {
   AutomationSendoutType,
   AutomationTrigger,
   CreateEmailAutomationPayload,
+  CreateSmsAutomationPayload,
   ListAutomationsParams,
   SetEmailAutomationPayload,
+  SetSmsAutomationPayload,
   UpdateEmailAutomationPayload,
+  UpdateSmsAutomationPayload,
 } from './resources/automations/automations.types.js';
 
 // ── Messages ─────────────────────────────────────────────────────────────────
@@ -76,22 +84,31 @@ export type {
   AutomailSetting,
   CreateEmailAutomationMessagePayload,
   CreateEmailCampaignMessagePayload,
+  CreateSmsAutomationMessagePayload,
+  CreateSmsCampaignMessagePayload,
   EmailAutomationMessage,
   EmailCampaignMessage,
   Message,
   MessageDispatcher,
+  SmsAutomationMessage,
+  SmsCampaignMessage,
   UpdateEmailAutomationMessagePayload,
   UpdateEmailCampaignMessagePayload,
+  UpdateSmsAutomationMessagePayload,
+  UpdateSmsCampaignMessagePayload,
 } from './resources/messages/messages.types.js';
 
 // ── Templates ────────────────────────────────────────────────────────────────
 export type {
   CreateEmailTemplatePayload,
+  CreateSmsTemplatePayload,
   EmailTemplate,
   ListTemplatesParams,
   RenderTemplateParams,
+  SmsTemplate,
   Template,
   UpdateEmailTemplatePayload,
+  UpdateSmsTemplatePayload,
 } from './resources/templates/templates.types.js';
 
 // ── Dynamic sets ─────────────────────────────────────────────────────────────
@@ -113,11 +130,17 @@ export type {
   CampaignRecipients,
   CampaignSendoutType,
   CampaignStatus,
+  CreateDefaultCampaignResult,
+  CreateDefaultEmailCampaignParams,
+  CreateDefaultSmsCampaignParams,
   CreateEmailCampaignPayload,
+  CreateSmsCampaignPayload,
   ListCampaignsParams,
   ScheduleCampaignPayload,
   SetEmailCampaignPayload,
+  SetSmsCampaignPayload,
   UpdateEmailCampaignPayload,
+  UpdateSmsCampaignPayload,
 } from './resources/campaigns/campaigns.types.js';
 
 
@@ -149,6 +172,11 @@ export type {
   CreateApiKeyPayload,
   UpdateApiKeyPayload,
 } from './resources/api-keys/api-keys.types.js';
+
+// ── Account ───────────────────────────────────────────────────────────────────
+export type {
+  AccountSenderDetails,
+} from './resources/account/account.types.js';
 
 // ── Exports ──────────────────────────────────────────────────────────────────
 export type {
@@ -217,3 +245,32 @@ export type {
   CreateCampaignEmailConfig,
   CreateCampaignEmailResult,
 } from './orchestration.types.js';
+
+// ── Webhooks ─────────────────────────────────────────────────────────────────
+export type {
+  CampaignLinkClickedEvent,
+  CampaignOpenedEvent,
+  CampaignSentEvent,
+  ImportFinishedEvent,
+  SubscriberAddedToSegmentEvent,
+  SubscriberAddedToTagEvent,
+  SubscriberBouncedEvent,
+  SubscriberOptedInEvent,
+  SubscriberRemovedFromTagEvent,
+  SubscriberResubscribedEvent,
+  SubscriberSuppressedEvent,
+  SubscriberTagChangedEvent,
+  TransactionLinkClickedEvent,
+  TransactionOpenedEvent,
+  TransactionSentEvent,
+  WebhookAccount,
+  WebhookBounceInfo,
+  WebhookCampaignRef,
+  WebhookEvent,
+  WebhookImportSummary,
+  WebhookSegmentRef,
+  WebhookSubscriber,
+  WebhookTagRef,
+  WebhookTransactionMessage,
+  WebhookTransactionRef,
+} from './webhooks/index.js';

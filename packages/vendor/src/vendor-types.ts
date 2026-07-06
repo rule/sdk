@@ -3,7 +3,7 @@
  * the Rule.io platform.
  *
  * Provides a two-layer abstraction:
- * - **Vendor Preset** (shipped by a `@rulecom/vendor-*` package): field
+ * - **Vendor Preset** (shipped by a `@rule/vendor-*` package): field
  *   names, tags, automation flows, default text.
  * - **Consumer Config** (provided at runtime): brand style, field IDs,
  *   URLs.
@@ -11,7 +11,7 @@
  * @module vendors
  */
 
-import type { EmailTheme, RCMLDocumentRoot } from '@rulecom/rcml'
+import type { EmailTheme, RCMLDocumentRoot } from '@rule/rcml'
 
 // ─── Errors ───────────────────────────────────────────────────────────────────
 
@@ -68,7 +68,7 @@ export interface FooterConfig {
  * The `theme` field is an {@link EmailTheme} applied to rcml documents via
  * `applyTheme`. Consumers convert their brand-style source (Rule.io API
  * response, hand-rolled config) to an `EmailTheme` before passing it in.
- * `@rulecom/client` ships `emailThemeFromBrandStyle` for the API-response case.
+ * `@rule/client` ships `emailThemeFromBrandStyle` for the API-response case.
  */
 export interface TemplateConfigV2 {
   /** Typed email theme applied to the built RCML document. */
@@ -83,14 +83,14 @@ export interface TemplateConfigV2 {
  * Full automation configuration.
  *
  * `templateBuilder` returns {@link RCMLDocumentRoot} at the type level so the
- * contract doesn't depend on `@rulecom/rcml`; concrete implementations return
+ * contract doesn't depend on `@rule/rcml`; concrete implementations return
  * a full `RcmlDocument` (a subtype), which TypeScript accepts by
  * function-return covariance.
  *
  * @example
  * ```typescript
- * import { RuleTags, createAbandonedCartEmail } from '@rulecom/sdk';
- * import type { AutomationConfigV2 } from '@rulecom/sdk';
+ * import { RuleTags, createAbandonedCartEmail } from '@rule/sdk';
+ * import type { AutomationConfigV2 } from '@rule/sdk';
  *
  * const automation: AutomationConfigV2 = {
  *   id: 'abandoned-cart',
@@ -309,7 +309,7 @@ export interface VendorFieldInfo {
  *
  * @example
  * ```typescript
- * import { shopifyPreset, SHOPIFY_FIELDS } from '@rulecom/sdk';
+ * import { shopifyPreset, SHOPIFY_FIELDS } from '@rule/sdk';
  *
  * shopifyPreset.validateConfig(config);
  * const automations = shopifyPreset.getAutomations(config);

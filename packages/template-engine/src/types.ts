@@ -1,5 +1,5 @@
 /**
- * Public type surface for `@rulecom/template-engine` v3.
+ * Public type surface for `@rule/template-engine` v3.
  *
  * See `docs/template-syntax.md` for the full syntax specification.
  *

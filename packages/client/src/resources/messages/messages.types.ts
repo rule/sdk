@@ -1,5 +1,5 @@
 /**
- * Message types for the `@rulecom/client` messages namespace.
+ * Message types for the `@rule/client` messages namespace.
  *
  * The Rule.io API models an email as three connected layers:
  *
@@ -113,6 +113,34 @@ export type EmailCampaignMessage = Message;
  */
 export type EmailAutomationMessage = Message;
 
+/**
+ * A message belonging to an SMS campaign.
+ *
+ * Structurally identical to `Message`; the named alias makes method
+ * signatures and variable declarations self-documenting at the call site.
+ *
+ * @example
+ * ```typescript
+ * const message: SmsCampaignMessage =
+ *   await client.messages.createSmsCampaignMessage(campaignId, { ... });
+ * ```
+ */
+export type SmsCampaignMessage = Message;
+
+/**
+ * A message belonging to an SMS automation.
+ *
+ * Structurally identical to `Message`; the named alias makes method
+ * signatures and variable declarations self-documenting at the call site.
+ *
+ * @example
+ * ```typescript
+ * const message: SmsAutomationMessage =
+ *   await client.messages.createSmsAutomationMessage(automationId, { ... });
+ * ```
+ */
+export type SmsAutomationMessage = Message;
+
 // ── Supporting types ──────────────────────────────────────────────────────────
 
 /**
@@ -217,6 +245,54 @@ export interface CreateEmailAutomationMessagePayload {
   automailSetting?: AutomailSetting;
 }
 
+/**
+ * Payload for `MessagesClient.createSmsCampaignMessage`.
+ *
+ * SMS messages do not have sender, preheader, or from-email fields. All fields
+ * are optional — the API applies account-level defaults when omitted.
+ *
+ * @example
+ * ```typescript
+ * await client.messages.createSmsCampaignMessage(campaignId, {
+ *   utmCampaign: 'spring-sale',
+ * });
+ * ```
+ */
+export interface CreateSmsCampaignMessagePayload {
+  /** UTM campaign parameter appended to tracked links. */
+  utmCampaign?: string | null;
+  /** UTM term parameter appended to tracked links. */
+  utmTerm?: string | null;
+}
+
+/**
+ * Payload for `MessagesClient.createSmsAutomationMessage`.
+ *
+ * SMS messages do not have sender, preheader, or from-email fields. All fields
+ * are optional — the API applies account-level defaults when omitted.
+ *
+ * @example
+ * ```typescript
+ * await client.messages.createSmsAutomationMessage(automationId, {
+ *   utmCampaign: 'welcome-flow',
+ *   automailSetting: { active: true, delayInSeconds: '0' },
+ * });
+ * ```
+ */
+export interface CreateSmsAutomationMessagePayload {
+  /** UTM campaign parameter appended to tracked links. */
+  utmCampaign?: string | null;
+  /** UTM term parameter appended to tracked links. */
+  utmTerm?: string | null;
+  /**
+   * Automail delivery settings for this message.
+   *
+   * Omitting this field leaves the setting unchanged on update, or uses the
+   * API default (active, no delay) on create.
+   */
+  automailSetting?: AutomailSetting;
+}
+
 // ── Update payloads ───────────────────────────────────────────────────────────
 
 /**
@@ -281,6 +357,46 @@ export interface UpdateEmailAutomationMessagePayload {
   automailSetting?: AutomailSetting;
 }
 
+/**
+ * Payload for `MessagesClient.updateSmsCampaignMessage`.
+ *
+ * All fields are optional — only the fields you include are changed.
+ *
+ * @example
+ * ```typescript
+ * await client.messages.updateSmsCampaignMessage(messageId, {
+ *   utmCampaign: 'spring-sale',
+ * });
+ * ```
+ */
+export interface UpdateSmsCampaignMessagePayload {
+  /** New UTM campaign parameter. Pass `null` to clear. */
+  utmCampaign?: string | null;
+  /** New UTM term parameter. Pass `null` to clear. */
+  utmTerm?: string | null;
+}
+
+/**
+ * Payload for `MessagesClient.updateSmsAutomationMessage`.
+ *
+ * All fields are optional — only the fields you include are changed.
+ *
+ * @example
+ * ```typescript
+ * await client.messages.updateSmsAutomationMessage(messageId, {
+ *   automailSetting: { active: true, delayInSeconds: '3600' },
+ * });
+ * ```
+ */
+export interface UpdateSmsAutomationMessagePayload {
+  /** New UTM campaign parameter. Pass `null` to clear. */
+  utmCampaign?: string | null;
+  /** New UTM term parameter. Pass `null` to clear. */
+  utmTerm?: string | null;
+  /** New automail delivery settings. Omit to leave unchanged. */
+  automailSetting?: AutomailSetting;
+}
+
 // ── Internal wire types ───────────────────────────────────────────────────────
 
 /**
@@ -328,8 +444,10 @@ export interface AutomailSettingWire {
  */
 export interface CreateMessageBody {
   dispatcher: { id: number; type: 'campaign' | 'automail' };
-  type: 1;
-  subject: string;
+  /** `1` = email, `2` = SMS. */
+  type: 1 | 2;
+  /** Required for email; omitted for SMS (the API sets a default). */
+  subject?: string;
   pre_header?: string | null;
   sender?: MessageSenderWire;
   utm_campaign?: string | null;

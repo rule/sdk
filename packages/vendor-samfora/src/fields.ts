@@ -5,7 +5,7 @@
  * Samfora is a Swedish charitable giving platform.
  */
 
-import type { VendorFieldSchema } from '@rulecom/vendor';
+import type { VendorFieldSchema } from '@rule/vendor';
 
 /**
  * Samfora field names for Rule.io custom fields.
@@ -24,7 +24,7 @@ import type { VendorFieldSchema } from '@rulecom/vendor';
  *
  * @example
  * ```typescript
- * import { SAMFORA_FIELDS } from '@rulecom/sdk';
+ * import { SAMFORA_FIELDS } from '@rule/sdk';
  *
  * const customFields = {
  *   [SAMFORA_FIELDS.donorFirstName]: 47736,   // pre-existing in account

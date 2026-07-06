@@ -1,3 +1,85 @@
+## 0.4.0-beta.8 (2026-06-19)
+
+### 🚀 Features
+
+- rename npm scope from @rulecom to @rule ([4575ff6](https://github.com/rulecom/rule-io-sdk/commit/4575ff6))
+
+### ❤️ Thank You
+
+- Claude
+- Oleksandr Ryzhyk
+
+## 0.4.0-beta.7 (2026-06-17)
+
+### 🚀 Features
+
+- **client:** add message/template override params to createDefault campaign methods ([72c3276](https://github.com/rulecom/rule-io-sdk/commit/72c3276))
+- **client:** add createDefaultEmailCampaign and createDefaultSmsCampaign orchestration methods ([95b9d2a](https://github.com/rulecom/rule-io-sdk/commit/95b9d2a))
+- **client:** typed webhook events + parser + tag-direction helper ([bfc9b86](https://github.com/rulecom/rule-io-sdk/commit/bfc9b86))
+- **client:** bulk-create subscribers via Rule.io v2 endpoint ([5159191](https://github.com/rulecom/rule-io-sdk/commit/5159191))
+- **rcml:** add SMS RCML module with full architecture parity to email ([4dc9930](https://github.com/rulecom/rule-io-sdk/commit/4dc9930))
+
+### 🩹 Fixes
+
+- **client:** address second-round Copilot review comments ([57d196f](https://github.com/rulecom/rule-io-sdk/commit/57d196f))
+- **client:** add missing blank lines to satisfy padding-line-between-statements lint rule ([e47632d](https://github.com/rulecom/rule-io-sdk/commit/e47632d))
+- **client:** address Copilot review on createDefault campaign methods ([7d701f8](https://github.com/rulecom/rule-io-sdk/commit/7d701f8))
+- **client:** export AccountSenderDetails and CreateDefault* types ([6f399d9](https://github.com/rulecom/rule-io-sdk/commit/6f399d9))
+- **client:** resolve CI Docs Quality failures from cross-file @link refs ([#152](https://github.com/rulecom/rule-io-sdk/issues/152))
+
+### ❤️ Thank You
+
+- Claude
+- Claude Sonnet 4.6
+- Oleksandr Ryzhyk
+
+## 0.4.0-beta.6 (2026-06-05)
+
+### 🚀 Features
+
+- **client:** accept SubscriberIdentifier in getSubscriberTags ([796f33a](https://github.com/rulecom/rule-io-sdk/commit/796f33a))
+- **client:** expose AnalyticsMetrics, AnalyticsObjectTypes, AnalyticsMessageTypes constants ([189c6a2](https://github.com/rulecom/rule-io-sdk/commit/189c6a2))
+- **client:** refactor custom-field namespace with full paginated list family ([2c6e0db](https://github.com/rulecom/rule-io-sdk/commit/2c6e0db))
+- **client:** refactor brand-styles namespace with camelCase types and wire mappers ([f066591](https://github.com/rulecom/rule-io-sdk/commit/f066591))
+- **client:** move suppressions into subscribers namespace with focused methods ([c88fba3](https://github.com/rulecom/rule-io-sdk/commit/c88fba3))
+- **client:** refactor tags namespace with camelCase types and paginated list family ([5f1c619](https://github.com/rulecom/rule-io-sdk/commit/5f1c619))
+- **client:** refactor automations namespace with email-specific methods and paginated list family ([1956152](https://github.com/rulecom/rule-io-sdk/commit/1956152))
+- **client:** refactor campaigns namespace with email-specific methods and string literals ([161370a](https://github.com/rulecom/rule-io-sdk/commit/161370a))
+- **client:** refactor dynamic-sets namespace with camelCase types and wire corrections ([a3ed01b](https://github.com/rulecom/rule-io-sdk/commit/a3ed01b))
+- **client:** refactor templates namespace with email-specific methods and paginated list family ([7013b01](https://github.com/rulecom/rule-io-sdk/commit/7013b01))
+- **client:** refactor messages namespace with dispatcher-specific types and OpenAPI wire fixes ([4c160f1](https://github.com/rulecom/rule-io-sdk/commit/4c160f1))
+- **client:** add tag automation methods, syncSegments option, and docs ([851a97d](https://github.com/rulecom/rule-io-sdk/commit/851a97d))
+- **client:** add getByCustomIdentifier() subscriber lookup method ([e1c6d41](https://github.com/rulecom/rule-io-sdk/commit/e1c6d41))
+- **client:** refactor subscriber tag API and add @rule/client docs ([b302c59](https://github.com/rulecom/rule-io-sdk/commit/b302c59))
+
+### 🩹 Fixes
+
+- **client:** update getSubscriberTags test for SubscriberIdentifier argument ([16eb34e](https://github.com/rulecom/rule-io-sdk/commit/16eb34e))
+- **client:** fix three TS errors breaking CI build ([659d812](https://github.com/rulecom/rule-io-sdk/commit/659d812))
+- **client:** add missing blank line for ESLint padding rule ([33f550b](https://github.com/rulecom/rule-io-sdk/commit/33f550b))
+- **client:** issues 8/9/10 — bookzen comment, delete tests, list result type ([83b72e6](https://github.com/rulecom/rule-io-sdk/commit/83b72e6))
+- **client:** coerce non-string custom field values in buildCustomFieldDataPayload ([0fae538](https://github.com/rulecom/rule-io-sdk/commit/0fae538))
+- **client:** extend _ensureSubscriber fallback to phone and customIdentifier ([448e99e](https://github.com/rulecom/rule-io-sdk/commit/448e99e))
+- **client:** map custom_identifier from v2 subscriber wire responses ([15567bb](https://github.com/rulecom/rule-io-sdk/commit/15567bb))
+- **client:** fix CI dead links, Vue interpolation, and vendor-bookzen API migration ([d426f7f](https://github.com/rulecom/rule-io-sdk/commit/d426f7f))
+- **client:** resolve CI failures in ESLint and TypeDoc checks ([3d967f5](https://github.com/rulecom/rule-io-sdk/commit/3d967f5))
+
+### ❤️ Thank You
+
+- Claude Sonnet 4.6
+- Oleksandr Ryzhyk
+
+## 0.4.0-beta.5 (2026-05-29)
+
+### 🩹 Fixes
+
+- **docs:** address Copilot review findings ([b02f989](https://github.com/rulecom/rule-io-sdk/commit/b02f989))
+
+### ❤️ Thank You
+
+- Claude Sonnet 4.6
+- Oleksandr Ryzhyk
+
 ## 0.4.0-beta.4 (2026-05-20)
 
 This was a version bump only for client to align it with other projects, there were no code changes.
@@ -55,7 +137,7 @@ This was a version bump only for client to align it with other projects, there w
 
 ### Initial Beta Release
 
-First public beta of `@rulecom/client` — a TypeScript HTTP client for the Rule.io email marketing API.
+First public beta of `@rule/client` — a TypeScript HTTP client for the Rule.io email marketing API.
 
 #### Features
 

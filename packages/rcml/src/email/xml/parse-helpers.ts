@@ -8,7 +8,7 @@
 
 import { XMLParser, XMLValidator } from 'fast-xml-parser'
 import type { RcmlDocument } from '../rcml-types.js'
-import { inlineRfmToJson, rfmToJson } from '../rfm-to-json.js'
+import { emailInlineRfmToJson, emailRfmToJson } from '../email-rfm-to-json.js'
 import { RCML_SCHEMA_SPEC, RcmlTagNamesEnum, type RcmlTagName } from '../schema/index.js'
 import type { RcmlXmlParseIssue } from '../xml-to-rcml.js'
 
@@ -179,13 +179,13 @@ function convertNode(
 
     try {
       const pmDoc =
-        tagName === RcmlTagNamesEnum.Button ? inlineRfmToJson(rfmBody) : rfmToJson(rfmBody)
+        tagName === RcmlTagNamesEnum.Button ? emailInlineRfmToJson(rfmBody) : emailRfmToJson(rfmBody)
 
       node['content'] = pmDoc
     } catch (err) {
       issues.push({
         path: `${path}/content`,
-        code: 'RFM_PARSE_ERROR',
+        code: 'EMAIL_RFM_PARSE_ERROR',
         message: err instanceof Error ? err.message : 'Invalid RFM content.',
       })
       node['content'] = { type: 'doc', content: [] }

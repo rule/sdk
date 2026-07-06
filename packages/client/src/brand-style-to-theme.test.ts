@@ -1,5 +1,5 @@
 /**
- * Tests for {@link emailThemeFromBrandStyle} — the `@rulecom/client` bridge
+ * Tests for {@link emailThemeFromBrandStyle} — the `@rule/client` bridge
  * that converts a Rule.io brand-style API response directly into an
  * {@link EmailTheme}.
  */
@@ -11,7 +11,7 @@ import {
   EmailThemeFontStyleType,
   EmailThemeImageType,
   applyTheme,
-} from '@rulecom/rcml';
+} from '@rule/rcml';
 
 import { emailThemeFromBrandStyle, resolveBrandTheme } from './brand-style-to-theme.js';
 import { RuleClientError } from './errors.js';

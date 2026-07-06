@@ -8,7 +8,7 @@
 
 import { XMLBuilder } from 'fast-xml-parser'
 import type { RcmlDocument } from '../rcml-types.js'
-import { jsonToInlineRfm, jsonToRfm } from '../json-to-rfm.js'
+import { jsonToEmailInlineRfm, jsonToEmailRfm } from '../json-to-email-rfm.js'
 import type { RcmlToXmlOptions } from '../rcml-to-xml.js'
 import { RcmlTagNamesEnum } from '../schema/index.js'
 import type { Json } from '../validate-rcml-json.js'
@@ -99,8 +99,8 @@ function toPreservedEntry(node: RcmlNodeLike): PreservedEntry {
     const content = node.content as Json | undefined
     const rfm =
       tagName === RcmlTagNamesEnum.Button
-        ? jsonToInlineRfm(content ?? emptyDoc())
-        : jsonToRfm(content ?? emptyDoc())
+        ? jsonToEmailInlineRfm(content ?? emptyDoc())
+        : jsonToEmailRfm(content ?? emptyDoc())
 
     entry[tagName] = rfm === '' ? [] : [{ '#text': rfm }]
 

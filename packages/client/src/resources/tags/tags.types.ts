@@ -1,9 +1,9 @@
 /**
- * Tag types for the `@rulecom/client` tags namespace.
+ * Tag types for the `@rule/client` tags namespace.
  *
  * Tags wrap the v2 `/tags` API — there is no v3 equivalent.
  *
- * Note: The `RuleTag` symbol exported from `@rulecom/client` refers to
+ * Note: The `RuleTag` symbol exported from `@rule/client` refers to
  * deprecated well-known tag string literals, not this entity type.
  */
 

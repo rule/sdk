@@ -685,7 +685,7 @@ const loopSpec = {
 
 const textSpec = {
   category: 'content',
-  description: 'Rich-text paragraph block. The content is a full RFM document — supports paragraphs, bullet/ordered lists, hard breaks, alignment blocks, inline marks, links, and dynamic placeholders. Renders as an HTML table cell.',
+  description: 'Rich-text paragraph block. The content is a full RFM document — supports paragraphs, bullet/ordered lists, hard breaks, alignment blocks, inline marks, links, and dynamic placeholders. Renders as an HTML table cell. Theme font and colour styling is applied via the rc-class attribute (default: "rcml-p-style"); applyTheme sets this automatically on unstyled nodes.',
   attrs: {
     align: {
       validator: V.TextAlign,
@@ -710,8 +710,8 @@ const textSpec = {
     },
     'rc-class': {
       validator: V.String,
-      description: 'Name of an rc-class defined in rc-head whose styles are inherited by this node.',
-      examples: ['body-text'],
+      description: 'Name of an rc-class defined in rc-head whose styles are inherited by this node. applyTheme automatically sets this to "rcml-p-style" (the theme paragraph style) on nodes that have no class. Override only when applying a different named style.',
+      examples: ['rcml-p-style'],
     },
     'font-family': {
       validator: V.FontFamily,
@@ -800,7 +800,7 @@ const textSpec = {
 
 const headingSpec = {
   category: 'content',
-  description: 'Heading block (h1–h6 semantics set inside the RFM content). Supports the same full RFM feature set as rc-text. Visually prominent text rendered as an HTML table cell.',
+  description: 'Heading block. Supports the same full RFM feature set as rc-text. Visually prominent text rendered as an HTML table cell. There is no level attribute — heading level semantics (H1–H4) are expressed through the rc-class attribute: use "rcml-h1-style", "rcml-h2-style", "rcml-h3-style", or "rcml-h4-style" to inherit the corresponding theme style. applyTheme defaults to "rcml-h1-style" on nodes that have no rc-class.',
   attrs: {
     align: {
       validator: V.TextAlign,
@@ -830,8 +830,8 @@ const headingSpec = {
     },
     'rc-class': {
       validator: V.String,
-      description: 'Name of an rc-class whose styles are inherited by this heading.',
-      examples: ['section-heading'],
+      description: 'Name of an rc-class defined in rc-head whose styles are inherited by this heading. applyTheme automatically sets this to "rcml-h1-style" (the theme H1 style) on nodes that have no class. Use other heading styles by setting the class explicitly.',
+      examples: ['rcml-h1-style', 'rcml-h2-style', 'rcml-h3-style', 'rcml-h4-style'],
     },
     'font-family': {
       validator: V.FontFamily,
@@ -920,7 +920,7 @@ const headingSpec = {
 
 const buttonSpec = {
   category: 'content',
-  description: 'Clickable call-to-action button. The label is an Inline RFM document (single paragraph — no lists or alignment blocks). Renders as a styled anchor tag inside a table cell.',
+  description: 'Clickable call-to-action button. The label is an Inline RFM document (single paragraph — no lists or alignment blocks). Renders as a styled anchor tag inside a table cell. Theme label font styling is applied via the rc-class attribute (default: "rcml-label-style"); applyTheme sets this automatically on unstyled nodes.',
   attrs: {
     align: {
       validator: V.Align,
@@ -982,8 +982,8 @@ const buttonSpec = {
     },
     'rc-class': {
       validator: V.String,
-      description: 'Name of an rc-class whose styles are inherited by this button.',
-      examples: ['primary-button'],
+      description: 'Name of an rc-class defined in rc-head whose styles are inherited by this button. applyTheme automatically sets this to "rcml-label-style" (the theme button-label style) on nodes that have no class. Override only when applying a different named style.',
+      examples: ['rcml-label-style'],
     },
     'font-family': {
       validator: V.FontFamily,
@@ -1233,7 +1233,7 @@ const imageSpec = {
 
 const logoSpec = {
   category: 'content',
-  description: 'Brand logo image. Functionally identical to rc-image but semantically distinct — the editor treats it as the document logo and it can inherit from a brand style.',
+  description: 'Brand logo image. Functionally identical to rc-image but semantically distinct — the editor treats it as the document logo and wires it to the brand theme. Theme logo URL and sizing are applied via the rc-class attribute (default: "rcml-logo-style"); applyTheme sets this automatically on unstyled nodes and also patches the src attribute with the brand logo URL.',
   attrs: {
     align: {
       validator: V.Align,
@@ -1328,8 +1328,8 @@ const logoSpec = {
     },
     'rc-class': {
       validator: V.String,
-      description: 'Name of an rc-class whose styles are inherited by this logo.',
-      examples: ['brand-logo'],
+      description: 'Name of an rc-class defined in rc-head whose styles are inherited by this logo. applyTheme automatically sets this to "rcml-logo-style" (the theme logo style) on nodes that have no class, and also applies the brand logo URL. Override only when applying a different named style.',
+      examples: ['rcml-logo-style'],
     },
   },
   isLeaf: true,

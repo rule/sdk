@@ -70,10 +70,10 @@ Full-width horizontal band that holds one or more columns. The primary layout ro
 
 ## Building
 
-Templates can be built using factory functions from `@rulecom/rcml`, or the JSON structure above can be generated directly by an AI model — pass [`rcmlSpec`](/api/rcml/src/variables/rcmlSpec) as context when prompting.
+Templates can be built using factory functions from `@rule/rcml`, or the JSON structure above can be generated directly by an AI model — pass [`rcmlSpec`](/api/rcml/src/variables/rcmlSpec) as context when prompting.
 
 ```typescript
-import { createSectionElement, createColumnElement } from '@rulecom/rcml';
+import { createSectionElement, createColumnElement } from '@rule/rcml';
 
 createSectionElement({
   attrs: { 'background-color': '#ffffff', padding: '40px 0' },

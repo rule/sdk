@@ -1,5 +1,5 @@
 /**
- * Dynamic-sets namespace client for the `@rulecom/client` package.
+ * Dynamic-sets namespace client for the `@rule/client` package.
  *
  * Wraps the v3 `/editor/dynamic-set` endpoints. A dynamic set connects a
  * template to a message. A message can have multiple dynamic sets — one per

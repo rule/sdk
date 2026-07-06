@@ -62,10 +62,10 @@ Any content element: [`<rc-text>`](../content/rc-text.md), [`<rc-heading>`](../c
 
 ## Building
 
-Templates can be built using factory functions from `@rulecom/rcml`, or the JSON structure above can be generated directly by an AI model — pass [`rcmlSpec`](/api/rcml/src/variables/rcmlSpec) as context when prompting.
+Templates can be built using factory functions from `@rule/rcml`, or the JSON structure above can be generated directly by an AI model — pass [`rcmlSpec`](/api/rcml/src/variables/rcmlSpec) as context when prompting.
 
 ```typescript
-import { createColumnElement, createTextElement } from '@rulecom/rcml';
+import { createColumnElement, createTextElement } from '@rule/rcml';
 
 createColumnElement({
   attrs: { padding: '0 16px', width: '50%' },

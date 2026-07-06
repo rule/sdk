@@ -49,10 +49,10 @@ A single conditional branch inside an `<rc-switch>`. Rendered when its condition
 
 ## Building
 
-Templates can be built using factory functions from `@rulecom/rcml`, or the JSON structure above can be generated directly by an AI model — pass [`rcmlSpec`](/api/rcml/src/variables/rcmlSpec) as context when prompting.
+Templates can be built using factory functions from `@rule/rcml`, or the JSON structure above can be generated directly by an AI model — pass [`rcmlSpec`](/api/rcml/src/variables/rcmlSpec) as context when prompting.
 
 ```typescript
-import { createCaseElement, createSectionElement } from '@rulecom/rcml';
+import { createCaseElement, createSectionElement } from '@rule/rcml';
 
 createCaseElement({
   attrs: { 'case-type': 'tag', 'case-property': '456', 'case-condition': 'eq', 'case-value': 'true' },

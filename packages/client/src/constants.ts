@@ -17,7 +17,7 @@ export const RULE_API_V3_BASE_URL = 'https://app.rule.io/api/v3';
  * @example
  * ```typescript
  * // Prefer vendor-specific tags:
- * import { SHOPIFY_TAGS } from '@rulecom/sdk';
+ * import { SHOPIFY_TAGS } from '@rule/sdk';
  * await client.syncSubscriber({
  *   email: 'customer@example.com',
  *   tags: [SHOPIFY_TAGS.orderCompleted],

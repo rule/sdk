@@ -3,7 +3,7 @@
  * typed node/mark tree model.
  *
  * This file contains **only public exports**. Every symbol here is part of
- * the `@rulecom/rcml` contract and is marked `@public` in its JSDoc. The
+ * the `@rule/rcml` contract and is marked `@public` in its JSDoc. The
  * AJV validator and visitor helpers live under `./content/json-validator/`.
  */
 
@@ -68,7 +68,7 @@ export type { SemanticValidationResult }
 
 /**
  * Restricts the set of node / mark types accepted by {@link validateJson} and
- * {@link safeParseJson}. Pre-built flavors: `rfmConfig`, `inlineRfmConfig`
+ * {@link safeParseJson}. Pre-built flavors: `emailRfmConfig`, `emailInlineRfmConfig`
  * (exported from `./content/flavors/index.js`).
  * @public
  */

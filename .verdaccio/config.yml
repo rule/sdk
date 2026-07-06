@@ -8,7 +8,7 @@ uplinks:
     maxage: 60m
 
 packages:
-  '@rulecom/*':
+  '@rule/*':
     access: $all
     publish: $all
     unpublish: $all

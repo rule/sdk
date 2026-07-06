@@ -526,37 +526,71 @@ type LooseNode = {
   children?: LooseNode[]
 }
 
+function referencesLogoClass(rcClass: string, mainClass: string, initialClass: string): boolean {
+  const classes = rcClass.split(/\s+/)
+
+  return classes.includes(mainClass) || classes.includes(initialClass)
+}
+
 /**
- * Deep-clone the body and propagate `logoUrl` onto every `<rc-logo>` node
- * whose `rc-class` references the logo class (main or initial seed). Also
- * ensures each updated node carries a `width` attribute, defaulting to
- * `'96px'` when unset, so the logo is always size-constrained.
- *
- * @param body    - The body node. Not mutated.
- * @param logoUrl - The logo image URL (already validated by the caller).
- * @returns       A new body with matching logo nodes updated.
+ * Maps tag name to the default `rc-class` name for nodes that have no
+ * existing `rc-class` attribute.
  *
  * @internal
  */
-export function applyLogoSrcToBody(body: RcmlBody, logoUrl: string): RcmlBody {
-  const cloned = JSON.parse(JSON.stringify(body)) as RcmlBody
-  const { main: mainClass, initial: initialClass } =
-    CLASS_NAMES_BY_IMAGE_TYPE_MAP[EmailThemeImageType.Logo]
+const DEFAULT_RC_CLASS_BY_TAG: Partial<Record<string, string>> = {
+  'rc-heading': CLASS_NAMES_BY_FONT_STYLE_TYPE_MAP[EmailThemeFontStyleType.H1],
+  'rc-text': CLASS_NAMES_BY_FONT_STYLE_TYPE_MAP[EmailThemeFontStyleType.Paragraph],
+  'rc-button': CLASS_NAMES_BY_FONT_STYLE_TYPE_MAP[EmailThemeFontStyleType.ButtonLabel],
+  'rc-logo': CLASS_NAMES_BY_IMAGE_TYPE_MAP[EmailThemeImageType.Logo].main,
+}
 
-  patchLogoNodes(cloned.children as unknown as LooseNode[], logoUrl, mainClass, initialClass)
+/**
+ * Deep-clone the body and apply two classes of defaults in a single pass:
+ *
+ * 1. For `rc-heading`, `rc-text`, `rc-button`, and `rc-logo` nodes with no
+ *    `rc-class` attribute, set the theme default class (`rcml-h1-style`,
+ *    `rcml-p-style`, `rcml-label-style`, `rcml-logo-style` respectively).
+ *
+ * 2. For `rc-logo` nodes that reference the logo class (main or initial
+ *    seed), propagate `logoUrl` as `src` and ensure a `width` default of
+ *    `'96px'` when unset. This only runs when `logoUrl` is provided.
+ *
+ * Nodes that already carry an `rc-class` attribute are left untouched by
+ * step 1. Step 2 applies regardless of whether step 1 just set the class.
+ *
+ * @param body    - The body node. Not mutated.
+ * @param logoUrl - Logo image URL. When provided, logo `src` is patched.
+ * @returns       A new body with defaults applied.
+ *
+ * @internal
+ */
+export function applyBodyDefaults(body: RcmlBody, logoUrl?: string): RcmlBody {
+  const cloned = JSON.parse(JSON.stringify(body)) as RcmlBody
+
+  patchBodyDefaults(cloned.children as unknown as LooseNode[], logoUrl)
 
   return cloned
 }
 
-function patchLogoNodes(
-  nodes: LooseNode[],
-  logoUrl: string,
-  mainClass: string,
-  initialClass: string
-): void {
+function patchBodyDefaults(nodes: LooseNode[], logoUrl: string | undefined): void {
   for (const node of nodes) {
-    if (node.tagName === 'rc-logo') {
+    // Step 1 — add default rc-class to unstyled content nodes
+    const defaultClass = DEFAULT_RC_CLASS_BY_TAG[node.tagName]
+
+    if (defaultClass) {
+      const existing = node.attributes?.['rc-class']
+
+      if (!existing || (typeof existing === 'string' && existing.trim() === '')) {
+        node.attributes = { ...(node.attributes ?? {}), 'rc-class': defaultClass }
+      }
+    }
+
+    // Step 2 — patch rc-logo src/width (rc-class is guaranteed present after step 1)
+    if (node.tagName === 'rc-logo' && logoUrl !== undefined) {
       const rcClass = node.attributes?.['rc-class']
+      const { main: mainClass, initial: initialClass } =
+        CLASS_NAMES_BY_IMAGE_TYPE_MAP[EmailThemeImageType.Logo]
 
       if (typeof rcClass === 'string' && referencesLogoClass(rcClass, mainClass, initialClass)) {
         const attrs = node.attributes ?? {}
@@ -570,15 +604,9 @@ function patchLogoNodes(
     }
 
     if (node.children) {
-      patchLogoNodes(node.children, logoUrl, mainClass, initialClass)
+      patchBodyDefaults(node.children, logoUrl)
     }
   }
-}
-
-function referencesLogoClass(rcClass: string, mainClass: string, initialClass: string): boolean {
-  const classes = rcClass.split(/\s+/)
-
-  return classes.includes(mainClass) || classes.includes(initialClass)
 }
 
 /**

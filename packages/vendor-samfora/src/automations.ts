@@ -12,10 +12,10 @@
  */
 
 import { randomUUID } from 'node:crypto';
-import type { CustomFieldMap, FooterConfig } from '@rulecom/vendor';
-import { VendorPresetError } from '@rulecom/vendor';
-import type { EmailTheme } from '@rulecom/rcml';
-import type { VendorAutomation, VendorConsumerConfig } from '@rulecom/vendor';
+import type { CustomFieldMap, FooterConfig } from '@rule/vendor';
+import { VendorPresetError } from '@rule/vendor';
+import type { EmailTheme } from '@rule/rcml';
+import type { VendorAutomation, VendorConsumerConfig } from '@rule/vendor';
 import type {
   Json,
   RcmlBodyChild,
@@ -25,8 +25,8 @@ import type {
   RcmlHeading,
   RcmlSection,
   RcmlText,
-} from '@rulecom/rcml';
-import { applyTheme } from '@rulecom/rcml';
+} from '@rule/rcml';
+import { applyTheme } from '@rule/rcml';
 import { SAMFORA_FIELDS } from './fields.js';
 import { SAMFORA_TAGS } from './tags.js';
 

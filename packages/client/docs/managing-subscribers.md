@@ -42,6 +42,8 @@ await client.subscribers.create({
 
 *→ [`CreateSubscriberPayload`](/api/client/src/interfaces/CreateSubscriberPayload) · [`Subscriber`](/api/client/src/interfaces/Subscriber)*
 
+To add many subscribers at once, use `bulkCreateSubscribers()` instead — it accepts up to 1000 entries per call. See [Bulk Create Subscribers](./bulk-create-subscribers).
+
 ## Looking up a subscriber
 
 Use the method that matches the identifier you have. For operations that accept a `SubscriberIdentifier` object (tag methods, block/unblock, etc.), see [Subscriber Identifiers](./subscriber-identifiers).

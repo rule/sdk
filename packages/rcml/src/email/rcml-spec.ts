@@ -59,7 +59,7 @@ export interface RcmlPublicTagSpec {
   attributes: Record<string, RcmlPublicAttrSpec>
 }
 
-/** Top-level machine-readable RCML specification exported from @rulecom/rcml. */
+/** Top-level machine-readable RCML specification exported from @rule/rcml. */
 export interface RcmlSpec {
   /** Spec format version — incremented when the shape of this object changes. */
   version: string
@@ -171,7 +171,7 @@ function buildRcmlSpec(): RcmlSpec {
  *
  * @example
  * ```ts
- * import { rcmlSpec } from '@rulecom/rcml'
+ * import { rcmlSpec } from '@rule/rcml'
  *
  * // Enumerate all supported tags
  * Object.keys(rcmlSpec.tags)

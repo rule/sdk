@@ -18,7 +18,7 @@ Block nodes — `paragraph`, `bullet-list`, `ordered-list` (one or more)
 
 ## Available in
 
-- Full RFM (`rc-text`, `rc-heading`)
+- Full Email RFM (`rc-text`, `rc-heading`)
 
 ## JSON
 
@@ -32,7 +32,7 @@ Block nodes — `paragraph`, `bullet-list`, `ordered-list` (one or more)
 }
 ```
 
-## RFM syntax
+## Email RFM syntax
 
 Use `:::left`, `:::center`, or `:::right` fence block, closed by `:::` on its own line. Any block content between the fences is wrapped in the `align` node.
 

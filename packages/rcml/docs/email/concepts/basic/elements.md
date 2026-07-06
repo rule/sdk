@@ -21,7 +21,7 @@ Content elements are the leaf nodes of an RCML document — they live inside `<r
 
 Elements carry their content in one of three ways:
 
-**`content`** — a ProseMirror JSON document, produced from RFM text using `rfmToJson()` or `inlineRfmToJson()`. Used by `rc-text`, `rc-heading`, and `rc-button`. See [Rich text content](/packages/rcml/email/concepts/basic/rich-text-content).
+**`content`** — a ProseMirror JSON document, produced from RFM text using `emailRfmToJson()` or `emailInlineRfmToJson()`. Used by `rc-text`, `rc-heading`, and `rc-button`. See [Rich text content](/packages/rcml/email/concepts/basic/rich-text-content).
 
 **`children`** — an array of child element objects. Used by `rc-social`, which holds `<rc-social-element>` children.
 
@@ -33,5 +33,5 @@ Several elements participate in theming passively. `rc-button` inherits its back
 
 ## Related
 
-- [Rich text content](/packages/rcml/email/concepts/basic/rich-text-content) — how RFM produces the `content` field
+- [Rich text content](/packages/rcml/email/concepts/basic/rich-text-content) — how Email RFM produces the `content` field
 - [Containers](/packages/rcml/email/concepts/basic/containers) — the column and section structure that elements live inside

@@ -6,14 +6,14 @@ Nx monorepo for the Rule.io TypeScript SDK. Detailed usage docs live in [`packag
 
 | Package | Purpose | Status |
 |---|---|---|
-| [`@rulecom/rcml`](packages/rcml) | RCML email-template builders, types, and validators | **Released** |
-| [`@rulecom/client`](packages/client) | HTTP wrapper around the Rule.io v2/v3 API | **Released** |
-| [`@rulecom/sdk`](packages/sdk) | Meta-package re-exporting `@rulecom/rcml` + `@rulecom/client` | **Released** |
-| [`@rulecom/template-engine`](packages/template-engine) | XML template engine powering vendor email templates | Under development |
-| [`@rulecom/vendor`](packages/vendor) | Shared vendor-preset infrastructure | Under development |
-| [`@rulecom/vendor-shopify`](packages/vendor-shopify) | Shopify preset — e-commerce automation flows | Under development |
-| [`@rulecom/vendor-bookzen`](packages/vendor-bookzen) | Bookzen preset — hospitality automation flows | Under development |
-| [`@rulecom/vendor-samfora`](packages/vendor-samfora) | Samfora preset — Swedish donation flows | Under development |
+| [`@rule/rcml`](packages/rcml) | RCML email-template builders, types, and validators | **Released** |
+| [`@rule/client`](packages/client) | HTTP wrapper around the Rule.io v2/v3 API | **Released** |
+| [`@rule/sdk`](packages/sdk) | Meta-package re-exporting `@rule/rcml` + `@rule/client` | **Released** |
+| [`@rule/template-engine`](packages/template-engine) | XML template engine powering vendor email templates | Under development |
+| [`@rule/vendor`](packages/vendor) | Shared vendor-preset infrastructure | Under development |
+| [`@rule/vendor-shopify`](packages/vendor-shopify) | Shopify preset — e-commerce automation flows | Under development |
+| [`@rule/vendor-bookzen`](packages/vendor-bookzen) | Bookzen preset — hospitality automation flows | Under development |
+| [`@rule/vendor-samfora`](packages/vendor-samfora) | Samfora preset — Swedish donation flows | Under development |
 
 ---
 
@@ -23,20 +23,20 @@ Most consumers install **one** package — npm pulls in everything else as trans
 
 | If you want to… | Install | Notes |
 |---|---|---|
-| Call the Rule.io HTTP API | `@rulecom/client` | The 90% case. Brings in `@rulecom/rcml` automatically. |
-| Compose custom RCML templates from primitives | `@rulecom/rcml` | Low-level builders only — pair with `@rulecom/client` to send. |
-| Try everything in one install (prototypes, demos) | `@rulecom/sdk` | Meta-package re-exporting the libraries above. |
+| Call the Rule.io HTTP API | `@rule/client` | The 90% case. Brings in `@rule/rcml` automatically. |
+| Compose custom RCML templates from primitives | `@rule/rcml` | Low-level builders only — pair with `@rule/client` to send. |
+| Try everything in one install (prototypes, demos) | `@rule/sdk` | Meta-package re-exporting the libraries above. |
 
 ### Examples
 
 Just calling the API:
 
 ```bash
-npm install @rulecom/client
+npm install @rule/client
 ```
 
 ```ts
-import { RuleClient } from '@rulecom/client';
+import { RuleClient } from '@rule/client';
 
 const client = new RuleClient({ apiKey: process.env.RULE_API_KEY! });
 await client.addSubscriberTagsV3('user@example.com', { tags: ['welcome'] });
@@ -45,14 +45,14 @@ await client.addSubscriberTagsV3('user@example.com', { tags: ['welcome'] });
 Kitchen sink for prototyping:
 
 ```bash
-npm install @rulecom/sdk
+npm install @rule/sdk
 ```
 
 ```ts
-import { RuleClient, createBrandTemplate } from '@rulecom/sdk';
+import { RuleClient, createBrandTemplate } from '@rule/sdk';
 ```
 
-> `@rulecom/template-engine` is an infrastructure package — it almost never appears in a consumer's `package.json`. It arrives as a transitive dependency of the vendor preset packages (not yet released).
+> `@rule/template-engine` is an infrastructure package — it almost never appears in a consumer's `package.json`. It arrives as a transitive dependency of the vendor preset packages (not yet released).
 
 ---
 
@@ -165,7 +165,7 @@ Scope your commits when a change is package-specific: `fix(client): …`, `feat(
 
 ### npm dist-tags
 
-- Beta releases publish under the **`beta`** dist-tag → `npm install @rulecom/client@beta`
+- Beta releases publish under the **`beta`** dist-tag → `npm install @rule/client@beta`
 - Stable releases publish under **`latest`**
 
 ### What gets published

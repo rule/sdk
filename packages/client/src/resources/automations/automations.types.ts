@@ -1,5 +1,5 @@
 /**
- * Automation types for the `@rulecom/client` automations namespace.
+ * Automation types for the `@rule/client` automations namespace.
  *
  * An automation is a trigger-based email that fires automatically when a
  * subscriber enters a tag or a segment. Unlike campaigns (one-time sends),
@@ -124,7 +124,23 @@ export interface CreateEmailAutomationPayload {
   sendoutType?: AutomationSendoutType;
 }
 
-// ── Set payload ───────────────────────────────────────────────────────────────
+/**
+ * Payload for `AutomationsClient.createSmsAutomation`.
+ *
+ * The message type is fixed to `'text_message'` by the method.
+ *
+ * @example
+ * ```typescript
+ * const automation = await client.automations.createSmsAutomation({
+ *   name: 'Order shipped SMS',
+ *   trigger: { type: 'TAG', id: tagId },
+ *   sendoutType: 'transactional',
+ * });
+ * ```
+ */
+export type CreateSmsAutomationPayload = CreateEmailAutomationPayload;
+
+// ── Set payloads ──────────────────────────────────────────────────────────────
 
 /**
  * Payload for `AutomationsClient.setEmailAutomation` (full replacement).
@@ -169,7 +185,25 @@ export interface SetEmailAutomationPayload {
   sendoutType: AutomationSendoutType;
 }
 
-// ── Update payload ────────────────────────────────────────────────────────────
+/**
+ * Payload for `AutomationsClient.setSmsAutomation` (full replacement).
+ *
+ * All four fields are required — the API replaces the entire automation body.
+ * The message type is fixed to `'text_message'` by the method.
+ *
+ * @example
+ * ```typescript
+ * await client.automations.setSmsAutomation(automationId, {
+ *   name: 'Order shipped SMS',
+ *   active: true,
+ *   trigger: { type: 'TAG', id: tagId },
+ *   sendoutType: 'transactional',
+ * });
+ * ```
+ */
+export type SetSmsAutomationPayload = SetEmailAutomationPayload;
+
+// ── Update payloads ───────────────────────────────────────────────────────────
 
 /**
  * Payload for `AutomationsClient.updateEmailAutomation`.
@@ -212,6 +246,18 @@ export interface UpdateEmailAutomationPayload {
    */
   sendoutType?: AutomationSendoutType;
 }
+
+/**
+ * Payload for `AutomationsClient.updateSmsAutomation`.
+ *
+ * All fields are optional — only the fields you include are changed.
+ *
+ * @example
+ * ```typescript
+ * await client.automations.updateSmsAutomation(automationId, { active: false });
+ * ```
+ */
+export type UpdateSmsAutomationPayload = UpdateEmailAutomationPayload;
 
 // ── List params ───────────────────────────────────────────────────────────────
 
@@ -286,6 +332,8 @@ export interface CreateAutomationBody {
   description?: string;
   trigger?: AutomationTriggerWire;
   sendout_type?: number;
+  /** `1` = email, `2` = SMS. Omit to default to email. */
+  message_type?: 1 | 2;
 }
 
 /**

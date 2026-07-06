@@ -1,5 +1,5 @@
 /**
- * Brand-style types for the `@rulecom/client` brand-styles namespace.
+ * Brand-style types for the `@rule/client` brand-styles namespace.
  *
  * A brand style captures your visual identity — logo, colours, fonts, and
  * social links. The RCML template builders use brand styles to produce

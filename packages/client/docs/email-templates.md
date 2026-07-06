@@ -1,5 +1,7 @@
 # Email Templates
 
+> Channel: **email**. For SMS, see [SMS Templates](./sms-templates).
+
 A template holds the email body written in [RCML](/packages/rcml/). Templates are independent objects — they are not linked to a message at creation time. The link is made later, via a dynamic set. This means the same template can be reused across multiple messages.
 
 ## Creating a template
@@ -7,7 +9,7 @@ A template holds the email body written in [RCML](/packages/rcml/). Templates ar
 Use `createEmailTemplate()` to create a new email template. The template's RCML document defines the visual structure and content of the email.
 
 ```typescript
-import { buildRcmlDocument } from '@rulecom/rcml';
+import { buildRcmlDocument } from '@rule/rcml';
 
 const rcml = buildRcmlDocument({ /* ... your template ... */ });
 
@@ -22,7 +24,7 @@ Template names must be unique within the account. When creating templates progra
 
 *→ [`CreateEmailTemplatePayload`](/api/client/src/interfaces/CreateEmailTemplatePayload)*
 
-See the [@rulecom/rcml documentation](/packages/rcml/) for how to build the RCML document.
+See the [@rule/rcml documentation](/packages/rcml/) for how to build the RCML document.
 
 ## Fetching a template
 
@@ -120,4 +122,4 @@ for await (const page of client.templates.iterateTemplatesPages({ pagination: { 
 ## Next steps
 
 - Link the template to a message: [Dynamic Sets](./dynamic-sets)
-- Build RCML templates: [@rulecom/rcml documentation](/packages/rcml/)
+- Build RCML templates: [@rule/rcml documentation](/packages/rcml/)

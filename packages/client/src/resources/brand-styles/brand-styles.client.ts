@@ -1,5 +1,5 @@
 /**
- * Brand-styles namespace client for the `@rulecom/client` package.
+ * Brand-styles namespace client for the `@rule/client` package.
  *
  * Wraps the v3 `/brand-styles` endpoints — list, get, create (from-domain
  * or manual), update (PATCH), and delete.
