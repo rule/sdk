@@ -13,9 +13,14 @@
  * condition (tag assignment or segment entry).
  */
 
+import { createSmsDocument } from '@rule/rcml';
+
 import { RuleApiError, RuleClientError } from '../../errors.js';
 import { BaseResource } from '../../core/base-resource.js';
 import { buildQueryString } from '../../core/query-string.js';
+import { DynamicSetsClient } from '../dynamic-sets/dynamic-sets.client.js';
+import { MessagesClient } from '../messages/messages.client.js';
+import { TemplatesClient } from '../templates/templates.client.js';
 import type {
   Automation,
   AutomationListResponse,
@@ -23,6 +28,8 @@ import type {
   AutomationSendoutType,
   AutomationWire,
   CreateAutomationBody,
+  CreateDefaultSmsMessageParams,
+  CreateDefaultSmsMessageResult,
   CreateEmailAutomationPayload,
   CreateSmsAutomationPayload,
   ListAutomationsParams,
@@ -257,6 +264,99 @@ export class AutomationsClient extends BaseResource {
   }
 
   /**
+   * Create a default SMS message and attach it to an existing automation.
+   *
+   * Creates three resources in a single call — message, template, and a
+   * dynamic set linking them — and attaches them to the automation identified
+   * by `automationId`.
+   *
+   * Use this after {@link createSmsAutomation} to give the automation its SMS
+   * content so it appears fully configured in the Rule.io UI.
+   *
+   * On any error, the method attempts to roll back all resources it already
+   * created before rethrowing. The parent automation is never touched.
+   *
+   * @param automationId - ID of the automation to attach the message to.
+   * @param params - Optional overrides. All fields are optional.
+   * @returns The IDs of the created message, template, and dynamic set.
+   *
+   * @example
+   * ```typescript
+   * const automation = await client.automations.createSmsAutomation({ name: 'Welcome' });
+   * const setup = await client.automations.createDefaultSmsMessage(automation.id!);
+   * console.log(setup.messageId, setup.templateId, setup.dynamicSetId);
+   * ```
+   */
+  async createDefaultSmsMessage(
+    automationId: number,
+    params: CreateDefaultSmsMessageParams = {}
+  ): Promise<CreateDefaultSmsMessageResult> {
+    const messages = this.lazy('messages', () => new MessagesClient(this.transport));
+    const templates = this.lazy('templates', () => new TemplatesClient(this.transport));
+    const dynamicSets = this.lazy('dynamicSets', () => new DynamicSetsClient(this.transport));
+
+    const { content: templateContentOverride, ...templateMetaOverrides } = params.template ?? {};
+
+    let smsBody: string | undefined;
+    if (!templateContentOverride) {
+      const isMarketing = (params.sendoutType ?? 'marketing') !== 'transactional';
+      smsBody = isMarketing
+        ? buildDefaultSmsContent(params.unsubscriptionMethod !== 'stopWord')
+        : 'Your message here.';
+    }
+
+    const createdResources: { type: 'message' | 'template'; id: number }[] = [];
+
+    try {
+      const [messageResult, templateResult] = await Promise.allSettled([
+        messages.createSmsAutomationMessage(automationId, {
+        automailSetting: { active: false, delayInSeconds: '0' },
+        ...params.message,
+      }),
+        templates.createSmsTemplate({
+          name: `Automation ${automationId} SMS template`,
+          ...templateMetaOverrides,
+          content: templateContentOverride ?? createSmsDocument({ content: smsBody! }),
+        }),
+      ]);
+
+      if (messageResult.status === 'fulfilled' && messageResult.value.id) {
+        createdResources.push({ type: 'message', id: messageResult.value.id });
+      }
+      if (templateResult.status === 'fulfilled' && templateResult.value.id) {
+        createdResources.push({ type: 'template', id: templateResult.value.id });
+      }
+
+      if (messageResult.status === 'rejected') throw messageResult.reason;
+      if (templateResult.status === 'rejected') throw templateResult.reason;
+
+      const message = messageResult.value;
+      const template = templateResult.value;
+
+      if (!message.id) {
+        throw new RuleApiError('Failed to create message — no ID returned.', 500);
+      }
+      if (!template.id) {
+        throw new RuleApiError('Failed to create template — no ID returned.', 500);
+      }
+
+      const dynamicSet = await dynamicSets.create({
+        messageId: message.id,
+        templateId: template.id,
+      });
+
+      if (!dynamicSet.id) {
+        throw new RuleApiError('Failed to create dynamic set — no ID returned.', 500);
+      }
+
+      return { messageId: message.id, templateId: template.id, dynamicSetId: dynamicSet.id };
+    } catch (error) {
+      await this._cleanupResources(createdResources, { messages, templates });
+      throw error;
+    }
+  }
+
+  /**
    * Set (upsert) an SMS automation — fully replaces it if it exists, creates
    * it if not.
    *
@@ -451,6 +551,40 @@ export class AutomationsClient extends BaseResource {
 
     return results;
   }
+
+  private async _cleanupResources(
+    resources: { type: 'message' | 'template'; id: number }[],
+    clients: { messages: MessagesClient; templates: TemplatesClient }
+  ): Promise<void> {
+    for (const resource of resources.reverse()) {
+      try {
+        if (resource.type === 'message') {
+          await clients.messages.delete(resource.id);
+        } else {
+          await clients.templates.delete(resource.id);
+        }
+      } catch {
+        // best-effort cleanup
+      }
+    }
+  }
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+/**
+ * Builds the default SMS body text, appending either a link-based unsubscribe
+ * footer or a stop-word placeholder.
+ * @internal
+ */
+function buildDefaultSmsContent(linkInsteadOfStopWord: boolean): string {
+  const body = 'Your message here.\n';
+
+  if (linkInsteadOfStopWord) {
+    return `${body}::unsubscribe`;
+  }
+
+  return `${body}::placeholder{type="Subscriber" original="[Subscriber:stop_word]" name="Stop word"}`;
 }
 
 // ── Wire ↔ entity mappers ─────────────────────────────────────────────────────

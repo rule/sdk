@@ -54,29 +54,29 @@ describe('createPlaceholderNode (generic)', () => {
 
 describe('createSubscriberPlaceholder', () => {
   it('builds a [Subscriber:<field>] node with name defaulting to field', () => {
-    expect(createSubscriberPlaceholder({ field: 'FirstName' })).toEqual<SmsPlaceholderNode>({
+    expect(createSubscriberPlaceholder({ field: 'email' })).toEqual<SmsPlaceholderNode>({
       type: 'placeholder',
       attrs: {
         type: 'Subscriber',
-        name: 'FirstName',
-        original: '[Subscriber:FirstName]',
+        name: 'email',
+        original: '[Subscriber:email]',
         value: null,
       },
     })
   })
 
   it('matches the parser output shape exactly (deep-equals what smsRfmToJson produces)', () => {
-    const built = createSubscriberPlaceholder({ field: 'FirstName' })
-    const parsed = smsRfmToJson('[Subscriber:FirstName]').content[0]
+    const built = createSubscriberPlaceholder({ field: 'phone_number' })
+    const parsed = smsRfmToJson('[Subscriber:phone_number]').content[0]
 
     expect(parsed).toEqual(built)
   })
 
   it('respects an explicit name override', () => {
     expect(
-      createSubscriberPlaceholder({ field: 'email', name: 'Email' }),
+      createSubscriberPlaceholder({ field: 'email', name: 'Email address' }),
     ).toMatchObject({
-      attrs: { name: 'Email', original: '[Subscriber:email]' },
+      attrs: { name: 'Email address', original: '[Subscriber:email]' },
     })
   })
 })

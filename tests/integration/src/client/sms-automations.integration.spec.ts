@@ -5,6 +5,9 @@ import { testName, testEmail } from '../helpers/test-data.js';
 describe('AutomationsClient — SMS', () => {
   const client = createTestClient();
   const createdIds: number[] = [];
+  const createdMessageIds: number[] = [];
+  const createdTemplateIds: number[] = [];
+  const createdDynamicSetIds: number[] = [];
 
   let tagId: number;
   let bootstrapEmail: string;
@@ -22,21 +25,31 @@ describe('AutomationsClient — SMS', () => {
   });
 
   afterAll(async () => {
+    await Promise.allSettled(createdDynamicSetIds.map((id) => client.dynamicSets.delete(id)));
+    await Promise.allSettled(createdMessageIds.map((id) => client.messages.delete(id)));
+    await Promise.allSettled(createdTemplateIds.map((id) => client.templates.delete(id)));
+    await Promise.allSettled(createdIds.map((id) => client.automations.delete(id)));
+  });
+
+  afterAll(async () => {
     await Promise.allSettled([
-      ...createdIds.map((id) => client.automations.delete(id)),
       client.tags.deleteById(tagId),
       client.subscribers.deleteByEmail(bootstrapEmail),
     ]);
   });
 
-  // ── createSmsAutomation ───────────────────────────────────────────────────
-
   describe('createSmsAutomation', () => {
     it('creates an SMS automation with name only and returns a numeric ID', async () => {
       const name = testName('sms-auto-create');
       const result = await client.automations.createSmsAutomation({ name });
+      const id = result.id!;
 
-      createdIds.push(result.id!);
+      createdIds.push(id);
+      const setup = await client.automations.createDefaultSmsMessage(id);
+
+      createdMessageIds.push(setup.messageId);
+      createdTemplateIds.push(setup.templateId);
+      createdDynamicSetIds.push(setup.dynamicSetId);
       expect(typeof result.id).toBe('number');
       expect(result.id).toBeGreaterThan(0);
       expect(result.name).toBe(name);
@@ -49,15 +62,19 @@ describe('AutomationsClient — SMS', () => {
         trigger: { type: 'TAG', id: tagId },
         sendoutType: 'marketing',
       });
+      const id = result.id!;
 
-      createdIds.push(result.id!);
+      createdIds.push(id);
+      const setup = await client.automations.createDefaultSmsMessage(id);
+
+      createdMessageIds.push(setup.messageId);
+      createdTemplateIds.push(setup.templateId);
+      createdDynamicSetIds.push(setup.dynamicSetId);
       expect(result.name).toBe(name);
       expect(result.trigger?.type).toBe('TAG');
       expect(result.trigger?.id).toBe(tagId);
     });
   });
-
-  // ── setSmsAutomation ──────────────────────────────────────────────────────
 
   describe('setSmsAutomation', () => {
     it('upserts an SMS automation with all required fields', async () => {
@@ -66,6 +83,11 @@ describe('AutomationsClient — SMS', () => {
       const id = created.id!;
 
       createdIds.push(id);
+      const setup = await client.automations.createDefaultSmsMessage(id);
+
+      createdMessageIds.push(setup.messageId);
+      createdTemplateIds.push(setup.templateId);
+      createdDynamicSetIds.push(setup.dynamicSetId);
 
       const newName = testName('sms-auto-set-upserted');
       const result = await client.automations.setSmsAutomation(id, {
@@ -80,8 +102,6 @@ describe('AutomationsClient — SMS', () => {
     });
   });
 
-  // ── updateSmsAutomation ───────────────────────────────────────────────────
-
   describe('updateSmsAutomation', () => {
     it('persists a partial name update', async () => {
       const name = testName('sms-auto-update');
@@ -93,6 +113,11 @@ describe('AutomationsClient — SMS', () => {
       const id = created.id!;
 
       createdIds.push(id);
+      const setup = await client.automations.createDefaultSmsMessage(id);
+
+      createdMessageIds.push(setup.messageId);
+      createdTemplateIds.push(setup.templateId);
+      createdDynamicSetIds.push(setup.dynamicSetId);
 
       const newName = testName('sms-auto-update-renamed');
       const updated = await client.automations.updateSmsAutomation(id, { name: newName });
@@ -114,14 +139,17 @@ describe('AutomationsClient — SMS', () => {
       const id = created.id!;
 
       createdIds.push(id);
+      const setup = await client.automations.createDefaultSmsMessage(id);
+
+      createdMessageIds.push(setup.messageId);
+      createdTemplateIds.push(setup.templateId);
+      createdDynamicSetIds.push(setup.dynamicSetId);
 
       const updated = await client.automations.updateSmsAutomation(id, { active: true });
 
       expect(updated.active).toBe(true);
     });
   });
-
-  // ── get ───────────────────────────────────────────────────────────────────
 
   describe('get', () => {
     it('returns the automation for a known ID (round-trip)', async () => {
@@ -130,6 +158,11 @@ describe('AutomationsClient — SMS', () => {
       const id = created.id!;
 
       createdIds.push(id);
+      const setup = await client.automations.createDefaultSmsMessage(id);
+
+      createdMessageIds.push(setup.messageId);
+      createdTemplateIds.push(setup.templateId);
+      createdDynamicSetIds.push(setup.dynamicSetId);
 
       const found = await client.automations.get(id);
 
@@ -145,14 +178,18 @@ describe('AutomationsClient — SMS', () => {
     });
   });
 
-  // ── listAutomations ───────────────────────────────────────────────────────
-
   describe('listAutomations', () => {
     it('includes the created SMS automation in results', async () => {
       const name = testName('sms-auto-list');
       const created = await client.automations.createSmsAutomation({ name });
+      const id = created.id!;
 
-      createdIds.push(created.id!);
+      createdIds.push(id);
+      const setup = await client.automations.createDefaultSmsMessage(id);
+
+      createdMessageIds.push(setup.messageId);
+      createdTemplateIds.push(setup.templateId);
+      createdDynamicSetIds.push(setup.dynamicSetId);
 
       const results = await client.automations.listAllAutomations();
       const found = results.some((a) => a.id === created.id);
@@ -160,8 +197,6 @@ describe('AutomationsClient — SMS', () => {
       expect(found).toBe(true);
     });
   });
-
-  // ── delete ────────────────────────────────────────────────────────────────
 
   describe('delete', () => {
     it('deletes the automation and subsequent get returns null', async () => {
@@ -175,8 +210,6 @@ describe('AutomationsClient — SMS', () => {
       expect(found).toBeNull();
     });
   });
-
-  // ── error handling ────────────────────────────────────────────────────────
 
   describe('error handling', () => {
     it('throws RuleApiError with isAuthError() when API key is invalid', async () => {

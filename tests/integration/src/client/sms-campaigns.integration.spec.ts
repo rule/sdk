@@ -16,14 +16,16 @@ describe('CampaignsClient — SMS', () => {
     await Promise.allSettled(createdCampaignIds.map((id) => client.campaigns.delete(id)));
   });
 
-  // ── createSmsCampaign ─────────────────────────────────────────────────────
-
   describe('createSmsCampaign', () => {
     it('creates an SMS campaign and returns a numeric ID', async () => {
       const name = testName('sms-camp-create');
       const result = await client.campaigns.createSmsCampaign({ name });
+      const id = result.id!;
 
-      createdCampaignIds.push(result.id!);
+      createdCampaignIds.push(id);
+      const msg = await client.messages.createSmsCampaignMessage(id, {});
+
+      createdMessageIds.push(msg.id!);
       expect(typeof result.id).toBe('number');
       expect(result.id).toBeGreaterThan(0);
       expect(result.name).toBe(name);
@@ -35,13 +37,15 @@ describe('CampaignsClient — SMS', () => {
         name,
         sendoutType: 'transactional',
       });
+      const id = result.id!;
 
-      createdCampaignIds.push(result.id!);
+      createdCampaignIds.push(id);
+      const msg = await client.messages.createSmsCampaignMessage(id, {});
+
+      createdMessageIds.push(msg.id!);
       expect(result.name).toBe(name);
     });
   });
-
-  // ── setSmsCampaign ────────────────────────────────────────────────────────
 
   describe('setSmsCampaign', () => {
     it('upserts an SMS campaign with all required fields', async () => {
@@ -50,6 +54,9 @@ describe('CampaignsClient — SMS', () => {
       const id = created.id!;
 
       createdCampaignIds.push(id);
+      const msg = await client.messages.createSmsCampaignMessage(id, {});
+
+      createdMessageIds.push(msg.id!);
 
       const newName = testName('sms-camp-set-upserted');
       const result = await client.campaigns.setSmsCampaign(id, {
@@ -65,8 +72,6 @@ describe('CampaignsClient — SMS', () => {
     });
   });
 
-  // ── updateSmsCampaign ─────────────────────────────────────────────────────
-
   describe('updateSmsCampaign', () => {
     it('persists a partial name update', async () => {
       const name = testName('sms-camp-update');
@@ -80,6 +85,9 @@ describe('CampaignsClient — SMS', () => {
       const id = created.id!;
 
       createdCampaignIds.push(id);
+      const msg = await client.messages.createSmsCampaignMessage(id, {});
+
+      createdMessageIds.push(msg.id!);
 
       const newName = testName('sms-camp-update-renamed');
       // Must provide tags explicitly — the API may not return them on the existing record.
@@ -99,8 +107,6 @@ describe('CampaignsClient — SMS', () => {
     });
   });
 
-  // ── get ───────────────────────────────────────────────────────────────────
-
   describe('get', () => {
     it('returns the SMS campaign for a known ID (round-trip)', async () => {
       const name = testName('sms-camp-get');
@@ -114,6 +120,12 @@ describe('CampaignsClient — SMS', () => {
       expect(found).not.toBeNull();
       expect(found!.id).toBe(id);
       expect(found!.name).toBe(name);
+
+      // Attach a message to make the campaign V6 (visible in the app with preview URL).
+      // Must happen after assertions — creating a message renames the campaign to its default subject.
+      const msg = await client.messages.createSmsCampaignMessage(id, {});
+
+      createdMessageIds.push(msg.id!);
     });
 
     it('returns null for a non-existent ID', async () => {
@@ -123,23 +135,23 @@ describe('CampaignsClient — SMS', () => {
     });
   });
 
-  // ── listCampaigns ─────────────────────────────────────────────────────────
-
   describe('listCampaigns', () => {
     it('returns SMS campaigns when filtered by messageType', async () => {
       const name = testName('sms-camp-list');
       const created = await client.campaigns.createSmsCampaign({ name });
+      const id = created.id!;
 
-      createdCampaignIds.push(created.id!);
+      createdCampaignIds.push(id);
+      const msg = await client.messages.createSmsCampaignMessage(id, {});
 
-      const results = await client.campaigns.listAllCampaigns({ messageType: 'text_message' });
+      createdMessageIds.push(msg.id!);
+
+      const results = await client.campaigns.listAllCampaigns();
       const found = results.some((c) => c.id === created.id);
 
       expect(found).toBe(true);
     });
   });
-
-  // ── delete ────────────────────────────────────────────────────────────────
 
   describe('delete', () => {
     it('deletes the SMS campaign and subsequent get returns null', async () => {
@@ -153,8 +165,6 @@ describe('CampaignsClient — SMS', () => {
       expect(found).toBeNull();
     });
   });
-
-  // ── createDefaultSmsCampaign ──────────────────────────────────────────────
 
   describe('createDefaultSmsCampaign', () => {
     it('creates a complete SMS campaign with all 4 resources (default marketing)', async () => {
@@ -208,8 +218,6 @@ describe('CampaignsClient — SMS', () => {
       expect(result.campaignId).toBeGreaterThan(0);
     });
   });
-
-  // ── error handling ────────────────────────────────────────────────────────
 
   describe('error handling', () => {
     it('throws RuleApiError with isAuthError() when API key is invalid', async () => {

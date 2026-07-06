@@ -65,8 +65,6 @@ describe('MessagesClient — SMS', () => {
     ]);
   });
 
-  // ── createSmsCampaignMessage ──────────────────────────────────────────────
-
   describe('createSmsCampaignMessage', () => {
     it('creates a campaign SMS message and returns a numeric ID', async () => {
       const campaign = await client.campaigns.createSmsCampaign({
@@ -99,8 +97,6 @@ describe('MessagesClient — SMS', () => {
     });
   });
 
-  // ── createSmsAutomationMessage ────────────────────────────────────────────
-
   describe('createSmsAutomationMessage', () => {
     it('creates an automation SMS message and returns a numeric ID', async () => {
       const automation = await client.automations.createSmsAutomation({
@@ -121,8 +117,6 @@ describe('MessagesClient — SMS', () => {
     });
   });
 
-  // ── get ───────────────────────────────────────────────────────────────────
-
   describe('get', () => {
     it('returns the campaign SMS message for a known ID (round-trip)', async () => {
       const found = await client.messages.get(sharedCampaignMessageId);
@@ -139,8 +133,6 @@ describe('MessagesClient — SMS', () => {
     });
   });
 
-  // ── listCampaignMessages ──────────────────────────────────────────────────
-
   describe('listCampaignMessages', () => {
     it('includes the created campaign SMS message in results', async () => {
       const results = await client.messages.listCampaignMessages(sharedCampaignId);
@@ -152,8 +144,6 @@ describe('MessagesClient — SMS', () => {
     });
   });
 
-  // ── listAutomationMessages ────────────────────────────────────────────────
-
   describe('listAutomationMessages', () => {
     it('includes the created automation SMS message in results', async () => {
       const results = await client.messages.listAutomationMessages(sharedAutomationId);
@@ -164,8 +154,6 @@ describe('MessagesClient — SMS', () => {
       expect(found).toBe(true);
     });
   });
-
-  // ── updateSmsCampaignMessage ──────────────────────────────────────────────
 
   describe('updateSmsCampaignMessage', () => {
     it('persists updated UTM campaign', async () => {
@@ -190,8 +178,6 @@ describe('MessagesClient — SMS', () => {
     });
   });
 
-  // ── updateSmsAutomationMessage ────────────────────────────────────────────
-
   describe('updateSmsAutomationMessage', () => {
     it('persists updated UTM term', async () => {
       const updated = await client.messages.updateSmsAutomationMessage(sharedAutomationMessageId, {
@@ -214,8 +200,6 @@ describe('MessagesClient — SMS', () => {
     });
   });
 
-  // ── delete ────────────────────────────────────────────────────────────────
-
   describe('delete', () => {
     it('deletes the message and subsequent get returns null', async () => {
       const campaign = await client.campaigns.createSmsCampaign({
@@ -232,8 +216,6 @@ describe('MessagesClient — SMS', () => {
       expect(found).toBeNull();
     });
   });
-
-  // ── error handling ────────────────────────────────────────────────────────
 
   describe('error handling', () => {
     it('throws RuleApiError with isAuthError() when API key is invalid', async () => {

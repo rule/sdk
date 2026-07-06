@@ -30,7 +30,9 @@ export type {
   CreateSmsUserPlaceholderOptions,
   SmsDateFormat,
   SmsDateSource,
+  SmsSubscriberField,
   SmsSystemLinkType,
+  SmsUserField,
 } from './placeholders.js'
 
 // Namespace bundle
