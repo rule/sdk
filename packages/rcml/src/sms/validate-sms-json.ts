@@ -1,5 +1,5 @@
 /**
- * Public API: SMS content JSON validation and typed node/mark tree model.
+ * Public API: SMS content JSON validation and typed node tree model.
  */
 
 import { getSmsValidator, toSmsValidationErrors } from './content/json-validator/validate.js'
@@ -7,19 +7,16 @@ import type {
   SmsContentJson,
   SmsContentSafeParseResult,
   SmsContentValidationError,
-  SmsHardbreakNode,
-  SmsInlineNode,
-  SmsLinkMark,
-  SmsMark,
-  SmsParagraphNode,
+  SmsLinkNode,
+  SmsMessageNode,
   SmsPlaceholderNode,
   SmsPlaceholderType,
-  SmsTextNode,
+  SmsTopLevelNode,
 } from './content/json-validator/types.js'
 
 // ─── Type re-exports ─────────────────────────────────────────────────────────
 
-/** The root shape of an SMS content JSON document (`{ type: 'doc', content: [...] }`). @public */
+/** The root shape of an SMS content JSON document (`{ type: 'sms', content: [...] }`). @public */
 export type { SmsContentJson }
 
 /** One entry from {@link SmsContentParseError.errors} / a failed {@link SmsContentSafeParseResult}. @public */
@@ -31,26 +28,17 @@ export type { SmsContentSafeParseResult }
 /** Category of an SMS placeholder atom. @public */
 export type { SmsPlaceholderType }
 
-/** SMS paragraph block node. @public */
-export type { SmsParagraphNode }
+/** SMS message text node. @public */
+export type { SmsMessageNode }
 
-/** SMS inline node union (text | placeholder | hardbreak). @public */
-export type { SmsInlineNode }
+/** SMS hyperlink node. @public */
+export type { SmsLinkNode }
 
-/** SMS inline text node. @public */
-export type { SmsTextNode }
-
-/** SMS inline hardbreak node. @public */
-export type { SmsHardbreakNode }
-
-/** SMS placeholder inline node. @public */
+/** SMS placeholder node. @public */
 export type { SmsPlaceholderNode }
 
-/** SMS inline mark union (link only). @public */
-export type { SmsMark }
-
-/** SMS link inline mark. @public */
-export type { SmsLinkMark }
+/** Union of all top-level SMS content node types. @public */
+export type { SmsTopLevelNode }
 
 // ─── Error class ─────────────────────────────────────────────────────────────
 

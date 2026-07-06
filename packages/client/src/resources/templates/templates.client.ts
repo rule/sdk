@@ -9,9 +9,11 @@
  * to a campaign or automation.
  */
 
+import { randomUUID } from 'node:crypto';
 import { RuleApiError } from '../../errors.js';
 import { BaseResource } from '../../core/base-resource.js';
 import { buildQueryString } from '../../core/query-string.js';
+import type { SmsDocument } from '@rule/rcml';
 import type {
   CreateEmailTemplatePayload,
   CreateSmsTemplatePayload,
@@ -26,6 +28,16 @@ import type {
   UpdateEmailTemplatePayload,
   UpdateSmsTemplatePayload,
 } from './templates.types.js';
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+const SMS_UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+function normalizeSmsId(doc: SmsDocument): SmsDocument {
+  if (typeof doc.id === 'string' && SMS_UUID_RE.test(doc.id)) return doc
+
+  return { ...doc, id: randomUUID() }
+}
 
 // ── Client ────────────────────────────────────────────────────────────────────
 
@@ -110,10 +122,25 @@ export class TemplatesClient extends BaseResource {
    * ```
    */
   async updateEmailTemplate(id: number, payload: UpdateEmailTemplatePayload): Promise<EmailTemplate> {
+    const existing = await this.get(id);
+
+    if (!existing) throw new RuleApiError(`Template ${id} not found`, 404);
+
+    if (existing.messageType !== 'email') {
+      throw new RuleApiError(`Template ${id} is not an email template`, 400);
+    }
+
+    const contentToSend = payload.content ?? existing.content;
+
+    if (contentToSend === undefined) {
+      throw new RuleApiError(`Template ${id} has no content and none was provided`, 400);
+    }
+
     const res = await this.transport.put<TemplateResponse>(`/editor/template/${id}`, {
       body: JSON.stringify({
-        name: payload.name,
-        template: payload.content,
+        message_type: 'email',
+        name: payload.name ?? existing.name,
+        template: contentToSend,
       }),
     });
 
@@ -146,7 +173,7 @@ export class TemplatesClient extends BaseResource {
       body: JSON.stringify({
         name: payload.name,
         message_type: 'text_message',
-        template: payload.content,
+        template: normalizeSmsId(payload.content),
       }),
     });
 
@@ -172,10 +199,25 @@ export class TemplatesClient extends BaseResource {
    * ```
    */
   async updateSmsTemplate(id: number, payload: UpdateSmsTemplatePayload): Promise<SmsTemplate> {
+    const existing = await this.get(id);
+
+    if (!existing) throw new RuleApiError(`Template ${id} not found`, 404);
+
+    if (existing.messageType !== 'text_message') {
+      throw new RuleApiError(`Template ${id} is not an SMS template`, 400);
+    }
+
+    const contentToSend = payload.content ?? (existing.content as SmsDocument | undefined);
+
+    if (contentToSend === undefined) {
+      throw new RuleApiError(`Template ${id} has no content and none was provided`, 400);
+    }
+
     const res = await this.transport.put<TemplateResponse>(`/editor/template/${id}`, {
       body: JSON.stringify({
-        name: payload.name,
-        template: payload.content,
+        message_type: 'text_message',
+        name: payload.name ?? existing.name,
+        template: normalizeSmsId(contentToSend),
       }),
     });
 

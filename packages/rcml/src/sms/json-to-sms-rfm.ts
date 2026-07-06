@@ -8,21 +8,20 @@ import type { SmsContentJson } from './content/json-validator/types.js'
 /**
  * Convert an {@link SmsContentJson} document back to an SMS RFM string.
  *
- * Reverse of {@link smsRfmToJson}. The conversion is lossless:
- * - Text nodes with a link mark → `:link[text]{href="..." track="..." shorten="..."}`
- * - Placeholder nodes with a resolved value or max-length → `::placeholder{...}` directive form
- * - Placeholder nodes with null value and null max-length → compact `[Type:Name]` form
- * - Hardbreaks → `\` at line end
- * - Paragraphs → separated by `\n\n`
+ * Reverse of {@link smsRfmToJson}. Serialization rules:
+ * - `message` nodes → text verbatim (embedded `\n` stays as-is)
+ * - `link` nodes → `:link[url]{track="..." shorten="..."}`
+ * - `placeholder` nodes → `::placeholder{type="..." original="..." name="..." ...}` directive form
+ * - the two-node unsubscribe footer (`is-unsubscribe: true` on both) → `::unsubscribe`
  *
- * @param json - Typed SMS content JSON (`{ type: 'doc', content: [...] }`).
+ * @param json - Typed SMS content JSON (`{ type: 'sms', content: [...] }`).
  * @returns SMS RFM string.
  *
  * @example
  * ```ts
- * const json = smsRfmToJson('Hello [Subscriber:FirstName]')
+ * const json = smsRfmToJson('Account: [Subscriber:email]')
  * const rfm = jsonToSmsRfm(json)
- * // rfm === 'Hello [Subscriber:FirstName]'
+ * // rfm === 'Account: ::placeholder{type="Subscriber" original="[Subscriber:email]" name="email"}'
  * ```
  * @public
  */

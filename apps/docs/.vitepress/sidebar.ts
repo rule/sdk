@@ -286,38 +286,37 @@ export const guideSidebar: DefaultTheme.SidebarItem[] = [
             text: 'Concepts',
             collapsed: false,
             items: [
-              { text: 'SMS document', link: '/packages/rcml/sms/concepts/sms-document' },
-              { text: 'SMS RFM', link: '/packages/rcml/sms/concepts/sms-rfm' },
+              { text: 'Template', link: '/packages/rcml/sms/concepts/template' },
+              { text: 'Content', link: '/packages/rcml/sms/concepts/content' },
+              { text: 'Unsubscription', link: '/packages/rcml/sms/concepts/unsubscription' },
             ],
           },
           {
             text: 'SMS RCML',
             collapsed: false,
             items: [
-              { text: 'Overview', link: '/packages/rcml/sms/rcml/' },
               { text: 'rc-sms', link: '/packages/rcml/sms/rcml/rc-sms' },
             ],
           },
           {
-            text: 'SMS RFM Content',
-            collapsed: true,
+            text: 'RCML Content',
+            collapsed: false,
             items: [
+              { text: 'Flavors', link: '/packages/rcml/sms/content/flavors' },
               {
-                text: 'Nodes',
-                collapsed: false,
+                text: 'Block nodes',
+                collapsed: true,
                 items: [
-                  { text: 'doc', link: '/packages/rcml/sms/content/nodes/doc' },
-                  { text: 'paragraph', link: '/packages/rcml/sms/content/nodes/paragraph' },
-                  { text: 'text', link: '/packages/rcml/sms/content/nodes/text' },
-                  { text: 'placeholder', link: '/packages/rcml/sms/content/nodes/placeholder' },
-                  { text: 'hardbreak', link: '/packages/rcml/sms/content/nodes/hardbreak' },
+                  { text: 'sms', link: '/packages/rcml/sms/content/nodes/sms' },
                 ],
               },
               {
-                text: 'Marks',
-                collapsed: false,
+                text: 'Inline nodes',
+                collapsed: true,
                 items: [
-                  { text: 'link', link: '/packages/rcml/sms/content/marks/link' },
+                  { text: 'message', link: '/packages/rcml/sms/content/nodes/message' },
+                  { text: 'link', link: '/packages/rcml/sms/content/nodes/link' },
+                  { text: 'placeholder', link: '/packages/rcml/sms/content/nodes/placeholder' },
                 ],
               },
             ],

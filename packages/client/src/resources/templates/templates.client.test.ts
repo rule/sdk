@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { RuleApiError } from '../../errors.js';
-import type { RcmlDocument } from '@rule/rcml';
+import type { RcmlDocument, SmsDocument } from '@rule/rcml';
 
 import {
   createMockErrorResponse,
@@ -123,32 +123,220 @@ describe('TemplatesClient', () => {
 
   describe('updateEmailTemplate', () => {
     it('PUTs payload mapped to snake_case body (content → template)', async () => {
-      fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_TEMPLATE }));
+      // GET (read) then PUT (write)
+      fetchMock
+        .mockResolvedValueOnce(createMockResponse({ data: WIRE_TEMPLATE }))
+        .mockResolvedValueOnce(createMockResponse({ data: WIRE_TEMPLATE }));
       const client = createClient(fetchMock);
 
       const result = await client.updateEmailTemplate(456, { name: 'Welcome email — v2' });
 
-      const [url, init] = fetchMock.mock.calls[0]!;
+      const [putUrl, putInit] = fetchMock.mock.calls[1]!;
 
-      expect(url).toBe('https://app.rule.io/api/v3/editor/template/456');
-      expect((init as RequestInit).method).toBe('PUT');
+      expect(putUrl).toBe('https://app.rule.io/api/v3/editor/template/456');
+      expect((putInit as RequestInit).method).toBe('PUT');
 
-      const body = JSON.parse((init as RequestInit).body as string);
+      const body = JSON.parse((putInit as RequestInit).body as string);
 
-      expect(body).toEqual({ name: 'Welcome email — v2' });
+      expect(body).toEqual({ message_type: 'email', name: 'Welcome email — v2', template: RCML_DOCUMENT });
       expect(result.id).toBe(456);
     });
 
     it('maps content to template field in wire body', async () => {
-      fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_TEMPLATE }));
+      fetchMock
+        .mockResolvedValueOnce(createMockResponse({ data: WIRE_TEMPLATE }))
+        .mockResolvedValueOnce(createMockResponse({ data: WIRE_TEMPLATE }));
       const client = createClient(fetchMock);
 
       await client.updateEmailTemplate(456, { content: RCML_DOCUMENT });
 
-      const body = JSON.parse((fetchMock.mock.calls[0]![1] as RequestInit).body as string);
+      const body = JSON.parse((fetchMock.mock.calls[1]![1] as RequestInit).body as string);
 
       expect(body.template).toEqual(RCML_DOCUMENT);
       expect(body).not.toHaveProperty('content');
+    });
+
+    it('includes message_type=email in PUT body', async () => {
+      fetchMock
+        .mockResolvedValueOnce(createMockResponse({ data: WIRE_TEMPLATE }))
+        .mockResolvedValueOnce(createMockResponse({ data: WIRE_TEMPLATE }));
+      const client = createClient(fetchMock);
+
+      await client.updateEmailTemplate(456, { name: 'v2', content: RCML_DOCUMENT });
+
+      const body = JSON.parse((fetchMock.mock.calls[1]![1] as RequestInit).body as string);
+
+      expect(body.message_type).toBe('email');
+    });
+
+    it('throws RuleApiError when the template does not exist', async () => {
+      fetchMock.mockResolvedValueOnce(createMockErrorResponse({}, 404));
+      const client = createClient(fetchMock);
+
+      await expect(client.updateEmailTemplate(999, { name: 'x' })).rejects.toBeInstanceOf(RuleApiError);
+    });
+  });
+
+  describe('createSmsTemplate', () => {
+    const SMS_DOCUMENT: SmsDocument = {
+      id: '550e8400-e29b-41d4-a716-446655440000',
+      tagName: 'rc-sms',
+      content: { type: 'sms', content: [{ type: 'message', text: 'Hello!' }] },
+    };
+
+    const WIRE_SMS_TEMPLATE = {
+      id: 789,
+      name: 'Order SMS',
+      message_type: 'text_message',
+      template: SMS_DOCUMENT,
+      created_at: '2024-01-01 10:00:00',
+      updated_at: '2024-01-02 10:00:00',
+    };
+
+    it('POSTs to v3 /editor/template with message_type=text_message', async () => {
+      fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_TEMPLATE }));
+      const client = createClient(fetchMock);
+
+      await client.createSmsTemplate({ name: 'Order SMS', content: SMS_DOCUMENT });
+
+      const [url, init] = fetchMock.mock.calls[0]!;
+
+      expect(url).toBe('https://app.rule.io/api/v3/editor/template');
+      expect((init as RequestInit).method).toBe('POST');
+
+      const body = JSON.parse((init as RequestInit).body as string);
+
+      expect(body.message_type).toBe('text_message');
+    });
+
+    it('preserves a valid UUID id on the template field', async () => {
+      fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_TEMPLATE }));
+      const client = createClient(fetchMock);
+
+      await client.createSmsTemplate({ content: SMS_DOCUMENT });
+
+      const body = JSON.parse(fetchMock.mock.calls[0]![1]!.body as string);
+
+      expect(body.template.id).toBe('550e8400-e29b-41d4-a716-446655440000');
+    });
+
+    it('auto-injects a UUID when id is missing', async () => {
+      fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_TEMPLATE }));
+      const client = createClient(fetchMock);
+
+      const docWithoutId: SmsDocument = {
+        tagName: 'rc-sms',
+        content: { type: 'sms', content: [{ type: 'message', text: 'Hello!' }] },
+      };
+
+      await client.createSmsTemplate({ content: docWithoutId });
+
+      const body = JSON.parse(fetchMock.mock.calls[0]![1]!.body as string);
+
+      expect(body.template.id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+    });
+
+    it('replaces a malformed id with a valid UUID', async () => {
+      fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_TEMPLATE }));
+      const client = createClient(fetchMock);
+
+      const docWithBadId: SmsDocument = {
+        id: 'not-a-uuid',
+        tagName: 'rc-sms',
+        content: { type: 'sms', content: [{ type: 'message', text: 'Hello!' }] },
+      };
+
+      await client.createSmsTemplate({ content: docWithBadId });
+
+      const body = JSON.parse(fetchMock.mock.calls[0]![1]!.body as string);
+
+      expect(body.template.id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+      expect(body.template.id).not.toBe('not-a-uuid');
+    });
+  });
+
+  describe('updateSmsTemplate', () => {
+    const SMS_DOCUMENT: SmsDocument = {
+      id: '550e8400-e29b-41d4-a716-446655440000',
+      tagName: 'rc-sms',
+      content: { type: 'sms', content: [{ type: 'message', text: 'Updated!' }] },
+    };
+
+    const WIRE_SMS_TEMPLATE = {
+      id: 789,
+      name: 'Order SMS',
+      message_type: 'text_message',
+      template: SMS_DOCUMENT,
+      created_at: '2024-01-01 10:00:00',
+      updated_at: '2024-01-02 10:00:00',
+    };
+
+    it('PUTs to /editor/template/:id and preserves valid UUID', async () => {
+      // GET (read) then PUT (write)
+      fetchMock
+        .mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_TEMPLATE }))
+        .mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_TEMPLATE }));
+      const client = createClient(fetchMock);
+
+      await client.updateSmsTemplate(789, { content: SMS_DOCUMENT });
+
+      const [url] = fetchMock.mock.calls[1]!;
+      const body = JSON.parse(fetchMock.mock.calls[1]![1]!.body as string);
+
+      expect(url).toBe('https://app.rule.io/api/v3/editor/template/789');
+      expect(body.template.id).toBe('550e8400-e29b-41d4-a716-446655440000');
+    });
+
+    it('auto-injects a UUID when content has no id', async () => {
+      fetchMock
+        .mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_TEMPLATE }))
+        .mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_TEMPLATE }));
+      const client = createClient(fetchMock);
+
+      const docWithoutId: SmsDocument = {
+        tagName: 'rc-sms',
+        content: { type: 'sms', content: [{ type: 'message', text: 'Updated!' }] },
+      };
+
+      await client.updateSmsTemplate(789, { content: docWithoutId });
+
+      const body = JSON.parse(fetchMock.mock.calls[1]![1]!.body as string);
+
+      expect(body.template.id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+    });
+
+    it('falls back to existing content when no new content is provided', async () => {
+      fetchMock
+        .mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_TEMPLATE }))
+        .mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_TEMPLATE }));
+      const client = createClient(fetchMock);
+
+      await client.updateSmsTemplate(789, { name: 'New name' });
+
+      const body = JSON.parse(fetchMock.mock.calls[1]![1]!.body as string);
+
+      expect(body.template).toEqual(SMS_DOCUMENT);
+      expect(body.name).toBe('New name');
+    });
+
+    it('includes message_type=text_message in PUT body', async () => {
+      fetchMock
+        .mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_TEMPLATE }))
+        .mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_TEMPLATE }));
+      const client = createClient(fetchMock);
+
+      await client.updateSmsTemplate(789, { name: 'New name', content: SMS_DOCUMENT });
+
+      const body = JSON.parse(fetchMock.mock.calls[1]![1]!.body as string);
+
+      expect(body.message_type).toBe('text_message');
+    });
+
+    it('throws RuleApiError when the template does not exist', async () => {
+      fetchMock.mockResolvedValueOnce(createMockErrorResponse({}, 404));
+      const client = createClient(fetchMock);
+
+      await expect(client.updateSmsTemplate(999, { name: 'x' })).rejects.toBeInstanceOf(RuleApiError);
     });
   });
 

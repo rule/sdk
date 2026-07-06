@@ -3,8 +3,8 @@
  *
  * The full {@link placeholderSpec} covers all token types including
  * email-only tokens (`LoopValue`, `RandomString`, `Dispatcher`, `PromoCode`).
- * This file exports a filtered view containing only the six token types
- * that are valid in SMS messages.
+ * This file exports a filtered view containing only the five token types
+ * that are valid in user-authored SMS messages.
  *
  * @see {@link placeholderSpec} for the full email + SMS token catalog.
  * @see {@link smsRfmSpec} for the SMS RFM content model that references these tokens.
@@ -23,7 +23,6 @@ const SMS_TOKEN_TYPES = [
   'User',
   'Date',
   'RemoteContent',
-  'Link',
 ] as const
 
 /** Union of token type keys valid in SMS messages. @public */
@@ -33,9 +32,12 @@ export type SmsPlaceholderTokenType = (typeof SMS_TOKEN_TYPES)[number]
 
 /**
  * Machine-readable placeholder spec for SMS — a filtered view of
- * {@link placeholderSpec} containing only the six token types valid in
- * SMS messages. Excluded: `LoopValue`, `RandomString`, `Dispatcher`,
- * `PromoCode`.
+ * {@link placeholderSpec} containing only the five token types valid in
+ * user-authored SMS messages.
+ *
+ * Excluded: `Link` (system-only — produced internally by the `::unsubscribe`
+ * directive; never authored directly), `LoopValue`, `RandomString`,
+ * `Dispatcher`, `PromoCode`.
  *
  * @example
  * ```ts
@@ -43,11 +45,7 @@ export type SmsPlaceholderTokenType = (typeof SMS_TOKEN_TYPES)[number]
  *
  * // All SMS-valid token type names
  * Object.keys(smsPlaceholderSpec.tokens)
- * // → ['CustomField', 'Subscriber', 'User', 'Date', 'RemoteContent', 'Link']
- *
- * // System link types that can appear in href or as Link placeholders
- * smsPlaceholderSpec.tokens['Link'].params?.['type'].allowedValues
- * // → ['Optin', 'Unsubscribe', 'WebBrowser', 'ShareLink', 'Signup']
+ * // → ['CustomField', 'Subscriber', 'User', 'Date', 'RemoteContent']
  *
  * // Cross-reference with smsRfmSpec:
  * import { smsRfmSpec } from '@rule/rcml'

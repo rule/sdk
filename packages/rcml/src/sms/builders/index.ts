@@ -3,21 +3,12 @@ export { SmsDocumentBuildErrorCodes, SmsDocumentBuildError, throwIfSmsIssues } f
 export type { SmsDocumentBuildErrorCode, SmsDocumentBuildIssue } from './errors.js'
 
 // Content node builders
-export {
-  createContent,
-  createHardbreakNode,
-  createParagraphNode,
-  createTextNode,
-} from './nodes.js'
+export { createContent, createMessageNode, createLinkNode, createUnsubscribeNodes } from './nodes.js'
 export type {
   CreateSmsContentOptions,
-  CreateSmsParagraphNodeOptions,
-  CreateSmsTextNodeOptions,
+  CreateSmsMessageNodeOptions,
+  CreateSmsLinkNodeOptions,
 } from './nodes.js'
-
-// Mark builders
-export { createLinkMark } from './marks.js'
-export type { CreateSmsLinkMarkOptions } from './marks.js'
 
 // Placeholder builders
 export {
@@ -39,7 +30,9 @@ export type {
   CreateSmsUserPlaceholderOptions,
   SmsDateFormat,
   SmsDateSource,
+  SmsSubscriberField,
   SmsSystemLinkType,
+  SmsUserField,
 } from './placeholders.js'
 
 // Namespace bundle

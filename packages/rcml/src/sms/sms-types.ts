@@ -2,14 +2,12 @@
  * Public API: SMS RCML document type.
  *
  * An SMS document is a single leaf node (`rc-sms`) whose `content` field holds
- * the message body as a structured {@link SmsContentJson} document. The node
- * shape follows the `RcmlAstLeafNode` convention used by the Rule.io editor:
+ * the message body as a structured {@link SmsContentJson} document:
  *
  * ```
  * {
  *   tagName: 'rc-sms',
- *   attributes: {},
- *   content: { type: 'doc', content: [...] }
+ *   content: { type: 'sms', content: [...] }
  * }
  * ```
  *
@@ -23,18 +21,22 @@ export type { SmsContentJson }
 /**
  * Root (and only) node of an SMS RCML document.
  *
- * Conforms to the `RcmlAstLeafNode` shape used by the Rule.io SMS editor.
  * Pass this type wherever the API accepts an SMS template body. Construct
  * one with {@link createSmsDocument}.
  *
  * @public
  */
 export interface SmsDocument {
-  /** Optional node ID (UUID). */
+  /**
+   * Document identifier (UUID). Generated automatically by {@link createSmsDocument}
+   * and the XML parser. Required by {@link validateSmsDocument} — a missing or
+   * malformed value yields `ID_INVALID`. Always construct documents with
+   * {@link createSmsDocument}, which fills in a valid UUID. Client methods also
+   * auto-inject a UUID before sending, so a hand-assembled document without an
+   * `id` will pass the API but will fail local validation until one is added.
+   */
   id?: string
   tagName: 'rc-sms'
-  /** Always empty — the `rc-sms` node declares no attributes. */
-  attributes: Record<string, never>
   /** SMS message body as structured content JSON. */
   content: SmsContentJson
 }

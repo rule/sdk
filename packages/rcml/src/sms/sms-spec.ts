@@ -31,8 +31,6 @@ export interface SmsPublicTagSpec {
   description: string
   /** How the tag holds its content. Always `sms-rfm-content` for `rc-sms`. */
   content: SmsContentSpec
-  /** Allowed attributes. Always empty — `rc-sms` declares no attributes. */
-  attributes: Record<string, never>
 }
 
 /**
@@ -62,7 +60,7 @@ export interface SmsSpec {
  * // Cross-reference with smsRfmSpec to get the content model
  * const tag = smsSpec.tags['rc-sms']
  * const flavor = smsRfmSpec.flavors[tag.content.type]  // 'sms-rfm-content'
- * flavor.inlineNodes  // ['text', 'placeholder', 'hardbreak']
+ * flavor.topLevelNodes  // ['message', 'link', 'placeholder']
  * ```
  * @public
  */
@@ -72,7 +70,6 @@ export const smsSpec: SmsSpec = {
     [SmsTagNamesEnum.Sms]: {
       description: SMS_SCHEMA_SPEC[SmsTagNamesEnum.Sms].description ?? '',
       content: { type: 'sms-rfm-content' },
-      attributes: {},
     },
   },
 }

@@ -1,5 +1,7 @@
 import { SmsDocumentBuildErrorCodes, type SmsDocumentBuildIssue } from '../builders/errors.js'
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 /**
  * Check that `input` has the correct `rc-sms` leaf-node shape.
  *
@@ -29,15 +31,17 @@ export function validateSmsStructure(input: unknown): SmsDocumentBuildIssue[] {
     })
   }
 
-  if (
-    typeof node['attributes'] !== 'object' ||
-    node['attributes'] === null ||
-    Object.keys(node['attributes'] as object).length !== 0
-  ) {
+  if (node['id'] === undefined || node['id'] === null) {
     issues.push({
-      code: SmsDocumentBuildErrorCodes.STRUCTURE_INVALID,
-      path: 'attributes',
-      message: 'attributes must be an empty object.',
+      code: SmsDocumentBuildErrorCodes.ID_INVALID,
+      path: 'id',
+      message: 'id is required (a UUID string).',
+    })
+  } else if (typeof node['id'] !== 'string' || !UUID_RE.test(node['id'])) {
+    issues.push({
+      code: SmsDocumentBuildErrorCodes.ID_INVALID,
+      path: 'id',
+      message: `id must be a valid UUID, got '${String(node['id'])}'.`,
     })
   }
 

@@ -9,141 +9,186 @@ describe('jsonToSmsRfm()', () => {
   })
 
   it('round-trips a placeholder', () => {
-    expect(jsonToSmsRfm(smsRfmToJson('[Subscriber:FirstName]'))).toBe('[Subscriber:FirstName]')
+    expect(jsonToSmsRfm(smsRfmToJson('[Subscriber:FirstName]'))).toBe(
+      '::placeholder{type="Subscriber" original="[Subscriber:FirstName]" name="FirstName"}',
+    )
   })
 
   it('round-trips text + placeholder + text', () => {
-    const input = 'Hi [Subscriber:FirstName]!'
-
-    expect(jsonToSmsRfm(smsRfmToJson(input))).toBe(input)
+    expect(jsonToSmsRfm(smsRfmToJson('Hi [Subscriber:FirstName]!'))).toBe(
+      'Hi ::placeholder{type="Subscriber" original="[Subscriber:FirstName]" name="FirstName"}!',
+    )
   })
 
-  it('round-trips single newline as hardbreak', () => {
+  it('round-trips single newline in message text', () => {
     expect(jsonToSmsRfm(smsRfmToJson('Line one\nLine two'))).toBe('Line one\nLine two')
   })
 
-  it('round-trips double newline as paragraph boundary', () => {
-    expect(jsonToSmsRfm(smsRfmToJson('Para one\n\nPara two'))).toBe('Para one\n\nPara two')
+  it('round-trips double newline (paragraph boundary becomes single \\n)', () => {
+    // Paragraph boundaries are flattened to \n in the new model
+    expect(jsonToSmsRfm(smsRfmToJson('Para one\n\nPara two'))).toBe('Para one\nPara two')
   })
 
-  it('renders linked text — preserves link mark as :link directive', () => {
+  it('renders a tracked+shortened link node as :link directive', () => {
     const json: SmsContentJson = {
-      type: 'doc',
+      type: 'sms',
       content: [
         {
-          type: 'paragraph',
-          content: [
-            {
-              type: 'text',
-              text: 'Click here',
-              marks: [{ type: 'link', attrs: { href: 'https://example.com', track: true, shorten: false } }],
-            },
-          ],
+          type: 'link',
+          text: 'https://example.com',
+          attrs: { track: true, shorten: true },
         },
       ],
     }
 
-    expect(jsonToSmsRfm(json)).toBe(':link[Click here]{href="https://example.com" track="true" shorten="false"}')
+    expect(jsonToSmsRfm(json)).toBe(':link[https://example.com]{track="true" shorten="true"}')
   })
 
-  it('empty paragraph round-trips to empty string', () => {
+  it('empty content round-trips to empty string', () => {
     expect(jsonToSmsRfm(smsRfmToJson(''))).toBe('')
   })
 })
 
-describe('jsonToSmsRfm() — link mark serialization', () => {
+describe('jsonToSmsRfm() — link node serialization', () => {
   it('emits :link with track="false" and shorten="false"', () => {
     const json: SmsContentJson = {
-      type: 'doc',
+      type: 'sms',
       content: [{
-        type: 'paragraph',
-        content: [{
-          type: 'text',
-          text: 'Visit',
-          marks: [{ type: 'link', attrs: { href: 'https://example.com', track: false, shorten: false } }],
-        }],
+        type: 'link',
+        text: 'https://example.com',
+        attrs: { track: false, shorten: false },
       }],
     }
 
-    expect(jsonToSmsRfm(json)).toBe(':link[Visit]{href="https://example.com" track="false" shorten="false"}')
+    expect(jsonToSmsRfm(json)).toBe(':link[https://example.com]{track="false" shorten="false"}')
   })
 
-  it('groups adjacent text nodes sharing the same link mark under a single :link wrapper', () => {
-    const linkMark = { type: 'link' as const, attrs: { href: 'https://example.com', track: true, shorten: true } }
+  it('emits message text verbatim including embedded newlines', () => {
     const json: SmsContentJson = {
-      type: 'doc',
-      content: [{
-        type: 'paragraph',
-        content: [
-          { type: 'text', text: 'Hello ', marks: [linkMark] },
-          { type: 'text', text: 'World', marks: [linkMark] },
-        ],
-      }],
+      type: 'sms',
+      content: [{ type: 'message', text: 'Hello\nWorld' }],
     }
 
-    expect(jsonToSmsRfm(json)).toBe(':link[Hello World]{href="https://example.com" track="true" shorten="true"}')
+    expect(jsonToSmsRfm(json)).toBe('Hello\nWorld')
   })
 
   it('emits ::placeholder when value is non-null', () => {
     const json: SmsContentJson = {
-      type: 'doc',
+      type: 'sms',
       content: [{
-        type: 'paragraph',
-        content: [{
-          type: 'placeholder',
-          attrs: {
-            type: 'CustomField',
-            original: '[CustomField:Address.Firstname]',
-            name: 'Address.Firstname',
-            value: '77856',
-            'max-length': null,
-          },
-        }],
+        type: 'placeholder',
+        attrs: {
+          type: 'CustomField',
+          original: '[CustomField:Address.Firstname]',
+          name: 'Address.Firstname',
+          value: '77856',
+        },
       }],
     }
 
     expect(jsonToSmsRfm(json)).toBe('::placeholder{type="CustomField" original="[CustomField:Address.Firstname]" name="Address.Firstname" value="77856"}')
   })
 
-  it('emits [Type:Name] shorthand when value and max-length are both null', () => {
+  it('emits ::placeholder directive when value is null and max-length is absent', () => {
     const json: SmsContentJson = {
-      type: 'doc',
+      type: 'sms',
       content: [{
-        type: 'paragraph',
-        content: [{
-          type: 'placeholder',
-          attrs: {
-            type: 'Subscriber',
-            original: '[Subscriber:FirstName]',
-            name: 'FirstName',
-            value: null,
-            'max-length': null,
-          },
-        }],
+        type: 'placeholder',
+        attrs: {
+          type: 'Subscriber',
+          original: '[Subscriber:FirstName]',
+          name: 'FirstName',
+          value: null,
+        },
       }],
     }
 
-    expect(jsonToSmsRfm(json)).toBe('[Subscriber:FirstName]')
+    expect(jsonToSmsRfm(json)).toBe('::placeholder{type="Subscriber" original="[Subscriber:FirstName]" name="FirstName"}')
   })
 
   it('emits ::placeholder when max-length is non-null', () => {
     const json: SmsContentJson = {
-      type: 'doc',
+      type: 'sms',
       content: [{
-        type: 'paragraph',
-        content: [{
-          type: 'placeholder',
-          attrs: {
-            type: 'Subscriber',
-            original: '[Subscriber:FirstName]',
-            name: 'FirstName',
-            value: null,
-            'max-length': '20',
-          },
-        }],
+        type: 'placeholder',
+        attrs: {
+          type: 'Subscriber',
+          original: '[Subscriber:FirstName]',
+          name: 'FirstName',
+          value: null,
+          'max-length': '20',
+        },
       }],
     }
 
     expect(jsonToSmsRfm(json)).toBe('::placeholder{type="Subscriber" original="[Subscriber:FirstName]" name="FirstName" max-length="20"}')
+  })
+})
+
+describe('jsonToSmsRfm() — ::unsubscribe serialization', () => {
+  it('collapses the two-node unsubscribe footer to ::unsubscribe', () => {
+    const json: SmsContentJson = {
+      type: 'sms',
+      content: [
+        {
+          type: 'message',
+          text: '[Subscriber:unsubscribe_text]',
+          attrs: { 'is-unsubscribe': true },
+        },
+        {
+          type: 'placeholder',
+          attrs: {
+            type: 'Link',
+            name: 'Unsubscribe',
+            original: '[Link:Unsubscribe]',
+            value: null,
+            'is-unsubscribe': true,
+          },
+        },
+      ],
+    }
+
+    expect(jsonToSmsRfm(json)).toBe('::unsubscribe')
+  })
+
+  it('message node with is-unsubscribe NOT followed by unsubscribe placeholder is emitted verbatim', () => {
+    const json: SmsContentJson = {
+      type: 'sms',
+      content: [
+        {
+          type: 'message',
+          text: '[Subscriber:unsubscribe_text]',
+          attrs: { 'is-unsubscribe': true },
+        },
+      ],
+    }
+
+    expect(jsonToSmsRfm(json)).toBe('[Subscriber:unsubscribe_text]')
+  })
+
+  it('full template with body and unsubscribe footer round-trips', () => {
+    const json: SmsContentJson = {
+      type: 'sms',
+      content: [
+        { type: 'message', text: 'Your order has shipped.\n' },
+        {
+          type: 'message',
+          text: '[Subscriber:unsubscribe_text]',
+          attrs: { 'is-unsubscribe': true },
+        },
+        {
+          type: 'placeholder',
+          attrs: {
+            type: 'Link',
+            name: 'Unsubscribe',
+            original: '[Link:Unsubscribe]',
+            value: null,
+            'is-unsubscribe': true,
+          },
+        },
+      ],
+    }
+
+    expect(jsonToSmsRfm(json)).toBe('Your order has shipped.\n::unsubscribe')
   })
 })

@@ -10,6 +10,8 @@
     "nx": "nx",
     "build": "nx run-many -t build",
     "test": "nx run-many -t vitest:test",
+    "test:integration": "nx run integration:test",
+    "test:ci": "nx run-many -t test-ci",
     "lint": "nx run-many -t eslint:lint",
     "graph": "nx graph",
     "affected": "nx affected -t eslint:lint test-ci build --parallel=3",

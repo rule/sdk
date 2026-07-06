@@ -3,6 +3,8 @@ import { convertXmlToSms } from './parse-helpers.js'
 import { serializeSmsToXml } from './serialize-helpers.js'
 import { createSmsDocument } from '../create-sms-document.js'
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 describe('convertXmlToSms()', () => {
   it('round-trips a simple document', () => {
     const doc = createSmsDocument({ content: 'Hello world' })
@@ -13,7 +15,7 @@ describe('convertXmlToSms()', () => {
 
     if (result.success) {
       expect(result.data.tagName).toBe('rc-sms')
-      expect(result.data.attributes).toEqual({})
+      expect('attributes' in result.data).toBe(false)
     }
   })
 
@@ -25,21 +27,41 @@ describe('convertXmlToSms()', () => {
     expect(result.success).toBe(true)
 
     if (result.success) {
-      const para = result.data.content.content[0]!
-
-      expect(para.content?.some((n) => n.type === 'placeholder')).toBe(true)
+      expect(result.data.content.content.some((n) => n.type === 'placeholder')).toBe(true)
     }
   })
 
-  it('round-trips id attribute', () => {
-    const doc = { ...createSmsDocument({ content: 'Hello' }), id: 'test-id' }
+  it('preserves a valid UUID id attribute from XML', () => {
+    const validUuid = '550e8400-e29b-41d4-a716-446655440000'
+    const doc = { ...createSmsDocument({ content: 'Hello' }), id: validUuid }
     const xml = serializeSmsToXml(doc, {})
     const result = convertXmlToSms(xml)
 
     expect(result.success).toBe(true)
 
     if (result.success) {
-      expect(result.data.id).toBe('test-id')
+      expect(result.data.id).toBe(validUuid)
+    }
+  })
+
+  it('auto-generates a UUID when id attribute is absent', () => {
+    const result = convertXmlToSms('<rc-sms>Hello</rc-sms>')
+
+    expect(result.success).toBe(true)
+
+    if (result.success) {
+      expect(result.data.id).toMatch(UUID_RE)
+    }
+  })
+
+  it('auto-generates a UUID when id attribute is not a valid UUID', () => {
+    const result = convertXmlToSms('<rc-sms id="not-a-uuid">Hello</rc-sms>')
+
+    expect(result.success).toBe(true)
+
+    if (result.success) {
+      expect(result.data.id).toMatch(UUID_RE)
+      expect(result.data.id).not.toBe('not-a-uuid')
     }
   })
 

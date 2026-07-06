@@ -24,32 +24,47 @@ const campaignId = campaign.id!;
 
 ## Default campaign
 
-Use `createDefaultSmsCampaign()` to create a campaign with all required content in a single call. The method fetches account sender details automatically, then creates the campaign, message, and an SMS template in parallel, and links them with a dynamic set. The unsubscribe style (link vs stop-word) is determined from the account's sender configuration. If any step fails, all already-created resources are automatically rolled back.
+Use `createDefaultSmsCampaign()` to create a campaign with all required content in a single call. It creates the campaign, message, and an SMS template in parallel, then links them with a dynamic set. If any step fails, all already-created resources are automatically rolled back.
 
 ```typescript
 const result = await client.campaigns.createDefaultSmsCampaign();
 // result: { campaignId, messageId, templateId, dynamicSetId }
 ```
 
-Sender details are fetched from `client.account` automatically — no manual configuration is needed. See [Account](./account) for details on the sender configuration.
+By default the template body includes an unsubscribe link footer (`::unsubscribe`). Pass `unsubscriptionMethod: 'stopWord'` to use a stop-word placeholder instead, or `sendoutType: 'transactional'` to omit the footer entirely:
 
-Pass `message` and `template` to override the auto-generated defaults:
+```typescript
+// Stop-word footer
+const result = await client.campaigns.createDefaultSmsCampaign({
+  unsubscriptionMethod: 'stopWord',
+});
+
+// Transactional — no footer
+const result2 = await client.campaigns.createDefaultSmsCampaign({
+  sendoutType: 'transactional',
+});
+```
+
+Pass `template.name` to override the auto-generated template name, or `message.utmCampaign` to set UTM tracking on the message:
 
 ```typescript
 const result = await client.campaigns.createDefaultSmsCampaign({
-  message: { subject: 'Hi [Subscriber:FirstName], your order shipped!' },
+  name: 'Order Shipped',
+  message: { utmCampaign: 'order-shipped' },
   template: { name: 'Order Shipped SMS' },
 });
 ```
 
-Supply a custom SMS document via `template.content` to use your own template structure:
+Supply a custom SMS document via `template.content` to use your own template body. The footer is then your responsibility — include `::unsubscribe` or a stop-word placeholder as needed:
 
 ```typescript
 import { createSmsDocument } from '@rule/sdk';
 
 const result = await client.campaigns.createDefaultSmsCampaign({
   template: {
-    content: createSmsDocument({ content: 'Your order [Order:Id] has shipped!' }),
+    content: createSmsDocument({
+      content: 'Your order ::placeholder{type="CustomField" original="[CustomField:Order.Id]" name="Order.Id"} has shipped!\n::unsubscribe',
+    }),
   },
 });
 ```

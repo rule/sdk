@@ -7,20 +7,19 @@ representation.
 
 ## A note on plain-text tokens
 
-`[Type:Name]` tokens — `[Subscriber:FirstName]`, `[CustomField:Order.Total]`,
+`[Type:Name]` tokens — `[Subscriber:email]`, `[CustomField:Order.Total]`,
 `[Link:Unsubscribe]`, and so on — are valid in **exactly two places**:
 
 1. As the value of the `original` attribute on a `placeholder` node, whether
    the node is written as `::placeholder{…}` in SMS RFM or as JSON.
-2. Inside a URL value or part of a URL value — typically the `href` of a link
-   mark or the URL given to `RemoteContent`.
+2. Inside a URL value or part of a URL value — typically the `text` of a
+   [`link`](./content/nodes/link) node or the URL given to `RemoteContent`.
 
-They are **not the recommended form** for body content. The parser does
-accept a bare `[Type:Name]` token as a backward-compatible shorthand —
-but the resulting placeholder node has no `name` / `value` / `max-length`
-attributes, which the editor relies on. To insert a dynamic value as text
-in the message, use the `::placeholder{…}` directive in SMS RFM, or one
-of the `sms` builder functions described below.
+The parser accepts a bare `[Type:Name]` token in body content as a
+shorthand for a placeholder node. The serializer always emits the full
+`::placeholder{…}` form — the shorthand is parse-only. To insert a dynamic
+value, use the `::placeholder{…}` directive in SMS RFM, or one of the `sms`
+builder functions described below.
 
 ## Quick start
 
@@ -32,8 +31,8 @@ import { createSmsDocument } from '@rule/rcml';
 
 const doc = createSmsDocument({
   content:
-    'Hi ::placeholder{type="Subscriber" original="[Subscriber:FirstName]" name="First name"}!' +
-    ' Your order ::placeholder{type="CustomField" original="[CustomField:Order.Id]" name="Order.Id"} has shipped.',
+    'Your order ::placeholder{type="CustomField" original="[CustomField:Order.Id]" name="Order.Id"} has shipped.' +
+    '\nAccount: ::placeholder{type="Subscriber" original="[Subscriber:email]" name="Email"}',
 });
 ```
 
@@ -65,377 +64,80 @@ import { smsRfmToJson, jsonToSmsRfm } from '@rule/rcml';
 
 // SMS RFM → JSON. Use the ::placeholder{…} directive for dynamic values.
 const json = smsRfmToJson(
-  'Hi ::placeholder{type="Subscriber" original="[Subscriber:FirstName]" name="First name"}!\nYour order is ready.'
+  'Your order is ready.\nAccount: ::placeholder{type="Subscriber" original="[Subscriber:email]" name="Email"}'
 );
 // {
-//   type: 'doc',
+//   type: 'sms',
 //   content: [
-//     {
-//       type: 'paragraph',
-//       content: [
-//         { type: 'text', text: 'Hi ' },
-//         { type: 'placeholder', attrs: { type: 'Subscriber', original: '[Subscriber:FirstName]',
-//             name: 'First name', value: null, 'max-length': null } },
-//         { type: 'text', text: '!' },
-//         { type: 'hardbreak', attrs: { isInline: false } },
-//         { type: 'text', text: 'Your order is ready.' },
-//       ],
-//     },
+//     { type: 'message', text: 'Your order is ready.\nAccount: ' },
+//     { type: 'placeholder', attrs: { type: 'Subscriber', original: '[Subscriber:email]',
+//         name: 'Email', value: null } },
 //   ],
 // }
 
 // JSON → SMS RFM
 const rfm = jsonToSmsRfm(json);
-// → 'Hi [Subscriber:FirstName]!\nYour order is ready.'
+// → 'Your order is ready.\nAccount: ::placeholder{type="Subscriber" original="[Subscriber:email]" name="Email"}'
 ```
 
-The `\n` in the SMS RFM string becomes a `hardbreak` node — a forced line
-break within the same paragraph. A blank line (`\n\n`) would produce a new
-`paragraph` node instead.
-
-### Serializer output
-
-Notice the asymmetry between input and output: the recommended *input* form
-for a placeholder is the `::placeholder{…}` directive, but `jsonToSmsRfm`
-*emits* the compact `[Type:Name]` form when both `value` and `max-length` are
-null. This is a serializer optimization for compact output, not a suggestion
-about how to write SMS RFM by hand. The parser accepts both forms; consumers
-that re-parse the serializer's output get back the same `SmsContentJson` tree
-either way.
+Both `\n` and `\n\n` in the SMS RFM string produce `\n` characters in the
+resulting `message` node text. Line breaks are just characters — there are no
+separate break nodes.
 
 ## Builders
 
 The `sms` namespace exposes typed factory functions that return correctly
-shaped `SmsContentJson` nodes and marks. Use builders when the document is
-composed from variables — a custom-field group held in code, a date offset
-that needs to be computed, a URL that depends on an environment.
+shaped `SmsContentJson` nodes. Use builders when the document is composed from
+variables — a custom-field group held in code, a date offset that needs to be
+computed, a URL that depends on an environment.
 
 Builders give full type checking, no string concatenation, and no exposure to
-wire-format details (`'max-length'` kebab key, `original` token format,
-`isInline: false` flag). They perform no validation themselves; the
-TypeScript types catch shape errors and `createSmsDocument` validates the
-assembled document at the boundary.
-
-A small worked example:
+wire-format details (`'max-length'` kebab key, `original` token format). They
+perform no validation themselves; the TypeScript types catch shape errors and
+`createSmsDocument` validates the assembled document at the boundary.
 
 ```typescript
 import { sms, createSmsDocument } from '@rule/rcml';
 
 const content = sms.createContent({
-  paragraphs: [
-    sms.createParagraphNode({
-      content: [
-        sms.createTextNode({ text: 'Hi ' }),
-        sms.createSubscriberPlaceholder({ field: 'FirstName' }),
-        sms.createTextNode({ text: '!' }),
-      ],
-    }),
+  nodes: [
+    sms.createMessageNode({ text: 'Your order is ready.\nAccount: ' }),
+    sms.createSubscriberPlaceholder({ field: 'email' }),
+    ...sms.createUnsubscribeNodes(),
   ],
 });
 
 const doc = createSmsDocument({ content });
 ```
 
-The remainder of this section is the builder reference. Read the
-[`placeholder`](./content/nodes/placeholder), [`text`](./content/nodes/text),
-[`paragraph`](./content/nodes/paragraph),
-[`hardbreak`](./content/nodes/hardbreak), and
-[link mark](./content/marks/link) reference pages for the JSON shapes each
-builder produces.
+Builder signatures and examples for each node type live on the node reference pages:
 
-### Document and node builders
+- [`message`](./content/nodes/message) — `sms.createMessageNode`
+- [`link`](./content/nodes/link) — `sms.createLinkNode`
+- [`placeholder`](./content/nodes/placeholder) — `sms.createSubscriberPlaceholder`, `sms.createCustomFieldPlaceholder`, `sms.createDatePlaceholder`, `sms.createRemoteContentPlaceholder`, `sms.createUserPlaceholder`, `sms.createPlaceholderNode`
 
-#### `sms.createContent`
+### `sms.createContent`
 
-Wraps one or more paragraph nodes in a root `doc` node — the shape of
-[`SmsContentJson`](./concepts/sms-document).
-
-```typescript
-function createContent(opts: { paragraphs: SmsParagraphNode[] }): SmsContentJson;
-```
+Wraps top-level nodes in a root `sms` node:
 
 ```typescript
 const content = sms.createContent({
-  paragraphs: [
-    sms.createParagraphNode({ content: [sms.createTextNode({ text: 'Hello' })] }),
+  nodes: [sms.createMessageNode({ text: 'Hello' })],
+});
+// → { type: 'sms', content: [{ type: 'message', text: 'Hello' }] }
+```
+
+### `sms.createUnsubscribeNodes`
+
+Produces the two-node unsubscribe footer as a spreadable tuple. See
+[Unsubscription](./concepts/unsubscription) for details.
+
+```typescript
+sms.createContent({
+  nodes: [
+    sms.createMessageNode({ text: 'Your order has shipped.' }),
+    ...sms.createUnsubscribeNodes(),
   ],
-});
-// → { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Hello' }] }] }
-```
-
-#### `sms.createParagraphNode`
-
-Builds a paragraph from a sequence of inline nodes. Pass an empty array (or
-omit the option) for an empty paragraph; the result will have no `content`
-field, as the schema expects.
-
-```typescript
-function createParagraphNode(opts?: { content?: SmsInlineNode[] }): SmsParagraphNode;
-```
-
-```typescript
-sms.createParagraphNode({
-  content: [
-    sms.createTextNode({ text: 'Hi ' }),
-    sms.createSubscriberPlaceholder({ field: 'FirstName' }),
-    sms.createTextNode({ text: '!' }),
-  ],
-});
-
-sms.createParagraphNode();
-// → { type: 'paragraph' }
-```
-
-#### `sms.createTextNode`
-
-Builds a leaf text node, optionally with a [link mark](./content/marks/link)
-applied. When no marks are supplied (or an empty array is passed), the
-returned node has no `marks` field — never `marks: []`.
-
-```typescript
-function createTextNode(opts: { text: string; marks?: SmsMark[] }): SmsTextNode;
-```
-
-```typescript
-sms.createTextNode({ text: 'Hello, world' });
-// → { type: 'text', text: 'Hello, world' }
-
-sms.createTextNode({
-  text: 'click here',
-  marks: [sms.createLinkMark({
-    href: 'https://example.com',
-    track: true,
-    shorten: false,
-  })],
-});
-```
-
-#### `sms.createHardbreakNode`
-
-Builds a hard line break that stays inside the current paragraph. Takes no
-options — the parser produces `isInline: false`, and the builder matches that
-shape.
-
-```typescript
-function createHardbreakNode(): SmsHardbreakNode;
-```
-
-```typescript
-sms.createHardbreakNode();
-// → { type: 'hardbreak', attrs: { isInline: false } }
-```
-
-### Mark builders
-
-#### `sms.createLinkMark`
-
-Builds a `link` mark with destination URL, click-tracking flag, and
-URL-shortening flag. Apply it via the `marks` field of a text node.
-
-```typescript
-function createLinkMark(opts: {
-  href: string;
-  track: boolean;
-  shorten: boolean;
-}): SmsLinkMark;
-```
-
-```typescript
-sms.createLinkMark({
-  href: 'https://example.com/orders/[CustomField:Order.Id]',
-  track: true,
-  shorten: true,
-});
-// → { type: 'link', attrs: { href: '…', track: true, shorten: true } }
-```
-
-The `href` is one of the two valid locations for plain-text tokens. It
-accepts `[Link:Unsubscribe]`, `[CustomField:…]`, and other tokens — the Rule
-platform resolves them at send time.
-
-The same link in SMS RFM string form uses the `:link[…]{…}` directive:
-
-```typescript
-const doc = createSmsDocument({
-  content:
-    'View your order: :link[track shipment]{href="https://example.com/orders/[CustomField:Order.Id]" track="true" shorten="true"}',
-});
-```
-
-The link mark's `track` and `shorten` flags are booleans in `SmsContentJson`.
-In the SMS RFM directive form they appear as the strings `"true"` /
-`"false"`; the parser converts them.
-
-### Placeholder builders
-
-The recommended way to construct a placeholder is one of the per-token
-convenience builders below. They compute the correct `original` token from
-domain inputs so you never have to assemble `[Subscriber:FirstName]` strings
-by hand.
-
-If you need a placeholder type the convenience builders do not cover, fall
-back to the generic `sms.createPlaceholderNode`.
-
-#### `sms.createSubscriberPlaceholder`
-
-Inserts a subscriber-profile field. `name` defaults to the `field` value,
-matching what the SMS RFM parser produces.
-
-```typescript
-function createSubscriberPlaceholder(opts: {
-  field: string;
-  name?: string;
-}): SmsPlaceholderNode;
-```
-
-```typescript
-sms.createSubscriberPlaceholder({ field: 'FirstName' });
-// original: '[Subscriber:FirstName]', name: 'FirstName'
-
-sms.createSubscriberPlaceholder({ field: 'email', name: 'Email' });
-// original: '[Subscriber:email]',     name: 'Email'
-```
-
-#### `sms.createUserPlaceholder`
-
-Inserts a field from the sender's Rule.io account profile.
-
-```typescript
-function createUserPlaceholder(opts: {
-  field: string;
-  name?: string;
-}): SmsPlaceholderNode;
-```
-
-```typescript
-sms.createUserPlaceholder({ field: 'CompanyName' });
-// original: '[User:CompanyName]', name: 'CompanyName'
-```
-
-#### `sms.createCustomFieldPlaceholder`
-
-Inserts a subscriber custom-field value. `group` and `name` are joined with a
-dot to form both the `original` token and the placeholder's display label.
-Optional `maxLength` (a number) appends `::N` to the token and sets the
-node's `max-length` attribute, which truncates the value at render time.
-
-```typescript
-function createCustomFieldPlaceholder(opts: {
-  group: string;
-  name: string;
-  maxLength?: number;
-}): SmsPlaceholderNode;
-```
-
-```typescript
-sms.createCustomFieldPlaceholder({ group: 'Order', name: 'Total' });
-// original: '[CustomField:Order.Total]'
-
-sms.createCustomFieldPlaceholder({ group: 'Order', name: 'Total', maxLength: 20 });
-// original: '[CustomField:Order.Total::20]', 'max-length': '20'
-```
-
-#### `sms.createDatePlaceholder`
-
-Inserts a formatted date computed at send time. The `source` argument is a
-typed discriminated union covering the simple keywords (`'now'`, `'tomorrow'`,
-`'yesterday'`), day-offset variants, and custom-field references. The
-`format` argument is a closed set of PHP date format strings.
-
-```typescript
-type SmsDateSource =
-  | 'now' | 'tomorrow' | 'yesterday'
-  | { kind: 'days-from-now'; count: number }
-  | { kind: 'days-ago'; count: number }
-  | { kind: 'custom-field'; group: string; name: string };
-
-type SmsDateFormat = 'Y-m-d' | 'd.m.Y' | 'm-d-Y' | 'm/d/Y' | 'd/m/Y';
-
-function createDatePlaceholder(opts: {
-  source: SmsDateSource;
-  format: SmsDateFormat;
-  name?: string;
-}): SmsPlaceholderNode;
-```
-
-```typescript
-sms.createDatePlaceholder({ source: 'tomorrow', format: 'd.m.Y' });
-// original: '[Date:tomorrow::d.m.Y]'
-
-sms.createDatePlaceholder({
-  source: { kind: 'days-from-now', count: 7 },
-  format: 'Y-m-d',
-});
-// original: '[Date:in-7-days::Y-m-d]'
-
-sms.createDatePlaceholder({
-  source: { kind: 'custom-field', group: 'Order', name: 'CreatedAt' },
-  format: 'Y-m-d',
-});
-// original: '[Date:[CustomField:Order.CreatedAt]::Y-m-d]'
-```
-
-#### `sms.createRemoteContentPlaceholder`
-
-Inserts a value fetched from a URL at send time. The URL is the second of the
-two valid locations for plain-text tokens — it may contain nested
-`[Subscriber:…]`, `[User:…]`, or `[CustomField:…]` tokens that the Rule
-platform resolves before the request is made.
-
-```typescript
-function createRemoteContentPlaceholder(opts: { url: string }): SmsPlaceholderNode;
-```
-
-```typescript
-sms.createRemoteContentPlaceholder({
-  url: 'https://api.example.com/offer?id=[CustomField:Order.Id]',
-});
-// original: '[RemoteContent:https://api.example.com/offer?id=[CustomField:Order.Id]]'
-```
-
-#### `sms.createLinkPlaceholder`
-
-Inserts a system-managed link URL as plain text in the message body — Rule's
-unsubscribe URL, web-browser-view URL, and similar. The `link` argument is a
-closed enum of the five available link types.
-
-To produce clickable text instead, use `sms.createLinkMark` with the same
-`[Link:…]` token as the `href`.
-
-```typescript
-type SmsSystemLinkType =
-  | 'Optin' | 'Unsubscribe' | 'WebBrowser' | 'ShareLink' | 'Signup';
-
-function createLinkPlaceholder(opts: { link: SmsSystemLinkType }): SmsPlaceholderNode;
-```
-
-```typescript
-sms.createLinkPlaceholder({ link: 'Unsubscribe' });
-// original: '[Link:Unsubscribe]', name: 'Unsubscribe'
-```
-
-#### `sms.createPlaceholderNode`
-
-The low-level fallback. Takes the raw `type`, `original` token, `name`, and
-optional `value` / `maxLength`. Use this only when the convenience builders
-above do not cover what you need.
-
-```typescript
-function createPlaceholderNode(opts: {
-  type: SmsPlaceholderType;
-  original: string;
-  name: string;
-  value?: string | number | null;
-  maxLength?: string | null;
-}): SmsPlaceholderNode;
-```
-
-```typescript
-sms.createPlaceholderNode({
-  type: 'Subscriber',
-  original: '[Subscriber:email]',
-  name: 'Email',
-  value: 'jane@example.com',
 });
 ```
 
@@ -453,7 +155,7 @@ const content: SmsContentJson = loadDraftFromStorage(); // your code
 const doc = createSmsDocument({ content });
 ```
 
-See [SMS document](./concepts/sms-document) for the full type reference.
+See [Content](./concepts/content) for the full type reference.
 
 ## XML format
 
@@ -467,15 +169,12 @@ import { createSmsDocument, smsToXml, xmlToSms } from '@rule/rcml';
 
 const doc = createSmsDocument({
   content:
-    'Hi ::placeholder{type="Subscriber" original="[Subscriber:FirstName]" name="First name"},' +
-    ' your total is ::placeholder{type="CustomField" original="[CustomField:Order.Total]" name="Order.Total"}.',
+    'Your total is ::placeholder{type="CustomField" original="[CustomField:Order.Total]" name="Order.Total"}.' +
+    '\nAccount: ::placeholder{type="Subscriber" original="[Subscriber:email]" name="Email"}',
 });
 
-// Serialize to XML. The XML body uses the compact [Type:Name] form
-// (the same serializer-output behaviour described under "Serializer output"
-// above).
 const xml = smsToXml(doc, { pretty: true });
-// → '<rc-sms>Hi [Subscriber:FirstName], your total is [CustomField:Order.Total].</rc-sms>'
+// → '<rc-sms>Your total is ::placeholder{type="CustomField" original="[CustomField:Order.Total]" name="Order.Total"}.\nAccount: ::placeholder{type="Subscriber" original="[Subscriber:email]" name="Email"}</rc-sms>'
 
 // Parse back to SmsDocument
 const restored = xmlToSms(xml);
@@ -522,44 +221,23 @@ if (!validated.success) {
 
 ## Putting it together
 
-A complete order-shipped SMS built with builders only — three paragraphs, two
-placeholders, one link mark, one hardbreak, one system-link placeholder:
+A complete order-shipped SMS built with builders only — message nodes,
+placeholders, a link node, and a system-link placeholder:
 
 ```typescript
 import { sms, createSmsDocument } from '@rule/rcml';
 
 const content = sms.createContent({
-  paragraphs: [
-    sms.createParagraphNode({
-      content: [
-        sms.createTextNode({ text: 'Hi ' }),
-        sms.createSubscriberPlaceholder({ field: 'FirstName' }),
-        sms.createTextNode({ text: ',' }),
-        sms.createHardbreakNode(),
-        sms.createTextNode({ text: 'your order ' }),
-        sms.createCustomFieldPlaceholder({ group: 'Order', name: 'Id' }),
-        sms.createTextNode({ text: ' has shipped.' }),
-      ],
+  nodes: [
+    sms.createMessageNode({ text: 'Your order ' }),
+    sms.createCustomFieldPlaceholder({ group: 'Order', name: 'Id' }),
+    sms.createMessageNode({ text: ' has shipped.\nTrack it: ' }),
+    sms.createLinkNode({
+      url: 'https://example.com/orders/[CustomField:Order.Id]',
+      track: true,
+      shorten: true,
     }),
-    sms.createParagraphNode({
-      content: [
-        sms.createTextNode({ text: 'Track it: ' }),
-        sms.createTextNode({
-          text: 'click here',
-          marks: [sms.createLinkMark({
-            href: 'https://example.com/orders/[CustomField:Order.Id]',
-            track: true,
-            shorten: true,
-          })],
-        }),
-      ],
-    }),
-    sms.createParagraphNode({
-      content: [
-        sms.createTextNode({ text: 'Reply STOP: ' }),
-        sms.createLinkPlaceholder({ link: 'Unsubscribe' }),
-      ],
-    }),
+    ...sms.createUnsubscribeNodes(),
   ],
 });
 
@@ -568,10 +246,11 @@ const doc = createSmsDocument({ content });
 
 ## Related
 
-- [SMS document](./concepts/sms-document) — `SmsDocument` and `SmsContentJson` types
-- [SMS RFM](./concepts/sms-rfm) — SMS RFM source format
+- [Template](./concepts/template) — `SmsDocument` structure and `createSmsDocument()` usage
+- [Content](./concepts/content) — `SmsContentJson` flat sequence model
+- [`message`](./content/nodes/message) — message node reference
+- [`link`](./content/nodes/link) — link node reference
 - [`placeholder`](./content/nodes/placeholder) — placeholder node attribute reference
-- [link mark](./content/marks/link) — link mark attribute reference
 - [Validation](./validation) — error types and codes
 - [Building with LLM](./building-with-llm) — spec-driven generation workflow
 - [`createSmsDocument`](/api/rcml/src/functions/createSmsDocument) — API reference

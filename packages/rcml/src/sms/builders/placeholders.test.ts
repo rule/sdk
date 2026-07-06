@@ -12,7 +12,7 @@ import { smsRfmToJson } from '../sms-rfm-to-json.js'
 import type { SmsPlaceholderNode } from '../content/json-validator/types.js'
 
 describe('createPlaceholderNode (generic)', () => {
-  it('defaults value and max-length to null when omitted', () => {
+  it('defaults value to null and omits max-length when not provided', () => {
     expect(
       createPlaceholderNode({
         type: 'Subscriber',
@@ -26,7 +26,6 @@ describe('createPlaceholderNode (generic)', () => {
         name: 'FirstName',
         original: '[Subscriber:FirstName]',
         value: null,
-        'max-length': null,
       },
     })
   })
@@ -55,30 +54,29 @@ describe('createPlaceholderNode (generic)', () => {
 
 describe('createSubscriberPlaceholder', () => {
   it('builds a [Subscriber:<field>] node with name defaulting to field', () => {
-    expect(createSubscriberPlaceholder({ field: 'FirstName' })).toEqual<SmsPlaceholderNode>({
+    expect(createSubscriberPlaceholder({ field: 'email' })).toEqual<SmsPlaceholderNode>({
       type: 'placeholder',
       attrs: {
         type: 'Subscriber',
-        name: 'FirstName',
-        original: '[Subscriber:FirstName]',
+        name: 'email',
+        original: '[Subscriber:email]',
         value: null,
-        'max-length': null,
       },
     })
   })
 
   it('matches the parser output shape exactly (deep-equals what smsRfmToJson produces)', () => {
-    const built = createSubscriberPlaceholder({ field: 'FirstName' })
-    const parsed = smsRfmToJson('[Subscriber:FirstName]').content[0]!.content![0]
+    const built = createSubscriberPlaceholder({ field: 'phone_number' })
+    const parsed = smsRfmToJson('[Subscriber:phone_number]').content[0]
 
     expect(parsed).toEqual(built)
   })
 
   it('respects an explicit name override', () => {
     expect(
-      createSubscriberPlaceholder({ field: 'email', name: 'Email' }),
+      createSubscriberPlaceholder({ field: 'email', name: 'Email address' }),
     ).toMatchObject({
-      attrs: { name: 'Email', original: '[Subscriber:email]' },
+      attrs: { name: 'Email address', original: '[Subscriber:email]' },
     })
   })
 })
@@ -92,7 +90,6 @@ describe('createUserPlaceholder', () => {
         name: 'CompanyName',
         original: '[User:CompanyName]',
         value: null,
-        'max-length': null,
       },
     })
   })
@@ -109,7 +106,6 @@ describe('createCustomFieldPlaceholder', () => {
         name: 'Order.Total',
         original: '[CustomField:Order.Total]',
         value: null,
-        'max-length': null,
       },
     })
   })
@@ -131,7 +127,7 @@ describe('createCustomFieldPlaceholder', () => {
 
   it('matches parser output for the no-truncation case', () => {
     const built = createCustomFieldPlaceholder({ group: 'Order', name: 'Total' })
-    const parsed = smsRfmToJson('[CustomField:Order.Total]').content[0]!.content![0]
+    const parsed = smsRfmToJson('[CustomField:Order.Total]').content[0]
 
     expect(parsed).toEqual(built)
   })
@@ -232,7 +228,6 @@ describe('createRemoteContentPlaceholder', () => {
         name: 'RemoteContent',
         original: '[RemoteContent:https://api.example.com/promo]',
         value: null,
-        'max-length': null,
       },
     })
   })
@@ -246,7 +241,11 @@ describe('createRemoteContentPlaceholder', () => {
   })
 })
 
-describe('createLinkPlaceholder', () => {
+describe('createLinkPlaceholder (internal)', () => {
+  // createLinkPlaceholder is internal — it creates a Link placeholder without
+  // is-unsubscribe: true, which means the output fails validateSmsJson.
+  // The public API for the unsubscribe footer is createUnsubscribeNodes().
+
   const linkTypes = [
     'Optin',
     'Unsubscribe',
@@ -255,7 +254,7 @@ describe('createLinkPlaceholder', () => {
     'Signup',
   ] as const
 
-  it.each(linkTypes)('builds a [Link:%s] node', (link) => {
+  it.each(linkTypes)('builds a raw [Link:%s] node (no is-unsubscribe)', (link) => {
     expect(createLinkPlaceholder({ link })).toEqual<SmsPlaceholderNode>({
       type: 'placeholder',
       attrs: {
@@ -263,15 +262,7 @@ describe('createLinkPlaceholder', () => {
         name: link,
         original: `[Link:${link}]`,
         value: null,
-        'max-length': null,
       },
     })
-  })
-
-  it('matches parser output shape exactly', () => {
-    const built = createLinkPlaceholder({ link: 'Unsubscribe' })
-    const parsed = smsRfmToJson('[Link:Unsubscribe]').content[0]!.content![0]
-
-    expect(parsed).toEqual(built)
   })
 })
