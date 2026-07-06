@@ -557,15 +557,13 @@ describe('CampaignsClient', () => {
     const WIRE_SMS_DYNAMIC_SET = { id: 31, name: 'ds', active: false, position: 0, created_at: '2024-01-01', updated_at: '2024-01-01' };
 
     it('returns IDs of all created resources on success', async () => {
-      // 1. GET sender details
-      fetchMock.mockResolvedValueOnce(createMockResponse(WIRE_SENDER));
-      // 2. POST SMS campaign
+      // 1. POST SMS campaign
       fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_CAMPAIGN }));
-      // 3a. POST SMS message (parallel)
+      // 2a. POST SMS message (parallel)
       fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_MESSAGE }));
-      // 3b. POST SMS template (parallel)
+      // 2b. POST SMS template (parallel)
       fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_TEMPLATE }));
-      // 4. POST dynamic set
+      // 3. POST dynamic set
       fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_DYNAMIC_SET }));
 
       const client = createClient(fetchMock);
@@ -581,7 +579,6 @@ describe('CampaignsClient', () => {
     });
 
     it('does not set subject on the SMS message POST', async () => {
-      fetchMock.mockResolvedValueOnce(createMockResponse(WIRE_SENDER));
       fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_CAMPAIGN }));
       fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_MESSAGE }));
       fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_TEMPLATE }));
@@ -603,7 +600,6 @@ describe('CampaignsClient', () => {
     });
 
     it('rolls back created resources when message creation fails', async () => {
-      fetchMock.mockResolvedValueOnce(createMockResponse(WIRE_SENDER));
       fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_CAMPAIGN }));
       // message fails, template succeeds
       fetchMock.mockResolvedValueOnce(createMockErrorResponse({}, 500));
@@ -624,8 +620,7 @@ describe('CampaignsClient', () => {
       expect(deletedUrls.some((u) => u.includes('/editor/campaign/200'))).toBe(true);
     });
 
-    it('skips getSenderDetails when template.content is provided', async () => {
-      // No sender mock — getSenderDetails is only called to build the default template content
+    it('skips footer when template.content is provided', async () => {
       fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_CAMPAIGN }));
       fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_MESSAGE }));
       fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_TEMPLATE }));
@@ -647,8 +642,7 @@ describe('CampaignsClient', () => {
       });
     });
 
-    it('omits unsubscribe footer and skips getSenderDetails for transactional sendout', async () => {
-      // No sender mock — getSenderDetails is skipped for transactional campaigns
+    it('omits unsubscribe footer for transactional sendout', async () => {
       fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_CAMPAIGN }));
       fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_MESSAGE }));
       fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_TEMPLATE }));
@@ -672,7 +666,6 @@ describe('CampaignsClient', () => {
     });
 
     it('template.name override uses the custom name', async () => {
-      fetchMock.mockResolvedValueOnce(createMockResponse(WIRE_SENDER));
       fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_CAMPAIGN }));
       fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_MESSAGE }));
       fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_TEMPLATE }));
@@ -692,6 +685,70 @@ describe('CampaignsClient', () => {
       const body = JSON.parse((templatePostCall![1] as RequestInit).body as string);
 
       expect(body.name).toBe('Order Shipped SMS');
+    });
+
+    it('uses a generated template name when template.name is not provided', async () => {
+      fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_CAMPAIGN }));
+      fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_MESSAGE }));
+      fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_TEMPLATE }));
+      fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_DYNAMIC_SET }));
+
+      const client = createClient(fetchMock);
+
+      await client.createDefaultSmsCampaign();
+
+      const templatePostCall = fetchMock.mock.calls.find(
+        ([url, init]) =>
+          (url as string).includes('/editor/template') &&
+          (init as RequestInit).method === 'POST'
+      );
+      const body = JSON.parse((templatePostCall![1] as RequestInit).body as string);
+
+      expect(body.name).toBe('Campaign 200 SMS template');
+    });
+
+    it('defaults to ::unsubscribe footer when unsubscriptionMethod is omitted', async () => {
+      fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_CAMPAIGN }));
+      fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_MESSAGE }));
+      fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_TEMPLATE }));
+      fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_DYNAMIC_SET }));
+
+      const client = createClient(fetchMock);
+
+      await client.createDefaultSmsCampaign();
+
+      const templatePostCall = fetchMock.mock.calls.find(
+        ([url, init]) =>
+          (url as string).includes('/editor/template') &&
+          (init as RequestInit).method === 'POST'
+      );
+      const body = JSON.parse((templatePostCall![1] as RequestInit).body as string);
+      const contentStr = JSON.stringify(body.template);
+
+      expect(contentStr).toContain('unsubscribe');
+      expect(contentStr).not.toContain('stop_word');
+    });
+
+    it("uses stop-word footer when unsubscriptionMethod is 'stopWord'", async () => {
+      fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_CAMPAIGN }));
+      fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_MESSAGE }));
+      fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_TEMPLATE }));
+      fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_SMS_DYNAMIC_SET }));
+
+      const client = createClient(fetchMock);
+
+      await client.createDefaultSmsCampaign({ unsubscriptionMethod: 'stopWord' });
+
+      const templatePostCall = fetchMock.mock.calls.find(
+        ([url, init]) =>
+          (url as string).includes('/editor/template') &&
+          (init as RequestInit).method === 'POST'
+      );
+      const body = JSON.parse((templatePostCall![1] as RequestInit).body as string);
+      const contentStr = JSON.stringify(body.template);
+
+      expect(contentStr).toContain('stop_word');
+      expect(contentStr).not.toContain('unsubscribe');
     });
   });
 });

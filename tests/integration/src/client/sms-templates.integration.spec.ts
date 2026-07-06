@@ -85,10 +85,33 @@ describe('TemplatesClient — SMS', () => {
   // ── update ────────────────────────────────────────────────────────────────
 
   describe('updateSmsTemplate', () => {
-    // NOTE: The Rule.io API requires message_type on PUT /editor/template but
-    // updateSmsTemplate does not include it. This is a known client limitation.
-    // The test below documents the current API contract expectation.
-    it.todo('persists an updated name (blocked: API requires message_type on PUT)');
+    it('persists an updated name', async () => {
+      const name = testName('sms-tmpl-update');
+      const created = await client.templates.createSmsTemplate({ name, content: minimalSmsDoc });
+
+      createdIds.push(created.id);
+
+      const newName = testName('sms-tmpl-update-renamed');
+      const updated = await client.templates.updateSmsTemplate(created.id, { name: newName });
+
+      expect(updated.name).toBe(newName);
+
+      const fetched = await client.templates.get(created.id);
+
+      expect(fetched!.name).toBe(newName);
+    });
+
+    it('persists updated content', async () => {
+      const name = testName('sms-tmpl-update-content');
+      const created = await client.templates.createSmsTemplate({ name, content: minimalSmsDoc });
+
+      createdIds.push(created.id);
+
+      const newContent = createSmsDocument({ content: 'Updated content for integration test' });
+      const updated = await client.templates.updateSmsTemplate(created.id, { content: newContent });
+
+      expect(updated.id).toBe(created.id);
+    });
   });
 
   // ── delete ────────────────────────────────────────────────────────────────

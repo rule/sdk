@@ -25,7 +25,6 @@ import { BrandStylesClient } from '../brand-styles/brand-styles.client.js';
 import { DynamicSetsClient } from '../dynamic-sets/dynamic-sets.client.js';
 import { MessagesClient } from '../messages/messages.client.js';
 import { TemplatesClient } from '../templates/templates.client.js';
-import { AccountClient } from '../account/account.client.js';
 import type {
   Campaign,
   CampaignListResponse,
@@ -729,18 +728,16 @@ export class CampaignsClient extends BaseResource {
    * Create a complete SMS campaign with all its dependencies in one call.
    *
    * Executes the full creation sequence:
-   * 1. Fetch account sender details when needed (to determine the unsubscribe
-   *    footer style for the default SMS body). Skipped when both
-   *    `message.subject` and `template.content` are provided.
-   * 2. Create the campaign.
-   * 3. In parallel: create the SMS message and create the SMS template (built
+   * 1. Create the campaign.
+   * 2. In parallel: create the SMS message and create the SMS template (built
    *    from the resolved SMS body text).
-   * 4. Create the default dynamic set linking the message to the template.
+   * 3. Create the default dynamic set linking the message to the template.
    *
    * If any step fails, all previously created resources are deleted
    * automatically before the error is rethrown.
    *
-   * @param params - Optional campaign name and sendout type.
+   * @param params - Optional campaign configuration. Pass `unsubscriptionMethod: 'stopWord'`
+   *   to use a stop-word placeholder footer instead of the default unsubscribe link.
    * @returns IDs of all created resources.
    *
    * @example
@@ -752,7 +749,6 @@ export class CampaignsClient extends BaseResource {
   async createDefaultSmsCampaign(
     params: CreateDefaultSmsCampaignParams = {}
   ): Promise<CreateDefaultCampaignResult> {
-    const account = this.lazy('account', () => new AccountClient(this.transport));
     const messages = this.lazy('messages', () => new MessagesClient(this.transport));
     const templates = this.lazy('templates', () => new TemplatesClient(this.transport));
     const dynamicSets = this.lazy('dynamicSets', () => new DynamicSetsClient(this.transport));
@@ -765,9 +761,7 @@ export class CampaignsClient extends BaseResource {
       const isMarketing = (params.sendoutType ?? 'marketing') !== 'transactional';
 
       if (isMarketing) {
-        const senderDetails = await account.getSenderDetails();
-
-        smsBody = buildDefaultSmsContent(senderDetails.linkInsteadOfStopWord ?? false);
+        smsBody = buildDefaultSmsContent(params.unsubscriptionMethod !== 'stopWord');
       } else {
         smsBody = 'Your message here.';
       }
@@ -794,6 +788,7 @@ export class CampaignsClient extends BaseResource {
           ...params.message,
         }),
         templates.createSmsTemplate({
+          name: `Campaign ${campaignId} SMS template`,
           ...templateMetaOverrides,
           content: templateContentOverride ?? createSmsDocument({ content: smsBody! }),
         }),

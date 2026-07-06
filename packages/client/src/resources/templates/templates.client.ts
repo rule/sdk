@@ -122,10 +122,14 @@ export class TemplatesClient extends BaseResource {
    * ```
    */
   async updateEmailTemplate(id: number, payload: UpdateEmailTemplatePayload): Promise<EmailTemplate> {
+    const existing = await this.get(id);
+    if (!existing) throw new RuleApiError(`Template ${id} not found`, 404);
+
     const res = await this.transport.put<TemplateResponse>(`/editor/template/${id}`, {
       body: JSON.stringify({
-        name: payload.name,
-        template: payload.content,
+        message_type: 'email',
+        name: payload.name ?? existing.name,
+        template: payload.content ?? existing.content,
       }),
     });
 
@@ -184,10 +188,16 @@ export class TemplatesClient extends BaseResource {
    * ```
    */
   async updateSmsTemplate(id: number, payload: UpdateSmsTemplatePayload): Promise<SmsTemplate> {
+    const existing = await this.get(id);
+    if (!existing) throw new RuleApiError(`Template ${id} not found`, 404);
+
+    const contentToSend = payload.content ?? (existing.content as SmsDocument | undefined);
+
     const res = await this.transport.put<TemplateResponse>(`/editor/template/${id}`, {
       body: JSON.stringify({
-        name: payload.name,
-        ...(payload.content !== undefined && { template: normalizeSmsId(payload.content) }),
+        message_type: 'text_message',
+        name: payload.name ?? existing.name,
+        ...(contentToSend !== undefined && { template: normalizeSmsId(contentToSend) }),
       }),
     });
 

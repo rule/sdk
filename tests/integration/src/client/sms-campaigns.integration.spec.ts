@@ -157,13 +157,9 @@ describe('CampaignsClient — SMS', () => {
   // ── createDefaultSmsCampaign ──────────────────────────────────────────────
 
   describe('createDefaultSmsCampaign', () => {
-    it('creates a complete SMS campaign with all 4 resources (transactional)', async () => {
-      // Use transactional to avoid the account.getSenderDetails() API call.
-      // Provide template.name explicitly — the API requires a name on the template.
+    it('creates a complete SMS campaign with all 4 resources (default marketing)', async () => {
       const result = await client.campaigns.createDefaultSmsCampaign({
         name: testName('sms-camp-default'),
-        sendoutType: 'transactional',
-        template: { name: testName('sms-camp-default-tmpl') },
       });
 
       createdMessageIds.push(result.messageId);
@@ -181,13 +177,25 @@ describe('CampaignsClient — SMS', () => {
       expect(result.dynamicSetId).toBeGreaterThan(0);
     });
 
+    it("creates a campaign with stop-word footer when unsubscriptionMethod is 'stopWord'", async () => {
+      const result = await client.campaigns.createDefaultSmsCampaign({
+        name: testName('sms-camp-default-sw'),
+        unsubscriptionMethod: 'stopWord',
+      });
+
+      createdMessageIds.push(result.messageId);
+      createdTemplateIds.push(result.templateId);
+      createdDynamicSetIds.push(result.dynamicSetId);
+      createdCampaignIds.push(result.campaignId);
+
+      expect(result.campaignId).toBeGreaterThan(0);
+    });
+
     it('accepts a template content override', async () => {
       const { createSmsDocument } = await import('@rule/rcml');
       const result = await client.campaigns.createDefaultSmsCampaign({
         name: testName('sms-camp-default-custom'),
-        sendoutType: 'transactional',
         template: {
-          name: testName('sms-camp-default-tmpl-custom'),
           content: createSmsDocument({ content: 'Your shipment is on its way.' }),
         },
       });

@@ -510,6 +510,17 @@ export interface CreateDefaultSmsCampaignParams {
      */
     content?: SmsDocument;
   };
+  /**
+   * Unsubscription method to include in the auto-generated SMS body footer.
+   *
+   * - `'unsubscribeLink'` (default) — appends `::unsubscribe`.
+   * - `'stopWord'` — appends the stop-word merge-tag placeholder.
+   *
+   * Has no effect when `template.content` is provided (the footer is then
+   * the caller's responsibility) or when `sendoutType` is `'transactional'`
+   * (transactional campaigns do not include an unsubscription footer).
+   */
+  unsubscriptionMethod?: 'unsubscribeLink' | 'stopWord';
 }
 
 // ── Internal wire types ───────────────────────────────────────────────────────
