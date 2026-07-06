@@ -126,11 +126,21 @@ export class TemplatesClient extends BaseResource {
 
     if (!existing) throw new RuleApiError(`Template ${id} not found`, 404);
 
+    if (existing.messageType !== 'email') {
+      throw new RuleApiError(`Template ${id} is not an email template`, 400);
+    }
+
+    const contentToSend = payload.content ?? existing.content;
+
+    if (contentToSend === undefined) {
+      throw new RuleApiError(`Template ${id} has no content and none was provided`, 400);
+    }
+
     const res = await this.transport.put<TemplateResponse>(`/editor/template/${id}`, {
       body: JSON.stringify({
         message_type: 'email',
         name: payload.name ?? existing.name,
-        template: payload.content ?? existing.content,
+        template: contentToSend,
       }),
     });
 
@@ -192,6 +202,10 @@ export class TemplatesClient extends BaseResource {
     const existing = await this.get(id);
 
     if (!existing) throw new RuleApiError(`Template ${id} not found`, 404);
+
+    if (existing.messageType !== 'text_message') {
+      throw new RuleApiError(`Template ${id} is not an SMS template`, 400);
+    }
 
     const contentToSend = payload.content ?? (existing.content as SmsDocument | undefined);
 

@@ -312,9 +312,9 @@ export class AutomationsClient extends BaseResource {
     try {
       const [messageResult, templateResult] = await Promise.allSettled([
         messages.createSmsAutomationMessage(automationId, {
-        automailSetting: { active: false, delayInSeconds: '0' },
-        ...params.message,
-      }),
+          automailSetting: { active: false, delayInSeconds: '0' },
+          ...params.message,
+        }),
         templates.createSmsTemplate({
           name: `Automation ${automationId} SMS template`,
           ...templateMetaOverrides,
