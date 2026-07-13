@@ -182,12 +182,15 @@ export interface RcmlBody {
   children: RcmlBodyChild[]
 }
 
-/** `<rc-section>` — row container (up to 20 columns per the schema). @public */
+/** Valid children of `<rc-section>`. @public */
+export type RcmlSectionChild = RcmlColumn | RcmlGroup
+
+/** `<rc-section>` — row container (up to 20 direct children per the schema). @public */
 export interface RcmlSection {
   id?: string
   tagName: 'rc-section'
   attributes?: AttrsFor<'rc-section'>
-  children: RcmlColumn[]
+  children: RcmlSectionChild[]
 }
 
 /** Valid children of `<rc-column>`. @public */
@@ -202,7 +205,6 @@ export type RcmlColumnChild =
   | RcmlDivider
   | RcmlSocial
   | RcmlLoop
-  | RcmlGroup
   | RcmlRaw
 
 /** `<rc-column>` — horizontal unit inside a section. @public */
@@ -224,7 +226,7 @@ export interface RcmlWrapper {
   children: RcmlWrapperChild[]
 }
 
-/** `<rc-group>` — column-only pass-through container. @public */
+/** `<rc-group>` — non-responsive wrapper placed directly inside `<rc-section>`; keeps its columns side-by-side on mobile instead of stacking. @public */
 export interface RcmlGroup {
   id?: string
   tagName: 'rc-group'

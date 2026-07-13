@@ -1,6 +1,6 @@
 # `<rc-group>`
 
-Groups columns inside a section to keep them side-by-side on mobile. Without a group, all columns in a section stack vertically on small screens. Columns inside a group remain horizontal even when surrounding columns stack.
+Non-responsive wrapper placed directly inside an [`<rc-section>`](./rc-section.md). Keeps its columns side-by-side on mobile instead of stacking. Without a group, all columns in a section stack vertically on small screens; columns inside a group remain horizontal. At most one group per section — the SDK enforces this to keep templates round-trippable through the Rule.io editor UI.
 
 ## Attributes
 
@@ -14,7 +14,7 @@ None.
 
 ## Parents
 
-- [`<rc-column>`](./rc-column.md)
+- [`<rc-section>`](./rc-section.md)
 
 ## JSON
 
@@ -42,12 +42,16 @@ None.
 Templates can be built using factory functions from `@rule/rcml`, or the JSON structure above can be generated directly by an AI model — pass [`rcmlSpec`](/api/rcml/src/variables/rcmlSpec) as context when prompting.
 
 ```typescript
-import { createGroupElement, createColumnElement } from '@rule/rcml';
+import { createSectionElement, createGroupElement, createColumnElement } from '@rule/rcml';
 
-createGroupElement({
+createSectionElement({
   children: [
-    createColumnElement({ attrs: { width: '50%' }, children: [] }),
-    createColumnElement({ attrs: { width: '50%' }, children: [] }),
+    createGroupElement({
+      children: [
+        createColumnElement({ attrs: { width: '50%' }, children: [] }),
+        createColumnElement({ attrs: { width: '50%' }, children: [] }),
+      ],
+    }),
   ],
 })
 ```

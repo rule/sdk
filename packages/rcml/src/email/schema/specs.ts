@@ -197,7 +197,7 @@ const bodySpec = {
 
 const sectionSpec = {
   category: 'layout',
-  description: 'Full-width horizontal band that holds one or more columns. The primary building block for email layout rows. Maximum 20 columns.',
+  description: "Full-width horizontal band that holds one or more columns, optionally wrapped in an rc-group. The primary building block for email layout rows. Maximum 20 direct children. When rc-group is present, it must be the section's only child (columns live inside the group, not alongside it).",
   attrs: {
     'background-color': {
       validator: V.Color,
@@ -334,7 +334,7 @@ const sectionSpec = {
     },
   },
   isLeaf: false,
-  validChildTypes: [T.Column],
+  validChildTypes: [T.Column, T.Group],
   maxChildCount: 20,
 } as const satisfies RcmlNodeSpec
 
@@ -349,6 +349,7 @@ const VALID_COLUMN_CHILDREN: readonly RcmlTagName[] = Object.values(T).filter(
       T.Body,
       T.Section,
       T.Column,
+      T.Group,
       T.SocialElement,
       T.Class,
       T.Switch,
@@ -603,7 +604,7 @@ const wrapperSpec = {
 
 const groupSpec = {
   category: 'layout',
-  description: 'Groups columns inside a section to control how they stack on mobile. Columns inside a group remain side-by-side on mobile when other columns stack.',
+  description: 'Groups columns inside an rc-section to control how they stack on mobile. Sits as a direct child of rc-section (not rc-column). Columns inside a group remain side-by-side on mobile even when other columns in the section stack.',
   attrs: {},
   isLeaf: false,
   validChildTypes: [T.Column],
