@@ -39,6 +39,8 @@ Full-width horizontal band that holds one or more columns. The primary layout ro
 | [`<rc-column>`](./rc-column.md) | 0–20 | Vertical content cell. |
 | [`<rc-group>`](./rc-group.md) | 0–1 | Optional wrapper for columns that must stay side-by-side on mobile. |
 
+A section either contains columns directly (Vertical), or a single group wrapping columns (Horizontal) — never both.
+
 ## Parents
 
 - [`<rc-body>`](../../root/rc-body.md)

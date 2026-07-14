@@ -1,6 +1,6 @@
 # `<rc-group>`
 
-Non-responsive wrapper placed directly inside an [`<rc-section>`](./rc-section.md). Keeps its columns side-by-side on mobile instead of stacking. Without a group, all columns in a section stack vertically on small screens; columns inside a group remain horizontal. At most one group per section — the SDK enforces this to keep templates round-trippable through the Rule.io editor UI.
+Non-responsive wrapper placed directly inside an [`<rc-section>`](./rc-section.md). Keeps its columns side-by-side on mobile instead of stacking. Without a group, all columns in a section stack vertically on small screens; columns inside a group remain horizontal. At most one group per section, and when present it must be the section's only direct child (columns live inside the group, not alongside it) — the SDK enforces this to keep templates round-trippable through the Rule.io editor UI.
 
 ## Attributes
 
