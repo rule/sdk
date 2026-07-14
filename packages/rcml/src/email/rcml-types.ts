@@ -185,12 +185,20 @@ export interface RcmlBody {
 /** Valid children of `<rc-section>`. @public */
 export type RcmlSectionChild = RcmlColumn | RcmlGroup
 
+/**
+ * Structural shape of `<rc-section>`'s children: either a list of columns,
+ * or a single group (never both, per the factory-level exclusivity guard
+ * enforced by `createSectionElement`).
+ * @public
+ */
+export type RcmlSectionChildren = readonly [RcmlGroup] | readonly RcmlColumn[]
+
 /** `<rc-section>` — row container (up to 20 direct children per the schema). @public */
 export interface RcmlSection {
   id?: string
   tagName: 'rc-section'
   attributes?: AttrsFor<'rc-section'>
-  children: RcmlSectionChild[]
+  children: RcmlSectionChildren
 }
 
 /** Valid children of `<rc-column>`. @public */

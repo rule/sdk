@@ -42,7 +42,7 @@ import type {
   RcmlPreview,
   RcmlRaw,
   RcmlSection,
-  RcmlSectionChild,
+  RcmlSectionChildren,
   RcmlSocial,
   RcmlSocialElement,
   RcmlSpacer,
@@ -193,7 +193,7 @@ export interface SocialChildElementOptions {
 /** Options accepted by {@link createSectionElement}. @public */
 export interface SectionElementOptions {
   attrs?: SectionElementAttrs
-  children: readonly RcmlSectionChild[]
+  children: RcmlSectionChildren
 }
 /** Options accepted by {@link createColumnElement}. @public */
 export interface ColumnElementOptions {
