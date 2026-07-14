@@ -113,7 +113,10 @@ function buildChildrenSchema(spec: RcmlNodeSpec, useAttrOverride = false): JsonS
       ? { type: 'object', not: { type: 'object' } } // empty children only
       : childTypes.length === 1 && childTypes[0]
         ? { $ref: `#/$defs/${refFor(childTypes[0])}` }
-        : { oneOf: childTypes.map((t) => ({ $ref: `#/$defs/${refFor(t)}` })) }
+        : {
+            discriminator: { propertyName: 'tagName' },
+            oneOf: childTypes.map((t) => ({ $ref: `#/$defs/${refFor(t)}` })),
+          }
 
   const schema: JsonSchema = {
     type: 'array',

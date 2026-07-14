@@ -29,8 +29,10 @@ function getValidator(): ValidateFunction {
 
   const ajv = new Ajv2020({
     strict: true,
+    strictTypes: false,
     allErrors: true,
     allowUnionTypes: true,
+    discriminator: true,
   })
 
   cachedValidator = ajv.compile(RCML_JSON_SCHEMA)
@@ -140,6 +142,14 @@ function toIssue(err: ErrorObject): EmailTemplateValidationIssue {
         path,
         code: EmailTemplateErrorCodes.CHILD_INVALID,
         message: 'Child does not match any allowed tag for this parent.',
+      }
+    }
+
+    case 'discriminator': {
+      return {
+        path,
+        code: EmailTemplateErrorCodes.CHILD_INVALID,
+        message: err.message ?? 'Child tagName does not match any allowed tag for this parent.',
       }
     }
 
