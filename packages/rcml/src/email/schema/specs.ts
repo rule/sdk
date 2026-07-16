@@ -197,7 +197,7 @@ const bodySpec = {
 
 const sectionSpec = {
   category: 'layout',
-  description: "Full-width horizontal band that holds one or more columns, optionally wrapped in an rc-group. The primary building block for email layout rows. Maximum 20 direct children. When rc-group is present, it must be the section's only child (columns live inside the group, not alongside it).",
+  description: "Full-width horizontal band that typically holds one or more columns, optionally wrapped in an rc-group. The primary building block for email layout rows. Empty sections are structurally valid but rarely useful. Maximum 20 direct children. When rc-group is present, it must be the section's only child (columns live inside the group, not alongside it).",
   attrs: {
     'background-color': {
       validator: V.Color,

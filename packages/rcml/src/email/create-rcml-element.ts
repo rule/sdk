@@ -632,10 +632,12 @@ export function createSocialChildElement(options: SocialChildElementOptions): Rc
 // ─── Layout containers ──────────────────────────────────────────────────────
 
 /**
- * Build an `<rc-section>` — a row-level container. Accepts 1–20 direct
- * children (per the schema's `maxChildCount`) — columns and/or a single
- * `<rc-group>` wrapping columns to keep them side-by-side on mobile. The
- * group counts as one child.
+ * Build an `<rc-section>` — a row-level container. Accepts 0–20 direct
+ * children (per the schema's `maxChildCount`) — a section is typically
+ * populated with columns and/or a single `<rc-group>` wrapping columns
+ * to keep them side-by-side on mobile, but empty sections are valid at
+ * the factory level (useful during interactive editing). The group
+ * counts as one child.
  *
  * The Rule.io editor's Responsive control models sections as a binary
  * switch: Vertical → all columns are direct children; Horizontal → all
