@@ -29,7 +29,6 @@ function getValidator(): ValidateFunction {
 
   const ajv = new Ajv2020({
     strict: true,
-    strictTypes: false,
     allErrors: true,
     allowUnionTypes: true,
     discriminator: true,
