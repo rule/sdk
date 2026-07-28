@@ -17,6 +17,11 @@ const colNoAttrs = () => ({
   children: [],
 })
 
+const group = (columns: unknown[]) => ({
+  tagName: 'rc-group',
+  children: columns,
+})
+
 describe('validateColumnWidths — single-column sections', () => {
   it('returns no issues for a single column with no width', () => {
     expect(validateColumnWidths({ tagName: 'rcml', children: [section([colNoAttrs()])] })).toEqual(
@@ -119,5 +124,42 @@ describe('validateColumnWidths — nesting', () => {
     const issues = validateColumnWidths(doc)
 
     expect(issues.length).toBeGreaterThan(0)
+  })
+})
+
+describe('validateColumnWidths — rc-group', () => {
+  it('flags widths inside rc-group when they do not sum to 100%', () => {
+    const doc = {
+      tagName: 'rcml',
+      children: [
+        { tagName: 'rc-head', children: [] },
+        {
+          tagName: 'rc-body',
+          children: [section([group([col('30%'), col('30%')])])],
+        },
+      ],
+    }
+    const issues = validateColumnWidths(doc)
+
+    expect(issues).toHaveLength(1)
+    expect(issues[0].code).toBe('ATTR_INVALID_VALUE')
+    expect(issues[0].message).toContain('rc-group')
+    expect(issues[0].message).toContain('60%')
+  })
+
+  it('skips width check when rc-group columns mix percentage and pixel widths', () => {
+    const doc = {
+      tagName: 'rcml',
+      children: [
+        { tagName: 'rc-head', children: [] },
+        {
+          tagName: 'rc-body',
+          children: [section([group([col('200px'), col('50%')])])],
+        },
+      ],
+    }
+    const issues = validateColumnWidths(doc)
+
+    expect(issues).toHaveLength(0)
   })
 })

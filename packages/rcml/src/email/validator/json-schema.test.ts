@@ -72,13 +72,13 @@ describe('RCML_JSON_SCHEMA — rc-section fragment', () => {
 
 describe('RCML_JSON_SCHEMA — AJV compile smoke test', () => {
   it('compiles cleanly under strict mode with allErrors + allowUnionTypes', () => {
-    const ajv = new Ajv2020({ strict: true, allErrors: true, allowUnionTypes: true })
+    const ajv = new Ajv2020({ strict: true, allErrors: true, allowUnionTypes: true, discriminator: true })
 
     expect(() => ajv.compile(RCML_JSON_SCHEMA)).not.toThrow()
   })
 
   it('validates a minimal document', () => {
-    const ajv = new Ajv2020({ strict: true, allErrors: true, allowUnionTypes: true })
+    const ajv = new Ajv2020({ strict: true, allErrors: true, allowUnionTypes: true, discriminator: true })
     const validate = ajv.compile(RCML_JSON_SCHEMA)
     const doc = {
       tagName: 'rcml',
@@ -92,7 +92,7 @@ describe('RCML_JSON_SCHEMA — AJV compile smoke test', () => {
   })
 
   it('rejects a totally wrong shape', () => {
-    const ajv = new Ajv2020({ strict: true, allErrors: true, allowUnionTypes: true })
+    const ajv = new Ajv2020({ strict: true, allErrors: true, allowUnionTypes: true, discriminator: true })
     const validate = ajv.compile(RCML_JSON_SCHEMA)
 
     expect(validate({ notRcml: true })).toBe(false)
