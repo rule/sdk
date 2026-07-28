@@ -132,6 +132,44 @@ function buildChildrenSchema(spec: RcmlNodeSpec, useAttrOverride = false): JsonS
 }
 
 /**
+ * Build the `children` array schema specifically for `rc-section`.
+ *
+ * `rc-section` has exclusive child shapes:
+ *   - a list of `rc-column[]` (0–maxChildCount), OR
+ *   - a single-item array containing one `rc-group`
+ *
+ * Mixed arrays like `[rc-column, rc-group]` and multi-group arrays are
+ * rejected by `createSectionElement` at build time; this schema mirrors
+ * that contract so `safeValidateEmailTemplate` rejects them too. The
+ * factory-level cardinality rules and the JSON Schema now agree.
+ *
+ * The generic `buildChildrenSchema` treats children as an array with
+ * per-item discriminated union — enough for tags whose children shape
+ * is uniform (e.g. rc-column, rc-body), but not expressive enough for
+ * rc-section's exclusivity.
+ */
+function buildSectionChildrenSchema(spec: RcmlNodeSpec): JsonSchema {
+  const maxItems = spec.maxChildCount
+
+  const columnsShape: JsonSchema = {
+    type: 'array',
+    items: { $ref: `#/$defs/${RcmlTagNamesEnum.Column}` },
+    ...(typeof maxItems === 'number' ? { maxItems } : {}),
+  }
+
+  const groupShape: JsonSchema = {
+    type: 'array',
+    minItems: 1,
+    maxItems: 1,
+    items: { $ref: `#/$defs/${RcmlTagNamesEnum.Group}` },
+  }
+
+  return {
+    oneOf: [columnsShape, groupShape],
+  }
+}
+
+/**
  * Non-ProseMirror content schemas for tags that carry a `content` property
  * with a plain string or a structured-but-non-PM object.
  *
@@ -185,8 +223,14 @@ function buildTagSchema(tagName: RcmlTagName, spec: RcmlNodeSpec): JsonSchema {
     // permissive *-attr override schemas so editor-generated nodes that lack
     // children/content still pass.
     const isAttrParent = tagName === RcmlTagNamesEnum.Attributes
+    // rc-section has exclusive child shapes (columns[] OR [group]); the
+    // generic per-item union isn't expressive enough to reject mixed
+    // arrays, so use the specialised schema builder here.
+    const isSection = tagName === RcmlTagNamesEnum.Section
 
-    properties['children'] = buildChildrenSchema(spec, isAttrParent)
+    properties['children'] = isSection
+      ? buildSectionChildrenSchema(spec)
+      : buildChildrenSchema(spec, isAttrParent)
     required.push('children')
   }
 

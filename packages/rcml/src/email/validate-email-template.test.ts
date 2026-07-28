@@ -163,6 +163,39 @@ describe('validateEmailTemplate — JSON AST input', () => {
     if (result.success) return
     expect(result.errors.some((e) => e.code === EmailTemplateErrorCodes.CHILD_TOO_MANY)).toBe(true)
   })
+
+  it('rejects rc-section with a mix of rc-column and rc-group (exclusivity)', () => {
+    // rc-section allows either an array of rc-columns OR a single-item
+    // array containing exactly one rc-group. Mixed shapes like
+    // [column, group] are rejected by createSectionElement at build
+    // time; the JSON Schema mirrors that contract so raw JSON built
+    // outside the factory is caught here too. The doc is intentionally
+    // typed as `unknown` to bypass TypeScript's narrower RcmlSection
+    // children union.
+    const bad: unknown = {
+      tagName: 'rcml',
+      children: [
+        { tagName: 'rc-head', children: [] },
+        {
+          tagName: 'rc-body',
+          children: [
+            {
+              tagName: 'rc-section',
+              children: [
+                { tagName: 'rc-column', children: [] },
+                { tagName: 'rc-group', children: [{ tagName: 'rc-column', children: [] }] },
+              ],
+            },
+          ],
+        },
+      ],
+    }
+    const result = safeValidateEmailTemplate(bad as RcmlDocument)
+
+    expect(result.success).toBe(false)
+    if (result.success) return
+    expect(result.errors.length).toBeGreaterThan(0)
+  })
 })
 
 describe('validateEmailTemplate — ProseMirror content delegation', () => {

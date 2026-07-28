@@ -42,14 +42,33 @@ describe('RCML_JSON_SCHEMA — $defs coverage', () => {
 })
 
 describe('RCML_JSON_SCHEMA — rc-section fragment', () => {
-  it('constrains rc-section to at most 20 columns', () => {
+  it('constrains rc-section children to exclusive shapes (columns[] or [group]) with at most 20 columns', () => {
     const $defs = RCML_JSON_SCHEMA['$defs'] as Record<string, Record<string, unknown>>
     const section = $defs['rc-section'] as Record<string, unknown>
     const properties = section['properties'] as Record<string, Record<string, unknown>>
     const children = properties['children'] as Record<string, unknown>
 
-    expect(children['type']).toBe('array')
-    expect(children['maxItems']).toBe(20)
+    // rc-section has exclusive children shapes — a union of two array shapes.
+    expect(children['oneOf']).toBeInstanceOf(Array)
+
+    const shapes = children['oneOf'] as Record<string, unknown>[]
+
+    expect(shapes).toHaveLength(2)
+
+    // First shape: array of rc-column, capped at maxChildCount (20).
+    const columnsShape = shapes[0]
+
+    expect(columnsShape['type']).toBe('array')
+    expect(columnsShape['maxItems']).toBe(20)
+    expect(columnsShape['items']).toEqual({ $ref: '#/$defs/rc-column' })
+
+    // Second shape: single-item array containing exactly one rc-group.
+    const groupShape = shapes[1]
+
+    expect(groupShape['type']).toBe('array')
+    expect(groupShape['minItems']).toBe(1)
+    expect(groupShape['maxItems']).toBe(1)
+    expect(groupShape['items']).toEqual({ $ref: '#/$defs/rc-group' })
   })
 
   it('pins rc-section `tagName` to a const', () => {
