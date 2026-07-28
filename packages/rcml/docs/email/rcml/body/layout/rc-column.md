@@ -33,7 +33,7 @@ Vertical content cell inside a section. Columns share the available width equall
 
 ## Children
 
-Any content element: [`<rc-text>`](../content/rc-text.md), [`<rc-heading>`](../content/rc-heading.md), [`<rc-button>`](../content/rc-button.md), [`<rc-image>`](../content/rc-image.md), [`<rc-logo>`](../content/rc-logo.md), [`<rc-video>`](../content/rc-video.md), [`<rc-spacer>`](../content/rc-spacer.md), [`<rc-divider>`](../content/rc-divider.md), [`<rc-social>`](../content/rc-social.md), [`<rc-loop>`](../control-flow/rc-loop.md), [`<rc-group>`](./rc-group.md), [`<rc-wrapper>`](./rc-wrapper.md), [`<rc-raw>`](../content/rc-raw.md)
+Any content element: [`<rc-text>`](../content/rc-text.md), [`<rc-heading>`](../content/rc-heading.md), [`<rc-button>`](../content/rc-button.md), [`<rc-image>`](../content/rc-image.md), [`<rc-logo>`](../content/rc-logo.md), [`<rc-video>`](../content/rc-video.md), [`<rc-spacer>`](../content/rc-spacer.md), [`<rc-divider>`](../content/rc-divider.md), [`<rc-social>`](../content/rc-social.md), [`<rc-loop>`](../control-flow/rc-loop.md), [`<rc-wrapper>`](./rc-wrapper.md), [`<rc-raw>`](../content/rc-raw.md)
 
 ## Parents
 

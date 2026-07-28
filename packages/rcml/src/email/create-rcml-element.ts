@@ -42,6 +42,7 @@ import type {
   RcmlPreview,
   RcmlRaw,
   RcmlSection,
+  RcmlSectionChildren,
   RcmlSocial,
   RcmlSocialElement,
   RcmlSpacer,
@@ -192,7 +193,7 @@ export interface SocialChildElementOptions {
 /** Options accepted by {@link createSectionElement}. @public */
 export interface SectionElementOptions {
   attrs?: SectionElementAttrs
-  children: readonly RcmlColumn[]
+  children: RcmlSectionChildren
 }
 /** Options accepted by {@link createColumnElement}. @public */
 export interface ColumnElementOptions {
@@ -631,22 +632,53 @@ export function createSocialChildElement(options: SocialChildElementOptions): Rc
 // ─── Layout containers ──────────────────────────────────────────────────────
 
 /**
- * Build an `<rc-section>` — a row-level container. Accepts 1–20 columns
- * (per the schema's `maxChildCount`). Every direct child of `<rc-body>` is
- * typically a section or a control-flow wrapper (`<rc-loop>` / `<rc-switch>` /
- * `<rc-wrapper>`).
+ * Build an `<rc-section>` — a row-level container. Accepts 0–20 direct
+ * children (per the schema's `maxChildCount`) — a section is typically
+ * populated with columns and/or a single `<rc-group>` wrapping columns
+ * to keep them side-by-side on mobile, but empty sections are valid at
+ * the factory level (useful during interactive editing). The group
+ * counts as one child.
  *
- * @param options - `options.children` is the list of column children;
- *   `options.attrs` controls section-level background / padding / borders.
+ * The Rule.io editor's Responsive control models sections as a binary
+ * switch: Vertical → all columns are direct children; Horizontal → all
+ * columns live inside one `<rc-group>`. The SDK enforces this pattern
+ * (≤1 rc-group per section) so SDK-built templates round-trip through
+ * the editor UI without breaking. Backend and rendering accept multiple
+ * groups; the SDK limit will be lifted once the editor supports
+ * multi-group grouping.
+ *
+ * Every direct child of `<rc-body>` is typically a section or a
+ * control-flow wrapper (`<rc-loop>` / `<rc-switch>` / `<rc-wrapper>`).
+ *
+ * @param options - `options.children` is the list of column and/or group
+ *   children; `options.attrs` controls section-level background / padding /
+ *   borders.
  * @returns A typed {@link RcmlSection} node.
- * @throws {RcmlElementBuildError} When attrs are invalid, any child is not
- *   an `<rc-column>`, or there are more than 20 children.
+ * @throws {RcmlElementBuildError} When attrs are invalid, any child is
+ *   neither an `<rc-column>` nor an `<rc-group>`, more than one child is
+ *   an `<rc-group>`, or there are more than 20 children.
  *
  * @example
  * ```ts
+ * // Vertical (columns stack on mobile):
  * createSectionElement({
  *   attrs: { 'background-color': '#ffffff', padding: '20px 0' },
- *   children: [createColumnElement({ children: [...] })],
+ *   children: [
+ *     createColumnElement({ children: [...] }),
+ *     createColumnElement({ children: [...] }),
+ *   ],
+ * })
+ *
+ * // Horizontal (columns stay side-by-side on mobile):
+ * createSectionElement({
+ *   children: [
+ *     createGroupElement({
+ *       children: [
+ *         createColumnElement({ attrs: { width: '50%' }, children: [...] }),
+ *         createColumnElement({ attrs: { width: '50%' }, children: [...] }),
+ *       ],
+ *     }),
+ *   ],
  * })
  * ```
  * @public
@@ -656,6 +688,20 @@ export function createSectionElement(options: SectionElementOptions): RcmlSectio
 
   issues.push(...collectAttrIssues('rc-section', options.attrs))
   issues.push(...validateChildren('rc-section', options.children))
+
+  const groupCount = options.children.filter((c) => c.tagName === 'rc-group').length
+
+  if (groupCount > 0 && (groupCount > 1 || options.children.length !== 1)) {
+    issues.push({
+      code: RcmlElementBuildErrorCodes.CHILD_INVALID,
+      path: 'children',
+      message:
+        groupCount > 1
+          ? `<rc-section> accepts at most one <rc-group> child; got ${String(groupCount)}.`
+          : `<rc-section> using <rc-group> must have it as the only child; got ${String(options.children.length)} children.`,
+    })
+  }
+
   throwIfIssues('rc-section', issues)
 
   const attributes = normalizeAttrs(options.attrs) as RcmlSection['attributes']
@@ -670,16 +716,18 @@ export function createSectionElement(options: SectionElementOptions): RcmlSectio
 }
 
 /**
- * Build an `<rc-column>` — a horizontal unit inside an `<rc-section>`.
- * Holds content elements (text, heading, button, image, divider, social,
- * loops, groups); sections and columns themselves are not valid children.
+ * Build an `<rc-column>` — a horizontal unit inside an `<rc-section>` or
+ * `<rc-group>`. Holds content elements (text, heading, button, image,
+ * divider, social, loops); sections, columns, and groups themselves are
+ * not valid children — groups sit at the section level, not inside a
+ * column.
  *
  * @param options - `options.children` is the list of content elements to
  *   stack vertically; `options.attrs` controls column-level padding,
  *   borders, width, vertical alignment.
  * @returns A typed {@link RcmlColumn} node.
  * @throws {RcmlElementBuildError} When attrs are invalid or any child is
- *   disallowed for columns (e.g. a nested `<rc-section>`).
+ *   disallowed for columns — e.g. a nested `<rc-section>` or `<rc-group>`.
  *
  * @example
  * ```ts
@@ -817,9 +865,10 @@ export function createLoopElement(options: LoopElementOptions): RcmlLoop {
 }
 
 /**
- * Build an `<rc-group>` — a column-only pass-through container used for
- * advanced layout composition (keeps columns adjacent without introducing
- * section-level backgrounds).
+ * Build an `<rc-group>` — a non-responsive wrapper for columns placed
+ * directly inside an `<rc-section>`. Columns inside a group stay
+ * side-by-side on mobile instead of stacking with the surrounding
+ * columns. At most one group per section (see {@link createSectionElement}).
  *
  * @param options - `options.children` is the list of `<rc-column>` children.
  * @returns A typed {@link RcmlGroup} node.
@@ -827,10 +876,14 @@ export function createLoopElement(options: LoopElementOptions): RcmlLoop {
  *
  * @example
  * ```ts
- * createGroupElement({
+ * createSectionElement({
  *   children: [
- *     createColumnElement({ children: [...] }),
- *     createColumnElement({ children: [...] }),
+ *     createGroupElement({
+ *       children: [
+ *         createColumnElement({ attrs: { width: '50%' }, children: [...] }),
+ *         createColumnElement({ attrs: { width: '50%' }, children: [...] }),
+ *       ],
+ *     }),
  *   ],
  * })
  * ```
