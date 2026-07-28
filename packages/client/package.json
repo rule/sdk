@@ -1,6 +1,6 @@
 {
   "name": "@rule/client",
-  "version": "0.4.0-beta.9",
+  "version": "0.4.0-beta.10",
   "description": "HTTP API client for the Rule.io email marketing platform.",
   "type": "module",
   "main": "./src/index.js",
@@ -32,7 +32,7 @@
   },
   "dependencies": {
     "@braintree/sanitize-url": "^7.1.2",
-    "@rule/rcml": "0.4.0-beta.9"
+    "@rule/rcml": "0.4.0-beta.10"
   },
   "engines": {
     "node": ">=20"

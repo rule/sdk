@@ -1,3 +1,21 @@
+## 0.4.0-beta.10 (2026-07-28)
+
+### 🩹 Fixes
+
+- **rcml:** align rc-group placement with backend production schema ([b40ef4a](https://github.com/rulecom/rule-io-sdk/commit/b40ef4a))
+- **rcml:** narrow RcmlSection children type to enforce group exclusivity ([ecd4592](https://github.com/rulecom/rule-io-sdk/commit/ecd4592))
+- **rcml:** reduce ajv validation noise via discriminator keyword ([242638b](https://github.com/rulecom/rule-io-sdk/commit/242638b))
+- **rcml:** recurse through rc-group in validateColumnWidths ([c5e86b7](https://github.com/rulecom/rule-io-sdk/commit/c5e86b7))
+- **rcml:** restore full ajv strict mode via explicit type on discriminator schema ([1043f03](https://github.com/rulecom/rule-io-sdk/commit/1043f03))
+- **rcml:** align rc-group placement with backend production schema ([#160](https://github.com/rulecom/rule-io-sdk/pull/160))
+- **rcml:** enforce rc-section child exclusivity in JSON Schema ([#161](https://github.com/rulecom/rule-io-sdk/issues/161))
+- **rcml:** enforce rc-section child exclusivity in JSON Schema ([#162](https://github.com/rulecom/rule-io-sdk/pull/162))
+
+### ❤️ Thank You
+
+- Oleksandr Ryzhyk @webmarket7
+- Serhij Zubrin
+
 ## 0.4.0-beta.9 (2026-07-06)
 
 ### 🚀 Features

@@ -1,3 +1,7 @@
+## 0.4.0-beta.10 (2026-07-28)
+
+This was a version bump only for sdk to align it with other projects, there were no code changes.
+
 ## 0.4.0-beta.9 (2026-07-06)
 
 This was a version bump only for sdk to align it with other projects, there were no code changes.
