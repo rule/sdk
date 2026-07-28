@@ -194,7 +194,17 @@ describe('validateEmailTemplate — JSON AST input', () => {
 
     expect(result.success).toBe(false)
     if (result.success) return
-    expect(result.errors.length).toBeGreaterThan(0)
+    // The section's children fail the top-level oneOf: neither an
+    // all-column array nor a single-group array. Assert that we see
+    // this specific failure mode reported on the section's children
+    // path, so the test can't pass on unrelated validation errors.
+    const sectionChildrenIssue = result.errors.find(
+      (e) =>
+        e.path === '/children/1/children/0/children' &&
+        e.code === EmailTemplateErrorCodes.CHILD_INVALID,
+    )
+
+    expect(sectionChildrenIssue).toBeDefined()
   })
 })
 
