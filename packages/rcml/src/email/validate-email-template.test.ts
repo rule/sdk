@@ -626,6 +626,84 @@ describe('validateEmailTemplate — non-PM content fields', () => {
 
     expect(result.success).toBe(false)
   })
+
+  it('accepts rc-raw with a { type: "html", text } content object', () => {
+    const doc = {
+      tagName: 'rcml',
+      children: [
+        { tagName: 'rc-head', children: [] },
+        {
+          tagName: 'rc-body',
+          children: [
+            {
+              tagName: 'rc-section',
+              children: [
+                {
+                  tagName: 'rc-column',
+                  children: [
+                    {
+                      tagName: 'rc-raw',
+                      content: { type: 'html', text: '<!--[if mso]><table><tr><td><![endif]-->' },
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    } as unknown as RcmlDocument
+
+    expect(safeValidateEmailTemplate(doc).success).toBe(true)
+  })
+
+  it('accepts rc-raw without content', () => {
+    const doc = {
+      tagName: 'rcml',
+      children: [
+        { tagName: 'rc-head', children: [] },
+        {
+          tagName: 'rc-body',
+          children: [
+            {
+              tagName: 'rc-section',
+              children: [{ tagName: 'rc-column', children: [{ tagName: 'rc-raw' }] }],
+            },
+          ],
+        },
+      ],
+    } as unknown as RcmlDocument
+
+    expect(safeValidateEmailTemplate(doc).success).toBe(true)
+  })
+
+  it('rejects rc-raw with a plain string content', () => {
+    const doc = {
+      tagName: 'rcml',
+      children: [
+        { tagName: 'rc-head', children: [] },
+        {
+          tagName: 'rc-body',
+          children: [
+            {
+              tagName: 'rc-section',
+              children: [
+                {
+                  tagName: 'rc-column',
+                  children: [
+                    // @ts-expect-error — intentionally wrong shape
+                    { tagName: 'rc-raw', content: '<p>wrong</p>' },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    } as unknown as RcmlDocument
+
+    expect(safeValidateEmailTemplate(doc).success).toBe(false)
+  })
 })
 
 // ─── Regression: full editor-produced document ───────────────────────────────

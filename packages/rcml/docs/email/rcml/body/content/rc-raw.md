@@ -8,7 +8,7 @@ None.
 
 ## Children
 
-None. Content is a raw HTML string set via the `content` field.
+None. Content is set via the `content` field as `{ type: 'html', text: string }`, where `text` holds the raw HTML string.
 
 ## Parents
 
@@ -19,7 +19,10 @@ None. Content is a raw HTML string set via the `content` field.
 ```json
 {
   "tagName": "rc-raw",
-  "content": "<!--[if mso]><table><tr><td><![endif]-->"
+  "content": {
+    "type": "html",
+    "text": "<!--[if mso]><table><tr><td><![endif]-->"
+  }
 }
 ```
 

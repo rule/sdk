@@ -509,7 +509,7 @@ describe('createAttributesElement / createPreviewElement / createPlainTextElemen
   it('createRawElement with content', () => {
     expect(createRawElement({ content: '<p>raw</p>' })).toEqual({
       tagName: 'rc-raw',
-      content: '<p>raw</p>',
+      content: { type: 'html', text: '<p>raw</p>' },
     })
   })
 
