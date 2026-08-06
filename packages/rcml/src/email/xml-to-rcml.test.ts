@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import type { RcmlBody, RcmlColumn, RcmlRaw, RcmlSection } from './rcml-types.js'
 import { RcmlXmlParseError, safeXmlToRcml, xmlToRcml } from './xml-to-rcml.js'
 
 describe('xmlToRcml (throwing)', () => {
@@ -64,7 +65,8 @@ describe('safeXmlToRcml (non-throwing)', () => {
     expect(result.success).toBe(true)
     if (!result.success) return
 
-    const raw = (result.data as any).children[1].children[0].children[0].children[0]
+    const body = result.data.children[1] as RcmlBody
+    const raw = ((body.children[0] as RcmlSection).children[0] as RcmlColumn).children[0] as RcmlRaw
 
     expect(raw.tagName).toBe('rc-raw')
     expect(raw.content).toEqual({

@@ -50,12 +50,20 @@ const SENTINEL_RE = /\x00RCRAW:([A-Za-z0-9+/=]*)\x00RCRAW/g
 
 /** Encode raw HTML as a sentinel placeholder that XMLBuilder will not encode. */
 function rawHtmlSentinel(html: string): string {
-  return SENTINEL_PREFIX + btoa(unescape(encodeURIComponent(html))) + SENTINEL_SUFFIX
+  const bytes = new TextEncoder().encode(html)
+  const b64 = btoa(String.fromCharCode(...bytes))
+
+  return SENTINEL_PREFIX + b64 + SENTINEL_SUFFIX
 }
 
 /** Replace all sentinels in the builder output with their original raw HTML. */
 function restoreSentinels(xml: string): string {
-  return xml.replace(SENTINEL_RE, (_, b64) => decodeURIComponent(escape(atob(b64))))
+  return xml.replace(SENTINEL_RE, (_, b64: string) => {
+    const binary = atob(b64)
+    const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0))
+
+    return new TextDecoder().decode(bytes)
+  })
 }
 
 /**

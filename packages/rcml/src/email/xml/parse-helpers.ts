@@ -205,7 +205,9 @@ function convertNode(
     return node
   }
 
-  const schema = RCML_SCHEMA_SPEC[tagName as RcmlTagName]
+  // `tagName` is an arbitrary string from XML input — the cast is needed to
+  // index the spec, but the value may not actually be a known RcmlTagName.
+  const schema = (RCML_SCHEMA_SPEC as Record<string, (typeof RCML_SCHEMA_SPEC)[RcmlTagName] | undefined>)[tagName]
 
   if (!schema) {
     issues.push({ path, code: 'UNKNOWN_TAG', message: `Unknown RCML tag: <${tagName}>` })
