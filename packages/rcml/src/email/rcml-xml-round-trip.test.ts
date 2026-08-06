@@ -84,6 +84,34 @@ const ROUND_TRIP_DOCS: ReadonlyArray<{ name: string; doc: RcmlDocument }> = [
     },
   },
   {
+    name: 'rc-raw content round-trip',
+    doc: {
+      tagName: 'rcml',
+      children: [
+        { tagName: 'rc-head', children: [] },
+        {
+          tagName: 'rc-body',
+          children: [
+            {
+              tagName: 'rc-section',
+              children: [
+                {
+                  tagName: 'rc-column',
+                  children: [
+                    {
+                      tagName: 'rc-raw',
+                      content: { type: 'html', text: '<!--[if mso]><table><tr><td><![endif]-->' },
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     name: 'preserves `id` on multiple nodes',
     doc: {
       id: 'root',

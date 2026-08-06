@@ -161,6 +161,14 @@ function convertNode(
     }
   }
 
+  if (tagName === RcmlTagNamesEnum.Raw) {
+    const text = extractText(rawChildren)
+
+    if (text !== '') node['content'] = { type: 'html', text }
+
+    return node
+  }
+
   if (
     tagName === RcmlTagNamesEnum.Text ||
     tagName === RcmlTagNamesEnum.Heading ||

@@ -19,7 +19,10 @@ None. Content is a raw HTML string set via the `content` field.
 ```json
 {
   "tagName": "rc-raw",
-  "content": "<!--[if mso]><table><tr><td><![endif]-->"
+  "content": {
+    "type": "html",
+    "text": "<!--[if mso]><table><tr><td><![endif]-->"
+  }
 }
 ```
 

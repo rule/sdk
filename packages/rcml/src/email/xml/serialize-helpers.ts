@@ -107,6 +107,15 @@ function toPreservedEntry(node: RcmlNodeLike): PreservedEntry {
     return entry
   }
 
+  if (tagName === RcmlTagNamesEnum.Raw) {
+    const rawContent = node.content as { type: 'html'; text: string } | undefined
+    const text = rawContent?.text ?? ''
+
+    entry[tagName] = text === '' ? [] : [{ '#text': text }]
+
+    return entry
+  }
+
   if (Array.isArray(node.children)) {
     entry[tagName] = node.children.map((child) =>
       toPreservedEntry(child as RcmlNodeLike),
