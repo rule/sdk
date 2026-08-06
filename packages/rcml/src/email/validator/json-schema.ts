@@ -171,7 +171,7 @@ function buildSectionChildrenSchema(spec: RcmlNodeSpec): JsonSchema {
 
 /**
  * Non-ProseMirror content schemas for tags that carry a `content` property
- * with a plain string or a structured-but-non-PM object.
+ * with a structured-but-non-PM object.
  *
  * Each entry:
  *  - `schema`   — the JSON Schema that validates the `content` value.
@@ -199,7 +199,15 @@ const TAGS_WITH_SIMPLE_CONTENT: Partial<
     required: true,
   },
   [RcmlTagNamesEnum.Raw]: {
-    schema: { type: 'string' },
+    schema: {
+      type: 'object',
+      properties: {
+        type: { const: 'html' },
+        text: { type: 'string' },
+      },
+      required: ['type', 'text'],
+      additionalProperties: false,
+    },
     required: false,
   },
 }

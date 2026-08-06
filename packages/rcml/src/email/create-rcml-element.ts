@@ -1190,7 +1190,7 @@ export function createPlainTextElement(options: PlainTextElementOptions): RcmlPl
 export function createRawElement(options: RawElementOptions = {}): RcmlRaw {
   const node: RcmlRaw = { tagName: 'rc-raw' }
 
-  if (options.content !== undefined) node.content = options.content
+  if (options.content !== undefined) node.content = { type: 'html', text: options.content }
 
   return node
 }

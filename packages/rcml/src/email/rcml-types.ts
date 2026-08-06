@@ -166,7 +166,7 @@ export interface RcmlPlainText {
 export interface RcmlRaw {
   id?: string
   tagName: 'rc-raw'
-  content?: string
+  content?: { type: 'html'; text: string }
 }
 
 // ─── Body / structural ──────────────────────────────────────────────────────

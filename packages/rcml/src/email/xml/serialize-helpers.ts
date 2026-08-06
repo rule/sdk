@@ -35,6 +35,45 @@ type RcmlNodeLike = {
 type PreservedEntry = Record<string, unknown>
 
 /**
+ * Sentinel marker used to smuggle raw HTML through the XMLBuilder without
+ * entity encoding. The marker prefix/suffix are chosen to be safe base64
+ * alphabet characters that XMLBuilder will not modify.
+ *
+ * Format: `\x00RCRAW:<base64-encoded-html>\x00RCRAW`
+ *
+ * The null-byte delimiters are not valid XML text, so they survive the builder
+ * unchanged and can be reliably matched for substitution afterwards.
+ */
+const SENTINEL_PREFIX = '\x00RCRAW:'
+const SENTINEL_SUFFIX = '\x00RCRAW'
+const SENTINEL_RE = /\x00RCRAW:([A-Za-z0-9+/=]*)\x00RCRAW/g
+
+// `String.fromCharCode(...bytes)` blows the call stack for large inputs.
+const BYTE_TO_CHAR_CHUNK = 0x8000
+
+/** Encode raw HTML as a sentinel placeholder that XMLBuilder will not encode. */
+function rawHtmlSentinel(html: string): string {
+  const bytes = new TextEncoder().encode(html)
+  let binary = ''
+
+  for (let i = 0; i < bytes.length; i += BYTE_TO_CHAR_CHUNK) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + BYTE_TO_CHAR_CHUNK))
+  }
+
+  return SENTINEL_PREFIX + btoa(binary) + SENTINEL_SUFFIX
+}
+
+/** Replace all sentinels in the builder output with their original raw HTML. */
+function restoreSentinels(xml: string): string {
+  return xml.replace(SENTINEL_RE, (_, b64: string) => {
+    const binary = atob(b64)
+    const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0))
+
+    return new TextDecoder().decode(bytes)
+  })
+}
+
+/**
  * Serialize an RCML JSON AST to an XML string.
  *
  * Builds the `preserveOrder: true` intermediate shape expected by
@@ -60,7 +99,8 @@ export function serializeRcmlToXml(doc: RcmlDocument, options: RcmlToXmlOptions)
   })
 
   const entry = toPreservedEntry(doc as unknown as RcmlNodeLike)
-  const xml = builder.build([entry]) as string
+  const built = builder.build([entry]) as string
+  const xml = restoreSentinels(built)
 
   // fast-xml-parser's pretty output brackets the document with stray
   // newlines — strip them so the result is stable across round-trips.
@@ -103,6 +143,17 @@ function toPreservedEntry(node: RcmlNodeLike): PreservedEntry {
         : jsonToEmailRfm(content ?? emptyDoc())
 
     entry[tagName] = rfm === '' ? [] : [{ '#text': rfm }]
+
+    return entry
+  }
+
+  if (tagName === RcmlTagNamesEnum.Raw) {
+    const rawContent = node.content as { type: 'html'; text: string } | undefined
+    const html = rawContent?.text ?? ''
+
+    // Use a sentinel placeholder so the XMLBuilder does not entity-encode the
+    // HTML. restoreSentinels() in serializeRcmlToXml() substitutes it back.
+    entry[tagName] = html === '' ? [] : [{ '#text': rawHtmlSentinel(html) }]
 
     return entry
   }
