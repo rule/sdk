@@ -48,12 +48,16 @@ const SENTINEL_PREFIX = '\x00RCRAW:'
 const SENTINEL_SUFFIX = '\x00RCRAW'
 const SENTINEL_RE = /\x00RCRAW:([A-Za-z0-9+/=]*)\x00RCRAW/g
 
+// Cached codec instances — avoids allocating new objects on every serialization call.
+const UTF8_ENCODER = new TextEncoder()
+const UTF8_DECODER = new TextDecoder()
+
 // `String.fromCharCode(...bytes)` blows the call stack for large inputs.
 const BYTE_TO_CHAR_CHUNK = 0x8000
 
 /** Encode raw HTML as a sentinel placeholder that XMLBuilder will not encode. */
 function rawHtmlSentinel(html: string): string {
-  const bytes = new TextEncoder().encode(html)
+  const bytes = UTF8_ENCODER.encode(html)
   let binary = ''
 
   for (let i = 0; i < bytes.length; i += BYTE_TO_CHAR_CHUNK) {
@@ -66,10 +70,22 @@ function rawHtmlSentinel(html: string): string {
 /** Replace all sentinels in the builder output with their original raw HTML. */
 function restoreSentinels(xml: string): string {
   return xml.replace(SENTINEL_RE, (_, b64: string) => {
-    const binary = atob(b64)
-    const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0))
+    let binary: string
 
-    return new TextDecoder().decode(bytes)
+    try {
+      binary = atob(b64)
+    } catch {
+      // Malformed sentinel — leave it as-is rather than throwing during serialization.
+      return SENTINEL_PREFIX + b64 + SENTINEL_SUFFIX
+    }
+
+    const bytes = new Uint8Array(binary.length)
+
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i)
+    }
+
+    return UTF8_DECODER.decode(bytes)
   })
 }
 
