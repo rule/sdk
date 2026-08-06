@@ -16,7 +16,9 @@ import { BaseResource } from '../../core/base-resource.js';
 import { buildQueryString } from '../../core/query-string.js';
 import type {
   AutomailSetting,
-  AutomailSettingWire,
+  AutomailSettingReadWire,
+  AutomailSettingRead,
+  AutomailSettingWriteWire,
   CreateEmailAutomationMessagePayload,
   CreateEmailCampaignMessagePayload,
   CreateMessageBody,
@@ -391,6 +393,9 @@ function mapMessageWireToEntity(wire: MessageWire): Message {
     dispatcher: wire.dispatcher,
     createdAt: wire.created_at,
     updatedAt: wire.updated_at,
+    automailSetting: wire.automail_setting
+      ? mapAutomailSettingFromWire(wire.automail_setting)
+      : undefined,
   };
 }
 
@@ -403,11 +408,19 @@ function mapSender(
   return { name: fromName, email: fromEmail };
 }
 
-function mapAutomailSetting(s: AutomailSetting): AutomailSettingWire {
+function mapAutomailSetting(s: AutomailSetting): AutomailSettingWriteWire {
   return {
     active: s.active,
     delay_in_seconds: parseInt(s.delayInSeconds, 10),
   };
+}
+
+function mapAutomailSettingFromWire(w: AutomailSettingReadWire): AutomailSettingRead {
+  if (w.type === 'delay') {
+    return { type: 'delay', active: w.active, delayInSeconds: String(w.delay) };
+  }
+
+  return { type: 'custom', active: w.active };
 }
 
 function mapCampaignPayloadToBody(
