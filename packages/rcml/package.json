@@ -1,6 +1,6 @@
 {
   "name": "@rule/rcml",
-  "version": "0.4.0-beta.10",
+  "version": "0.4.0-beta.11",
   "description": "RCML email template builders and type definitions for the Rule.io SDK.",
   "type": "module",
   "main": "./src/index.js",

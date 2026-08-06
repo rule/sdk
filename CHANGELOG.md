@@ -1,3 +1,27 @@
+## 0.4.0-beta.11 (2026-08-06)
+
+### 🚀 Features
+
+- **rcml:** rc-raw HTML support — align content shape with backend schema ([#164](https://github.com/rulecom/rule-io-sdk/pull/164))
+
+### 🩹 Fixes
+
+- **integration:** replace any casts with proper RCML types in rc-raw test ([d0c9aa6](https://github.com/rulecom/rule-io-sdk/commit/d0c9aa6))
+- **rcml:** align rc-raw content shape with backend schema ([f931aea](https://github.com/rulecom/rule-io-sdk/commit/f931aea))
+- **rcml:** preserve inner HTML tags in rc-raw during XML parse/serialize ([1e928cb](https://github.com/rulecom/rule-io-sdk/commit/1e928cb))
+- **rcml:** resolve CI lint errors in rc-raw XML helpers and test ([39b1053](https://github.com/rulecom/rule-io-sdk/commit/39b1053))
+- **rcml:** chunk String.fromCharCode in rawHtmlSentinel to avoid call-stack overflow ([ba5e6eb](https://github.com/rulecom/rule-io-sdk/commit/ba5e6eb))
+- **rcml:** align rc-raw content shape with backend schema + fix XML HTML parsing ([#163](https://github.com/rulecom/rule-io-sdk/pull/163))
+
+### 🔥 Performance
+
+- **rcml:** cache TextEncoder/TextDecoder, use indexed loop in restoreSentinels, guard atob ([19e873d](https://github.com/rulecom/rule-io-sdk/commit/19e873d))
+
+### ❤️ Thank You
+
+- Claude
+- Oleksandr Ryzhyk @webmarket7
+
 ## 0.4.0-beta.10 (2026-07-28)
 
 ### 🩹 Fixes

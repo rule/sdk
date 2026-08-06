@@ -1,3 +1,21 @@
+## 0.4.0-beta.11 (2026-08-06)
+
+### 🩹 Fixes
+
+- **rcml:** chunk String.fromCharCode in rawHtmlSentinel to avoid call-stack overflow ([ba5e6eb](https://github.com/rulecom/rule-io-sdk/commit/ba5e6eb))
+- **rcml:** resolve CI lint errors in rc-raw XML helpers and test ([39b1053](https://github.com/rulecom/rule-io-sdk/commit/39b1053))
+- **rcml:** preserve inner HTML tags in rc-raw during XML parse/serialize ([1e928cb](https://github.com/rulecom/rule-io-sdk/commit/1e928cb))
+- **rcml:** align rc-raw content shape with backend schema ([f931aea](https://github.com/rulecom/rule-io-sdk/commit/f931aea))
+
+### 🔥 Performance
+
+- **rcml:** cache TextEncoder/TextDecoder, use indexed loop in restoreSentinels, guard atob ([19e873d](https://github.com/rulecom/rule-io-sdk/commit/19e873d))
+
+### ❤️ Thank You
+
+- Claude
+- Oleksandr Ryzhyk
+
 ## 0.4.0-beta.10 (2026-07-28)
 
 ### 🩹 Fixes
