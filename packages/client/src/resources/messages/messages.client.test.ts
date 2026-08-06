@@ -364,5 +364,24 @@ describe('MessagesClient', () => {
       expect(url).toContain('id=77');
       expect(url).toContain('dispatcher_type=automail');
     });
+
+    it('maps automail_setting on list items through the same mapper as get()', async () => {
+      const wire = {
+        ...WIRE_MESSAGE,
+        dispatcher: { id: 77, type: -2 },
+        automail_setting: { type: 'delay', active: true, delay: 3600 },
+      };
+
+      fetchMock.mockResolvedValueOnce(createMockResponse({ data: [wire] }));
+      const client = createClient(fetchMock);
+
+      const result = await client.listAutomationMessages(77);
+
+      expect(result[0]!.automailSetting).toEqual({
+        type: 'delay',
+        active: true,
+        delayInSeconds: '3600',
+      });
+    });
   });
 });
