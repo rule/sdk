@@ -8,7 +8,7 @@ None.
 
 ## Children
 
-None. Content is a raw HTML string set via the `content` field.
+None. Content is set via the `content` field as `{ type: 'html', text: string }`, where `text` holds the raw HTML string.
 
 ## Parents
 
