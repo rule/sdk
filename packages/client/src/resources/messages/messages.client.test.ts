@@ -246,6 +246,19 @@ describe('MessagesClient', () => {
         expect(result!.automailSetting).toBeUndefined();
         expect(result).not.toHaveProperty('automail_setting');
       });
+
+      it('throws on an unknown automail_setting.type (contract-drift guard)', async () => {
+        const wire = {
+          ...WIRE_MESSAGE,
+          dispatcher: { id: 77, type: -2 },
+          automail_setting: { type: 'trigger-event', active: true },
+        };
+
+        fetchMock.mockResolvedValueOnce(createMockResponse({ data: wire }));
+        const client = createClient(fetchMock);
+
+        await expect(client.get(10)).rejects.toThrow(/Unexpected automail_setting\.type/);
+      });
     });
   });
 

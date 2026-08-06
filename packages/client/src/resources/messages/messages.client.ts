@@ -420,7 +420,13 @@ function mapAutomailSettingFromWire(w: AutomailSettingReadWire): AutomailSetting
     return { type: 'delay', active: w.active, delayInSeconds: String(w.delay) };
   }
 
-  return { type: 'custom', active: w.active };
+  if (w.type === 'custom') {
+    return { type: 'custom', active: w.active };
+  }
+
+  throw new Error(
+    `Unexpected automail_setting.type on wire: ${JSON.stringify((w as { type: unknown }).type)}`
+  );
 }
 
 function mapCampaignPayloadToBody(
