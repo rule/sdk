@@ -48,12 +48,19 @@ const SENTINEL_PREFIX = '\x00RCRAW:'
 const SENTINEL_SUFFIX = '\x00RCRAW'
 const SENTINEL_RE = /\x00RCRAW:([A-Za-z0-9+/=]*)\x00RCRAW/g
 
+// `String.fromCharCode(...bytes)` blows the call stack for large inputs.
+const BYTE_TO_CHAR_CHUNK = 0x8000
+
 /** Encode raw HTML as a sentinel placeholder that XMLBuilder will not encode. */
 function rawHtmlSentinel(html: string): string {
   const bytes = new TextEncoder().encode(html)
-  const b64 = btoa(String.fromCharCode(...bytes))
+  let binary = ''
 
-  return SENTINEL_PREFIX + b64 + SENTINEL_SUFFIX
+  for (let i = 0; i < bytes.length; i += BYTE_TO_CHAR_CHUNK) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + BYTE_TO_CHAR_CHUNK))
+  }
+
+  return SENTINEL_PREFIX + btoa(binary) + SENTINEL_SUFFIX
 }
 
 /** Replace all sentinels in the builder output with their original raw HTML. */
