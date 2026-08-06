@@ -1,4 +1,4 @@
-import { xmlToRcml } from '@rule/rcml';
+import { xmlToRcml, type RcmlBody, type RcmlColumn, type RcmlRaw, type RcmlSection } from '@rule/rcml';
 import { createTestClient } from '../helpers/client.js';
 import { testName } from '../helpers/test-data.js';
 
@@ -33,15 +33,14 @@ describe('EmailTemplatesClient — rc-raw HTML round-trip', () => {
 
   it('parses rc-raw XML with HTML tags into the { type, text } content shape', () => {
     const doc = xmlToRcml(RC_RAW_XML);
-    const body = (doc as any).children[1];
-    const rawNode = body.children[0].children[0].children[0];
+    const body = doc.children[1] as RcmlBody;
+    const rawNode = (body.children[0] as RcmlSection).children[0] as RcmlColumn;
+    const raw = rawNode.children[0] as RcmlRaw;
 
-    expect(rawNode.tagName).toBe('rc-raw');
-    expect(rawNode.content).toEqual(
-      expect.objectContaining({ type: 'html' })
-    );
-    expect(rawNode.content.text).toContain('<div');
-    expect(rawNode.content.text).toContain('HTML block');
+    expect(raw.tagName).toBe('rc-raw');
+    expect(raw.content).toEqual(expect.objectContaining({ type: 'html' }));
+    expect(raw.content?.text).toContain('<div');
+    expect(raw.content?.text).toContain('HTML block');
   });
 
   it('creates an email template with rc-raw HTML and fetches it back intact', async () => {
@@ -60,14 +59,14 @@ describe('EmailTemplatesClient — rc-raw HTML round-trip', () => {
 
     expect(fetched).not.toBeNull();
 
-    const body = (fetched!.content as any).children[1];
-    const rawNode = body.children[0].children[0].children[0];
+    const fetchedDoc = fetched!.content;
+    const body = fetchedDoc.children[1] as RcmlBody;
+    const rawNode = (body.children[0] as RcmlSection).children[0] as RcmlColumn;
+    const raw = rawNode.children[0] as RcmlRaw;
 
-    expect(rawNode.tagName).toBe('rc-raw');
-    expect(rawNode.content).toEqual(
-      expect.objectContaining({ type: 'html' })
-    );
-    expect(rawNode.content.text).toContain('<div');
-    expect(rawNode.content.text).toContain('HTML block');
+    expect(raw.tagName).toBe('rc-raw');
+    expect(raw.content).toEqual(expect.objectContaining({ type: 'html' }));
+    expect(raw.content?.text).toContain('<div');
+    expect(raw.content?.text).toContain('HTML block');
   });
 });
