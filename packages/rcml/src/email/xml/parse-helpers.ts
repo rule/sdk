@@ -34,6 +34,9 @@ const parser = new XMLParser({
   trimValues: false,
   preserveOrder: true,
   processEntities: true,
+  // Treat <rc-raw> content as an opaque text node so inner HTML tags are not
+  // parsed as XML — they are preserved verbatim as the raw #text string.
+  stopNodes: ['*.rc-raw'],
 })
 
 /**

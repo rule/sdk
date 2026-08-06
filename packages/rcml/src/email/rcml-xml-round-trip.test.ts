@@ -84,7 +84,7 @@ const ROUND_TRIP_DOCS: ReadonlyArray<{ name: string; doc: RcmlDocument }> = [
     },
   },
   {
-    name: 'rc-raw content round-trip',
+    name: 'rc-raw with MSO conditional comment round-trip',
     doc: {
       tagName: 'rcml',
       children: [
@@ -101,6 +101,37 @@ const ROUND_TRIP_DOCS: ReadonlyArray<{ name: string; doc: RcmlDocument }> = [
                     {
                       tagName: 'rc-raw',
                       content: { type: 'html', text: '<!--[if mso]><table><tr><td><![endif]-->' },
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    name: 'rc-raw with HTML tags round-trip',
+    doc: {
+      tagName: 'rcml',
+      children: [
+        { tagName: 'rc-head', children: [] },
+        {
+          tagName: 'rc-body',
+          children: [
+            {
+              tagName: 'rc-section',
+              children: [
+                {
+                  tagName: 'rc-column',
+                  children: [
+                    {
+                      tagName: 'rc-raw',
+                      content: {
+                        type: 'html',
+                        text: '<div style="padding:40px 10px"><span>HTML block</span></div>',
+                      },
                     },
                   ],
                 },

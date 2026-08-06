@@ -35,6 +35,30 @@ type RcmlNodeLike = {
 type PreservedEntry = Record<string, unknown>
 
 /**
+ * Sentinel marker used to smuggle raw HTML through the XMLBuilder without
+ * entity encoding. The marker prefix/suffix are chosen to be safe base64
+ * alphabet characters that XMLBuilder will not modify.
+ *
+ * Format: `\x00RCRAW:<base64-encoded-html>\x00RCRAW`
+ *
+ * The null-byte delimiters are not valid XML text, so they survive the builder
+ * unchanged and can be reliably matched for substitution afterwards.
+ */
+const SENTINEL_PREFIX = '\x00RCRAW:'
+const SENTINEL_SUFFIX = '\x00RCRAW'
+const SENTINEL_RE = /\x00RCRAW:([A-Za-z0-9+/=]*)\x00RCRAW/g
+
+/** Encode raw HTML as a sentinel placeholder that XMLBuilder will not encode. */
+function rawHtmlSentinel(html: string): string {
+  return SENTINEL_PREFIX + btoa(unescape(encodeURIComponent(html))) + SENTINEL_SUFFIX
+}
+
+/** Replace all sentinels in the builder output with their original raw HTML. */
+function restoreSentinels(xml: string): string {
+  return xml.replace(SENTINEL_RE, (_, b64) => decodeURIComponent(escape(atob(b64))))
+}
+
+/**
  * Serialize an RCML JSON AST to an XML string.
  *
  * Builds the `preserveOrder: true` intermediate shape expected by
@@ -60,7 +84,8 @@ export function serializeRcmlToXml(doc: RcmlDocument, options: RcmlToXmlOptions)
   })
 
   const entry = toPreservedEntry(doc as unknown as RcmlNodeLike)
-  const xml = builder.build([entry]) as string
+  const built = builder.build([entry]) as string
+  const xml = restoreSentinels(built)
 
   // fast-xml-parser's pretty output brackets the document with stray
   // newlines — strip them so the result is stable across round-trips.
@@ -109,9 +134,11 @@ function toPreservedEntry(node: RcmlNodeLike): PreservedEntry {
 
   if (tagName === RcmlTagNamesEnum.Raw) {
     const rawContent = node.content as { type: 'html'; text: string } | undefined
-    const text = rawContent?.text ?? ''
+    const html = rawContent?.text ?? ''
 
-    entry[tagName] = text === '' ? [] : [{ '#text': text }]
+    // Use a sentinel placeholder so the XMLBuilder does not entity-encode the
+    // HTML. restoreSentinels() in serializeRcmlToXml() substitutes it back.
+    entry[tagName] = html === '' ? [] : [{ '#text': rawHtmlSentinel(html) }]
 
     return entry
   }

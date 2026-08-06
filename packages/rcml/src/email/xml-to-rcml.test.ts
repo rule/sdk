@@ -54,6 +54,25 @@ describe('safeXmlToRcml (non-throwing)', () => {
     expect(['XML_PARSE_ERROR', 'ROOT_INVALID']).toContain(result.errors[0]?.code)
   })
 
+  it('preserves inner HTML tags inside rc-raw as a { type, text } content object', () => {
+    const xml =
+      '<rcml><rc-head></rc-head><rc-body><rc-section><rc-column>' +
+      '<rc-raw><div style="padding:40px"><span>hello</span></div></rc-raw>' +
+      '</rc-column></rc-section></rc-body></rcml>'
+    const result = safeXmlToRcml(xml)
+
+    expect(result.success).toBe(true)
+    if (!result.success) return
+
+    const raw = (result.data as any).children[1].children[0].children[0].children[0]
+
+    expect(raw.tagName).toBe('rc-raw')
+    expect(raw.content).toEqual({
+      type: 'html',
+      text: '<div style="padding:40px"><span>hello</span></div>',
+    })
+  })
+
   it('surfaces EMAIL_RFM_PARSE_ERROR when a text element contains invalid RFM', () => {
     // Unclosed directive inside rc-text — the RFM parser rejects it.
     const xml = '<rcml><rc-head></rc-head><rc-body><rc-section><rc-column><rc-text>:font[hi</rc-text></rc-column></rc-section></rc-body></rcml>'
