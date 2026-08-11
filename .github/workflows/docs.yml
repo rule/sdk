@@ -5,7 +5,7 @@
 #   2. The first run will create the gh-pages branch automatically.
 #
 # Deployment layout on gh-pages:
-#   /index.html      → redirect to /rule-io-sdk/latest/
+#   /index.html      → redirect to /sdk/latest/
 #   /latest/         → current docs (updated on every push to main)
 #   /vX.Y/           → immutable version snapshots (added in Phase 9)
 
@@ -46,7 +46,7 @@ jobs:
       - name: Build VitePress site
         run: npx nx run docs:build
         env:
-          DOCS_BASE: /rule-io-sdk/latest/
+          DOCS_BASE: /sdk/latest/
 
       - name: Stage deployment (redirect at root + docs at latest/)
         run: |
