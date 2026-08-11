@@ -1,0 +1,1 @@
+import{_ as a,H as r,f as t,i}from"./chunks/framework.BN6oFVt7.js";const u=JSON.parse('{"title":"Rule.io SDK","description":"","frontmatter":{},"headers":[],"relativePath":"api/index.md","filePath":"api/index.md"}'),s={name:"api/index.md"};function l(o,e,n,c,d,_){return r(),t("div",null,[...e[0]||(e[0]=[i("",5)])])}const m=a(s,[["render",l]]);export{u as __pageData,m as default};
