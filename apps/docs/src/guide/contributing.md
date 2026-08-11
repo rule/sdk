@@ -17,7 +17,7 @@ Edit Markdown files directly under `apps/docs/src/guide/`. Run the dev server to
 npm run docs:dev
 ```
 
-Then open `http://localhost:5173/rule-io-sdk/` (or `DOCS_BASE=/ npm run docs:dev` for `http://localhost:5173/`).
+Then open `http://localhost:5173/sdk/` (or `DOCS_BASE=/ npm run docs:dev` for `http://localhost:5173/`).
 
 ## Editing package docs
 
