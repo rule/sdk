@@ -1,3 +1,7 @@
+## 0.4.0-beta.12 (2026-08-11)
+
+This was a version bump only for client to align it with other projects, there were no code changes.
+
 ## 0.4.0-beta.11 (2026-08-06)
 
 This was a version bump only for client to align it with other projects, there were no code changes.

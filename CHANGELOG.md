@@ -1,3 +1,13 @@
+## 0.4.0-beta.12 (2026-08-11)
+
+### 🩹 Fixes
+
+- **docs:** update GitHub Pages base URL after repo rename to sdk ([#166](https://github.com/rule/sdk/pull/166))
+
+### ❤️ Thank You
+
+- Oleksandr Ryzhyk @webmarket7
+
 ## 0.4.0-beta.11 (2026-08-06)
 
 ### 🚀 Features
