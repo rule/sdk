@@ -28,7 +28,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/rulecom/rule-io-sdk.git",
+    "url": "https://github.com/rule/sdk.git",
     "directory": "packages/sdk"
   },
   "dependencies": {

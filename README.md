@@ -1,4 +1,4 @@
-# rule-io-sdk
+# sdk
 
 Nx monorepo for the Rule.io TypeScript SDK. Detailed usage docs live in [`packages/sdk`](packages/sdk/README.md) and the per-package READMEs; this README covers package selection, contributor workflow, and the release process.
 
@@ -204,7 +204,7 @@ The SDK documentation site lives in `apps/docs/` and is built with [VitePress](h
 
 ```bash
 npm run docs:generate   # generate API reference + sync package docs
-npm run docs:dev        # start dev server → http://localhost:5173/rule-io-sdk/
+npm run docs:dev        # start dev server → http://localhost:5173/sdk/
 ```
 
 To preview the production build:

@@ -9,7 +9,7 @@ export default defineConfig({
   title: 'Rule.io SDK',
   description: 'Documentation for @rule/client, @rule/rcml, and @rule/sdk',
   srcDir: 'src',
-  base: (process.env['DOCS_BASE'] ?? '/rule-io-sdk/') as `/${string}/`,
+  base: (process.env['DOCS_BASE'] ?? '/sdk/') as `/${string}/`,
 
   markdown: {
     anchor: {

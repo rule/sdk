@@ -32,7 +32,7 @@ Get your API key from [Rule.io Settings → API](https://app.rule.io/v5/#/app/se
 
 ## Documentation
 
-Full guides and API reference: see the [published documentation site](https://rulecom.github.io/rule-io-sdk/).
+Full guides and API reference: see the [published documentation site](https://rule.github.io/sdk/).
 
 ## License
 
