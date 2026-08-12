@@ -1,3 +1,15 @@
+## 0.4.0-beta.13 (2026-08-12)
+
+### 🩹 Fixes
+
+- **client:** throw on unknown automail_setting.type instead of silent fallback ([#165](https://github.com/rule/sdk/issues/165))
+- **client:** expose read-path automail_setting as a discriminated union ([325310af](https://github.com/rule/sdk/commit/325310af))
+
+### ❤️ Thank You
+
+- Claude
+- Serhij Zubrin
+
 ## 0.4.0-beta.12 (2026-08-11)
 
 This was a version bump only for client to align it with other projects, there were no code changes.
