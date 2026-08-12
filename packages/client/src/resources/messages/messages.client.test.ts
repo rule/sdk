@@ -178,6 +178,88 @@ describe('MessagesClient', () => {
 
       await expect(client.get(5)).rejects.toBeInstanceOf(RuleApiError);
     });
+
+    describe('automail_setting mapping', () => {
+      it('maps type=delay with non-zero delay to entity discriminant with string delayInSeconds', async () => {
+        const wire = {
+          ...WIRE_MESSAGE,
+          dispatcher: { id: 77, type: -2 },
+          automail_setting: { type: 'delay', active: true, delay: 259200 },
+        };
+
+        fetchMock.mockResolvedValueOnce(createMockResponse({ data: wire }));
+        const client = createClient(fetchMock);
+
+        const result = await client.get(10);
+
+        expect(result!.automailSetting).toEqual({
+          type: 'delay',
+          active: true,
+          delayInSeconds: '259200',
+        });
+        expect(typeof (result!.automailSetting as { delayInSeconds: string }).delayInSeconds).toBe(
+          'string'
+        );
+      });
+
+      it('maps type=delay with delay=0 to delayInSeconds="0" (immediate delivery)', async () => {
+        const wire = {
+          ...WIRE_MESSAGE,
+          dispatcher: { id: 77, type: -2 },
+          automail_setting: { type: 'delay', active: true, delay: 0 },
+        };
+
+        fetchMock.mockResolvedValueOnce(createMockResponse({ data: wire }));
+        const client = createClient(fetchMock);
+
+        const result = await client.get(10);
+
+        expect(result!.automailSetting).toEqual({
+          type: 'delay',
+          active: true,
+          delayInSeconds: '0',
+        });
+      });
+
+      it('maps type=custom without delay to entity discriminant without delayInSeconds', async () => {
+        const wire = {
+          ...WIRE_MESSAGE,
+          dispatcher: { id: 77, type: -2 },
+          automail_setting: { type: 'custom', active: false },
+        };
+
+        fetchMock.mockResolvedValueOnce(createMockResponse({ data: wire }));
+        const client = createClient(fetchMock);
+
+        const result = await client.get(10);
+
+        expect(result!.automailSetting).toEqual({ type: 'custom', active: false });
+        expect(result!.automailSetting).not.toHaveProperty('delayInSeconds');
+      });
+
+      it('leaves automailSetting undefined for campaign messages (no automail_setting on wire)', async () => {
+        fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_MESSAGE }));
+        const client = createClient(fetchMock);
+
+        const result = await client.get(10);
+
+        expect(result!.automailSetting).toBeUndefined();
+        expect(result).not.toHaveProperty('automail_setting');
+      });
+
+      it('throws on an unknown automail_setting.type (contract-drift guard)', async () => {
+        const wire = {
+          ...WIRE_MESSAGE,
+          dispatcher: { id: 77, type: -2 },
+          automail_setting: { type: 'trigger-event', active: true },
+        };
+
+        fetchMock.mockResolvedValueOnce(createMockResponse({ data: wire }));
+        const client = createClient(fetchMock);
+
+        await expect(client.get(10)).rejects.toThrow(/Unexpected automail_setting\.type/);
+      });
+    });
   });
 
   describe('updateEmailCampaignMessage', () => {
@@ -294,6 +376,25 @@ describe('MessagesClient', () => {
 
       expect(url).toContain('id=77');
       expect(url).toContain('dispatcher_type=automail');
+    });
+
+    it('maps automail_setting on list items through the same mapper as get()', async () => {
+      const wire = {
+        ...WIRE_MESSAGE,
+        dispatcher: { id: 77, type: -2 },
+        automail_setting: { type: 'delay', active: true, delay: 3600 },
+      };
+
+      fetchMock.mockResolvedValueOnce(createMockResponse({ data: [wire] }));
+      const client = createClient(fetchMock);
+
+      const result = await client.listAutomationMessages(77);
+
+      expect(result[0]!.automailSetting).toEqual({
+        type: 'delay',
+        active: true,
+        delayInSeconds: '3600',
+      });
     });
   });
 });

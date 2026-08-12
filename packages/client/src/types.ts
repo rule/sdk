@@ -84,6 +84,7 @@ export type {
 // ── Messages ─────────────────────────────────────────────────────────────────
 export type {
   AutomailSetting,
+  AutomailSettingRead,
   CreateEmailAutomationMessagePayload,
   CreateEmailCampaignMessagePayload,
   CreateSmsAutomationMessagePayload,

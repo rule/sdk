@@ -100,6 +100,26 @@ await client.messages.updateSmsAutomationMessage(messageId, {
 
 *→ [`UpdateSmsAutomationMessagePayload`](/api/client/src/interfaces/UpdateSmsAutomationMessagePayload)*
 
+## Reading the automail setting
+
+`get()` and `listAutomationMessages()` return `automailSetting` on automation messages so you can inspect the current delivery state. The field is a discriminated union on `type` — trigger-relative delays and segment-driven delivery are modelled separately:
+
+```typescript
+const message = await client.messages.get(messageId);
+
+if (message?.automailSetting?.type === 'delay') {
+  // Trigger-relative delivery. delayInSeconds is a string; '0' = immediate.
+  console.log('Delay:', message.automailSetting.delayInSeconds, 'seconds');
+} else if (message?.automailSetting?.type === 'custom') {
+  // Segment-driven delivery configured in the Rule.io UI. No delay field.
+  console.log('Segment-driven delivery, active:', message.automailSetting.active);
+}
+```
+
+Campaign messages omit `automailSetting`.
+
+*→ [`AutomailSettingRead`](/api/client/src/type-aliases/AutomailSettingRead)*
+
 ## Listing messages
 
 Retrieve all messages for a campaign or automation. A dispatcher typically has one message, but the API supports multiple (e.g. for A/B variants).

@@ -83,6 +83,14 @@ export interface Message {
   createdAt?: string;
   /** ISO 8601 timestamp of when the message was last updated. */
   updatedAt?: string;
+  /**
+   * Automail delivery state, present only on automation messages.
+   *
+   * A discriminated union on `type`: `"delay"` carries a `delayInSeconds`
+   * value; `"custom"` indicates segment-driven delivery configured in the
+   * Rule.io UI and does not carry a delay. Campaign messages omit this field.
+   */
+  automailSetting?: AutomailSettingRead;
 }
 
 /**
@@ -144,9 +152,13 @@ export type SmsAutomationMessage = Message;
 // ── Supporting types ──────────────────────────────────────────────────────────
 
 /**
- * Automail delivery settings attached to an automation message.
+ * Automail delivery settings for the write path (POST / PUT).
  *
- * Controls when the automation fires relative to its trigger event.
+ * Only trigger-relative delays can be set through the SDK: pass
+ * `delayInSeconds` as a string of seconds since the trigger event
+ * (`"0"` for immediate delivery). Date-based (UI-configured) delays cannot
+ * be created or modified through the SDK — configure them in the Rule.io
+ * UI.
  */
 export interface AutomailSetting {
   /**
@@ -166,6 +178,44 @@ export interface AutomailSetting {
    */
   delayInSeconds: string;
 }
+
+/**
+ * Automail delivery state as returned by the Rule.io v3 API on automation
+ * messages.
+ *
+ * Discriminated union on `type`. `AutomailSetting` (the write payload) is
+ * the flat shape the API accepts on create/update; on read, the API
+ * projects delivery state into this union.
+ *
+ * - `"delay"` — trigger-relative delay in seconds. Carries `delayInSeconds`
+ *   (`"0"` for immediate delivery).
+ * - `"custom"` — date-based delivery configured in the Rule.io UI (e.g.
+ *   "send N days before/after a subscriber's date field"). The API does not
+ *   expose the underlying rules (which custom field, offset, direction,
+ *   timezone, repeat behaviour), so the SDK can only report *that* a custom
+ *   delay is set and whether the message is `active`. To view or modify a
+ *   custom delay, use the Rule.io UI.
+ */
+export type AutomailSettingRead =
+  | {
+      /** Trigger-relative delay. */
+      type: 'delay';
+      /** Whether this automation message is active. */
+      active: boolean;
+      /**
+       * Delay between the trigger event and the send, expressed in seconds.
+       *
+       * `"0"` means the message is sent as soon as the trigger fires. Returned
+       * as a string to match the SDK's write-side `AutomailSetting` shape.
+       */
+      delayInSeconds: string;
+    }
+  | {
+      /** Segment-driven delivery configured in the Rule.io UI. */
+      type: 'custom';
+      /** Whether this automation message is active. */
+      active: boolean;
+    };
 
 // ── Create payloads ───────────────────────────────────────────────────────────
 
@@ -424,19 +474,36 @@ export interface MessageWire {
   dispatcher?: { id: number; type: number };
   created_at?: string;
   updated_at?: string;
+  /** Present only on automation messages; omitted for campaigns. */
+  automail_setting?: AutomailSettingReadWire;
 }
 
 /**
- * Wire-format automail setting.
+ * Wire-format automail setting accepted by create/update request bodies.
  *
  * `delay_in_seconds` is an integer on the wire (the SDK public API uses a
- * string; the mapper converts with `parseInt`).
+ * string; the mapper converts with `parseInt`). This is the flat shape the
+ * v3 API expects on write; on read the API returns a discriminated union,
+ * modelled separately by `AutomailSettingReadWire`.
  * @internal
  */
-export interface AutomailSettingWire {
+export interface AutomailSettingWriteWire {
   active: boolean;
   delay_in_seconds: number;
 }
+
+/**
+ * Wire-format automail setting returned by GET `/editor/message/:id`.
+ *
+ * Discriminated union on `type`. For `"delay"` the response carries an
+ * integer `delay` (seconds since the trigger, `0` for immediate delivery).
+ * For `"custom"` the delay field is absent because delivery is driven by a
+ * segment configured in the Rule.io UI.
+ * @internal
+ */
+export type AutomailSettingReadWire =
+  | { type: 'delay'; active: boolean; delay: number }
+  | { type: 'custom'; active: boolean };
 
 /**
  * Wire body for POST `/editor/message`.
@@ -452,7 +519,7 @@ export interface CreateMessageBody {
   sender?: MessageSenderWire;
   utm_campaign?: string | null;
   utm_term?: string | null;
-  automail_setting?: AutomailSettingWire;
+  automail_setting?: AutomailSettingWriteWire;
 }
 
 /**
@@ -465,7 +532,7 @@ export interface UpdateMessageBody {
   sender?: MessageSenderWire;
   utm_campaign?: string | null;
   utm_term?: string | null;
-  automail_setting?: AutomailSettingWire;
+  automail_setting?: AutomailSettingWriteWire;
 }
 
 /**
