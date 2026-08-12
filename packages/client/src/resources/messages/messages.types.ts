@@ -152,9 +152,13 @@ export type SmsAutomationMessage = Message;
 // ── Supporting types ──────────────────────────────────────────────────────────
 
 /**
- * Automail delivery settings attached to an automation message.
+ * Automail delivery settings for the write path (POST / PUT).
  *
- * Controls when the automation fires relative to its trigger event.
+ * Only trigger-relative delays can be set through the SDK: pass
+ * `delayInSeconds` as a string of seconds since the trigger event
+ * (`"0"` for immediate delivery). Date-based (UI-configured) delays cannot
+ * be created or modified through the SDK — configure them in the Rule.io
+ * UI.
  */
 export interface AutomailSetting {
   /**
@@ -176,16 +180,21 @@ export interface AutomailSetting {
 }
 
 /**
- * Automail delivery state as returned by the API on automation messages.
+ * Automail delivery state as returned by the Rule.io v3 API on automation
+ * messages.
  *
- * Discriminated union on `type`. `AutomailSetting` (used for write payloads)
- * is the flat shape the API accepts on create/update; on read, the API
- * projects it into this union depending on how the automation is configured.
+ * Discriminated union on `type`. `AutomailSetting` (the write payload) is
+ * the flat shape the API accepts on create/update; on read, the API
+ * projects delivery state into this union.
  *
  * - `"delay"` — trigger-relative delay in seconds. Carries `delayInSeconds`
  *   (`"0"` for immediate delivery).
- * - `"custom"` — segment-driven delivery configured in the Rule.io UI.
- *   Carries no delay because timing is determined by segment membership.
+ * - `"custom"` — date-based delivery configured in the Rule.io UI (e.g.
+ *   "send N days before/after a subscriber's date field"). The API does not
+ *   expose the underlying rules (which custom field, offset, direction,
+ *   timezone, repeat behaviour), so the SDK can only report *that* a custom
+ *   delay is set and whether the message is `active`. To view or modify a
+ *   custom delay, use the Rule.io UI.
  */
 export type AutomailSettingRead =
   | {
