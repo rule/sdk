@@ -124,9 +124,9 @@ export interface Automation {
    * Tags attached to or removed from the subscriber once this automation
    * completes for them.
    *
-   * `null` if no finish tags are configured.
+   * `[]` if no finish tags are configured.
    */
-  finishTags?: AutomationFinishTag[] | null;
+  finishTags: AutomationFinishTag[];
   /** ISO 8601 timestamp of when the automation was created. */
   createdAt?: string;
   /** ISO 8601 timestamp of when the automation was last updated. */

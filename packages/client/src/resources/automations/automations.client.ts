@@ -618,9 +618,7 @@ function mapAutomationWireToEntity(wire: AutomationWire): Automation {
     sendoutType: wire.sendout_type
       ? mapSendoutTypeFromWire(wire.sendout_type.value)
       : undefined,
-    finishTags: wire.finish_tags
-      ? wire.finish_tags.map(mapFinishTagWireToEntity)
-      : wire.finish_tags,
+    finishTags: (wire.finish_tags ?? []).map(mapFinishTagWireToEntity),
     createdAt: wire.created_at,
     updatedAt: wire.updated_at,
   };

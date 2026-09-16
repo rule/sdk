@@ -100,7 +100,7 @@ for (const tag of automation?.finishTags ?? []) {
 }
 ```
 
-`finishTags` is `null` when no finish tags are configured.
+`finishTags` is `[]` when no finish tags are configured.
 
 *→ [`AutomationFinishTag`](/api/client/src/interfaces/AutomationFinishTag) · [`AutomationFinishTagEntry`](/api/client/src/interfaces/AutomationFinishTagEntry)*
 

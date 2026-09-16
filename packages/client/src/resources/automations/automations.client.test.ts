@@ -183,7 +183,7 @@ describe('AutomationsClient', () => {
       ]);
     });
 
-    it('maps finish_tags: null to finishTags: null when no finish tags are configured', async () => {
+    it('maps finish_tags: null to finishTags: [] when no finish tags are configured', async () => {
       fetchMock.mockResolvedValueOnce(
         createMockResponse({ data: { ...WIRE_AUTOMATION, finish_tags: null } })
       );
@@ -191,7 +191,7 @@ describe('AutomationsClient', () => {
 
       const result = await client.get(123);
 
-      expect(result!.finishTags).toBeNull();
+      expect(result!.finishTags).toEqual([]);
     });
   });
 
