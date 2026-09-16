@@ -93,6 +93,7 @@ describe('AutomationsClient — SMS', () => {
         active: false,
         trigger: { type: 'TAG', id: tagId },
         sendoutType: 'marketing',
+        finishTags: [],
       });
 
       expect(result.id).toBe(id);
