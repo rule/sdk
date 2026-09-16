@@ -117,7 +117,7 @@ export class AutomationsClient extends BaseResource {
    * Set (upsert) an email automation — fully replaces it if it exists,
    * creates it if not.
    *
-   * All four required fields are required and fully replace the existing
+   * All five required fields are required and fully replace the existing
    * values. This is a complete replacement, not a merge. If the automation
    * does not exist, it is created as an email automation.
    *
@@ -373,7 +373,7 @@ export class AutomationsClient extends BaseResource {
    * Set (upsert) an SMS automation — fully replaces it if it exists, creates
    * it if not.
    *
-   * All four required fields fully replace the existing values. If the
+   * All five required fields fully replace the existing values. If the
    * automation does not exist, it is created as an SMS automation.
    *
    * @param id - Automation ID.
