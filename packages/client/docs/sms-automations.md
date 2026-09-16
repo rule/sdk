@@ -74,37 +74,37 @@ await client.automations.updateSmsAutomation(automationId, {
 
 ## Finish tags
 
-Finish tags mirror the "Finish" step of the automation editor in the Rule.io UI, where a subscriber can be added to or removed from tags once they complete the automation. Set them via `finishTags` on create or update:
+Finish tags mirror the "Finish" step of the automation editor in the Rule.io UI, where a subscriber can be added to or removed from tags once they complete the automation. Set them via `tagActionsOnFinish` on create or update:
 
 ```typescript
 await client.automations.updateSmsAutomation(automationId, {
-  finishTags: [
-    { id: birthdayTagId },                    // add this tag (detach defaults to false)
-    { id: blackFridayTagId, detach: true },    // remove this tag instead
+  tagActionsOnFinish: [
+    { tagId: tagId, action: 'add' },
+    { tagId: otherTagId, action: 'remove' },
   ],
 });
 ```
 
-Passing a list always **replaces** the existing set — it is not a per-tag merge, so tags left out are removed.
+Passing a list always **replaces** the existing set — it is not a per-tag merge, so tags left out are removed. Each `tagId` can appear at most once — the SDK throws a `RuleClientError` before sending the request if the same tag id appears more than once (the raw API rejects duplicates too, but with a less helpful validation error).
 
-On `updateSmsAutomation()` (partial update), omitting `finishTags` leaves the existing finish tags unchanged, exactly like every other field on that method. On `setSmsAutomation()` (full replacement), `finishTags` is required like the other fields — see [Full replacement](#full-replacement) below.
+On `updateSmsAutomation()` (partial update), omitting `tagActionsOnFinish` leaves the existing finish tags unchanged, exactly like every other field on that method. On `setSmsAutomation()` (full replacement), `tagActionsOnFinish` is required like the other fields — see [Full replacement](#full-replacement) below.
 
 Reading back an automation returns the resolved tag name alongside each entry:
 
 ```typescript
 const automation = await client.automations.get(automationId);
-for (const tag of automation?.finishTags ?? []) {
-  console.log(tag.name, tag.detach ? 'removed' : 'added', 'on completion');
+for (const tag of automation?.tagActionsOnFinish ?? []) {
+  console.log(tag.name, tag.action === 'remove' ? 'removed' : 'added', 'on completion');
 }
 ```
 
-`finishTags` is `[]` when no finish tags are configured.
+`tagActionsOnFinish` is `[]` when no finish tags are configured.
 
 *→ [`AutomationFinishTag`](/api/client/src/interfaces/AutomationFinishTag) · [`AutomationFinishTagEntry`](/api/client/src/interfaces/AutomationFinishTagEntry)*
 
 ## Full replacement
 
-Use `setSmsAutomation()` to completely replace an automation's fields. All fields — including `finishTags` — are required and fully replace the existing values; this is a complete replacement, not a merge. If the automation does not exist, it is created. Pass `finishTags: []` if the automation should have no finish tags.
+Use `setSmsAutomation()` to completely replace an automation's fields. All fields — including `tagActionsOnFinish` — are required and fully replace the existing values; this is a complete replacement, not a merge. If the automation does not exist, it is created. Pass `tagActionsOnFinish: []` if the automation should have no finish tags.
 
 ```typescript
 await client.automations.setSmsAutomation(automationId, {
@@ -112,7 +112,7 @@ await client.automations.setSmsAutomation(automationId, {
   active: true,
   trigger: { type: 'TAG', id: tagId },
   sendoutType: 'transactional',
-  finishTags: [{ id: birthdayTagId }],
+  tagActionsOnFinish: [{ tagId: tagId, action: 'add' }],
 });
 ```
 

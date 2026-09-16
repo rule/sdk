@@ -66,6 +66,8 @@ export class AutomationsClient extends BaseResource {
    * ```
    */
   async createEmailAutomation(payload: CreateEmailAutomationPayload): Promise<Automation> {
+    validateTagActionsOnFinish(payload.tagActionsOnFinish);
+
     const body: CreateAutomationBody = {
       name: payload.name,
       description: payload.description,
@@ -73,7 +75,7 @@ export class AutomationsClient extends BaseResource {
       sendout_type: payload.sendoutType
         ? mapSendoutTypeToWire(payload.sendoutType)
         : undefined,
-      finish_tags: payload.finishTags?.map(mapFinishTagEntryToWire),
+      finish_tags: payload.tagActionsOnFinish?.map(mapFinishTagEntryToWire),
     };
     const res = await this.transport.post<AutomationResponse>('/editor/automail', {
       body: JSON.stringify(body),
@@ -133,17 +135,19 @@ export class AutomationsClient extends BaseResource {
    *   active: true,
    *   trigger: { type: 'TAG', id: tagId },
    *   sendoutType: 'transactional',
-   *   finishTags: [{ id: birthdayTagId }],
+   *   tagActionsOnFinish: [{ tagId: tagId, action: 'add' }],
    * });
    * ```
    */
   async setEmailAutomation(id: number, payload: SetEmailAutomationPayload): Promise<Automation> {
+    validateTagActionsOnFinish(payload.tagActionsOnFinish);
+
     const body: UpdateAutomationBody = {
       name: payload.name,
       active: payload.active,
       trigger: payload.trigger,
       sendout_type: mapSendoutTypeToWire(payload.sendoutType),
-      finish_tags: payload.finishTags?.map(mapFinishTagEntryToWire) ?? [],
+      finish_tags: payload.tagActionsOnFinish?.map(mapFinishTagEntryToWire) ?? [],
     };
 
     try {
@@ -192,6 +196,8 @@ export class AutomationsClient extends BaseResource {
    * ```
    */
   async updateEmailAutomation(id: number, partial: UpdateEmailAutomationPayload): Promise<Automation> {
+    validateTagActionsOnFinish(partial.tagActionsOnFinish);
+
     const existing = await this.get(id);
 
     if (existing === null) {
@@ -226,7 +232,7 @@ export class AutomationsClient extends BaseResource {
       active,
       trigger,
       sendout_type: sendoutType,
-      finish_tags: partial.finishTags?.map(mapFinishTagEntryToWire),
+      finish_tags: partial.tagActionsOnFinish?.map(mapFinishTagEntryToWire),
     };
 
     const res = await this.transport.put<AutomationResponse>(`/editor/automail/${id}`, {
@@ -255,6 +261,8 @@ export class AutomationsClient extends BaseResource {
    * ```
    */
   async createSmsAutomation(payload: CreateSmsAutomationPayload): Promise<Automation> {
+    validateTagActionsOnFinish(payload.tagActionsOnFinish);
+
     const body: CreateAutomationBody = {
       name: payload.name,
       description: payload.description,
@@ -263,7 +271,7 @@ export class AutomationsClient extends BaseResource {
         ? mapSendoutTypeToWire(payload.sendoutType)
         : undefined,
       message_type: 2,
-      finish_tags: payload.finishTags?.map(mapFinishTagEntryToWire),
+      finish_tags: payload.tagActionsOnFinish?.map(mapFinishTagEntryToWire),
     };
     const res = await this.transport.post<AutomationResponse>('/editor/automail', {
       body: JSON.stringify(body),
@@ -388,17 +396,19 @@ export class AutomationsClient extends BaseResource {
    *   active: true,
    *   trigger: { type: 'TAG', id: tagId },
    *   sendoutType: 'transactional',
-   *   finishTags: [{ id: birthdayTagId }],
+   *   tagActionsOnFinish: [{ tagId: tagId, action: 'add' }],
    * });
    * ```
    */
   async setSmsAutomation(id: number, payload: SetSmsAutomationPayload): Promise<Automation> {
+    validateTagActionsOnFinish(payload.tagActionsOnFinish);
+
     const body: UpdateAutomationBody = {
       name: payload.name,
       active: payload.active,
       trigger: payload.trigger,
       sendout_type: mapSendoutTypeToWire(payload.sendoutType),
-      finish_tags: payload.finishTags?.map(mapFinishTagEntryToWire) ?? [],
+      finish_tags: payload.tagActionsOnFinish?.map(mapFinishTagEntryToWire) ?? [],
     };
 
     try {
@@ -618,7 +628,7 @@ function mapAutomationWireToEntity(wire: AutomationWire): Automation {
     sendoutType: wire.sendout_type
       ? mapSendoutTypeFromWire(wire.sendout_type.value)
       : undefined,
-    finishTags: (wire.finish_tags ?? []).map(mapFinishTagWireToEntity),
+    tagActionsOnFinish: (wire.finish_tags ?? []).map(mapFinishTagWireToEntity),
     createdAt: wire.created_at,
     updatedAt: wire.updated_at,
   };
@@ -630,8 +640,8 @@ function mapAutomationWireToEntity(wire: AutomationWire): Automation {
  */
 function mapFinishTagEntryToWire(entry: AutomationFinishTagEntry): AutomationFinishTagEntryWire {
   return {
-    id: entry.id,
-    detach: entry.detach,
+    id: entry.tagId,
+    detach: entry.action === 'remove',
   };
 }
 
@@ -641,10 +651,33 @@ function mapFinishTagEntryToWire(entry: AutomationFinishTagEntry): AutomationFin
  */
 function mapFinishTagWireToEntity(wire: AutomationFinishTagWire): AutomationFinishTag {
   return {
-    id: wire.id,
+    tagId: wire.id,
     name: wire.name,
-    detach: wire.detach,
+    action: wire.detach ? 'remove' : 'add',
   };
+}
+
+/**
+ * Throws if the same tag id appears more than once in a tag-actions-on-finish
+ * list — the API rejects a `finish_tags` list with duplicate ids regardless
+ * of action, but with an error keyed to the wire-level field name, which is
+ * confusing since the SDK never exposes that name to callers.
+ * @internal
+ */
+function validateTagActionsOnFinish(entries: AutomationFinishTagEntry[] | undefined): void {
+  if (!entries) return;
+
+  const seen = new Set<number>();
+
+  for (const entry of entries) {
+    if (seen.has(entry.tagId)) {
+      throw new RuleClientError(
+        `tagActionsOnFinish contains tagId ${entry.tagId} more than once — each tag can appear at most once`
+      );
+    }
+
+    seen.add(entry.tagId);
+  }
 }
 
 /**

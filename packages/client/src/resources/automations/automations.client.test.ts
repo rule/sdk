@@ -79,22 +79,22 @@ describe('AutomationsClient', () => {
       expect(body.sendout_type).toBe(2);
     });
 
-    it('maps finishTags to finish_tags in the wire body', async () => {
+    it('maps tagActionsOnFinish to finish_tags in the wire body', async () => {
       fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_AUTOMATION }));
       const client = createClient(fetchMock);
 
       await client.createEmailAutomation({
         name: 'Welcome email',
-        finishTags: [{ id: 10 }, { id: 11, detach: true }],
+        tagActionsOnFinish: [{ tagId: 10, action: 'add' }, { tagId: 11, action: 'remove' }],
       });
 
       const body = JSON.parse((fetchMock.mock.calls[0]![1] as RequestInit).body as string);
 
-      expect(body.finish_tags).toEqual([{ id: 10 }, { id: 11, detach: true }]);
-      expect(body).not.toHaveProperty('finishTags');
+      expect(body.finish_tags).toEqual([{ id: 10, detach: false }, { id: 11, detach: true }]);
+      expect(body).not.toHaveProperty('tagActionsOnFinish');
     });
 
-    it('omits finish_tags entirely when finishTags is not provided (backward compat)', async () => {
+    it('omits finish_tags entirely when tagActionsOnFinish is not provided (backward compat)', async () => {
       fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_AUTOMATION }));
       const client = createClient(fetchMock);
 
@@ -104,26 +104,38 @@ describe('AutomationsClient', () => {
 
       expect(body).not.toHaveProperty('finish_tags');
     });
+
+    it('throws RuleClientError when the same tagId appears more than once', async () => {
+      const client = createClient(fetchMock);
+
+      await expect(
+        client.createEmailAutomation({
+          name: 'Welcome email',
+          tagActionsOnFinish: [{ tagId: 10, action: 'add' }, { tagId: 10, action: 'remove' }],
+        })
+      ).rejects.toBeInstanceOf(RuleClientError);
+      expect(fetchMock.mock.calls).toHaveLength(0);
+    });
   });
 
   describe('createSmsAutomation', () => {
-    it('maps finishTags to finish_tags in the wire body', async () => {
+    it('maps tagActionsOnFinish to finish_tags in the wire body', async () => {
       fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_AUTOMATION }));
       const client = createClient(fetchMock);
 
       await client.createSmsAutomation({
         name: 'Welcome SMS',
-        finishTags: [{ id: 10 }, { id: 11, detach: true }],
+        tagActionsOnFinish: [{ tagId: 10, action: 'add' }, { tagId: 11, action: 'remove' }],
       });
 
       const body = JSON.parse((fetchMock.mock.calls[0]![1] as RequestInit).body as string);
 
       expect(body.message_type).toBe(2);
-      expect(body.finish_tags).toEqual([{ id: 10 }, { id: 11, detach: true }]);
-      expect(body).not.toHaveProperty('finishTags');
+      expect(body.finish_tags).toEqual([{ id: 10, detach: false }, { id: 11, detach: true }]);
+      expect(body).not.toHaveProperty('tagActionsOnFinish');
     });
 
-    it('omits finish_tags entirely when finishTags is not provided (backward compat)', async () => {
+    it('omits finish_tags entirely when tagActionsOnFinish is not provided (backward compat)', async () => {
       fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_AUTOMATION }));
       const client = createClient(fetchMock);
 
@@ -161,7 +173,7 @@ describe('AutomationsClient', () => {
       await expect(client.get(1)).rejects.toBeInstanceOf(RuleApiError);
     });
 
-    it('maps finish_tags to finishTags (id, name, detach)', async () => {
+    it('maps finish_tags to tagActionsOnFinish (tagId, name, action)', async () => {
       fetchMock.mockResolvedValueOnce(
         createMockResponse({
           data: {
@@ -177,13 +189,13 @@ describe('AutomationsClient', () => {
 
       const result = await client.get(123);
 
-      expect(result!.finishTags).toEqual([
-        { id: 196064, name: 'Birthday', detach: false },
-        { id: 215636, name: 'Black-Friday', detach: true },
+      expect(result!.tagActionsOnFinish).toEqual([
+        { tagId: 196064, name: 'Birthday', action: 'add' },
+        { tagId: 215636, name: 'Black-Friday', action: 'remove' },
       ]);
     });
 
-    it('maps finish_tags: null to finishTags: [] when no finish tags are configured', async () => {
+    it('maps finish_tags: null to tagActionsOnFinish: [] when no finish tags are configured', async () => {
       fetchMock.mockResolvedValueOnce(
         createMockResponse({ data: { ...WIRE_AUTOMATION, finish_tags: null } })
       );
@@ -191,7 +203,7 @@ describe('AutomationsClient', () => {
 
       const result = await client.get(123);
 
-      expect(result!.finishTags).toEqual([]);
+      expect(result!.tagActionsOnFinish).toEqual([]);
     });
   });
 
@@ -205,7 +217,7 @@ describe('AutomationsClient', () => {
         active: true,
         trigger: { type: 'TAG', id: 42 },
         sendoutType: 'transactional',
-        finishTags: [],
+        tagActionsOnFinish: [],
       });
 
       expect(fetchMock.mock.calls).toHaveLength(1);
@@ -237,7 +249,7 @@ describe('AutomationsClient', () => {
         active: true,
         trigger: { type: 'TAG', id: 5 },
         sendoutType: 'marketing',
-        finishTags: [],
+        tagActionsOnFinish: [],
       });
 
       expect(fetchMock.mock.calls).toHaveLength(2);
@@ -256,7 +268,7 @@ describe('AutomationsClient', () => {
           active: true,
           trigger: { type: 'TAG', id: 5 },
           sendoutType: 'marketing',
-          finishTags: [],
+          tagActionsOnFinish: [],
         })
       ).rejects.toBeInstanceOf(RuleApiError);
     });
@@ -270,7 +282,7 @@ describe('AutomationsClient', () => {
         active: true,
         trigger: { type: 'TAG', id: 42 },
         sendoutType: 'marketing',
-        finishTags: [],
+        tagActionsOnFinish: [],
       });
 
       const body = JSON.parse((fetchMock.mock.calls[0]![1] as RequestInit).body as string);
@@ -278,7 +290,7 @@ describe('AutomationsClient', () => {
       expect(body.finish_tags).toEqual([]);
     });
 
-    it('sends finish_tags: [] when finishTags is undefined at runtime (non-TS callers bypassing the required type)', async () => {
+    it('sends finish_tags: [] when tagActionsOnFinish is undefined at runtime (non-TS callers bypassing the required type)', async () => {
       fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_AUTOMATION }));
       const client = createClient(fetchMock);
 
@@ -293,6 +305,21 @@ describe('AutomationsClient', () => {
 
       expect(body.finish_tags).toEqual([]);
     });
+
+    it('throws RuleClientError when the same tagId appears more than once', async () => {
+      const client = createClient(fetchMock);
+
+      await expect(
+        client.setEmailAutomation(123, {
+          name: 'Welcome email',
+          active: true,
+          trigger: { type: 'TAG', id: 42 },
+          sendoutType: 'marketing',
+          tagActionsOnFinish: [{ tagId: 5, action: 'add' }, { tagId: 5, action: 'remove' }],
+        })
+      ).rejects.toBeInstanceOf(RuleClientError);
+      expect(fetchMock.mock.calls).toHaveLength(0);
+    });
   });
 
   describe('setSmsAutomation', () => {
@@ -305,7 +332,7 @@ describe('AutomationsClient', () => {
         active: true,
         trigger: { type: 'TAG', id: 42 },
         sendoutType: 'transactional',
-        finishTags: [{ id: 10 }, { id: 11, detach: true }],
+        tagActionsOnFinish: [{ tagId: 10, action: 'add' }, { tagId: 11, action: 'remove' }],
       });
 
       const [url, init] = fetchMock.mock.calls[0]!;
@@ -313,10 +340,10 @@ describe('AutomationsClient', () => {
 
       expect(url).toBe('https://app.rule.io/api/v3/editor/automail/123');
       expect((init as RequestInit).method).toBe('PUT');
-      expect(body.finish_tags).toEqual([{ id: 10 }, { id: 11, detach: true }]);
+      expect(body.finish_tags).toEqual([{ id: 10, detach: false }, { id: 11, detach: true }]);
     });
 
-    it('sends finish_tags: [] when finishTags is undefined at runtime (non-TS callers bypassing the required type)', async () => {
+    it('sends finish_tags: [] when tagActionsOnFinish is undefined at runtime (non-TS callers bypassing the required type)', async () => {
       fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_AUTOMATION }));
       const client = createClient(fetchMock);
 
@@ -343,7 +370,7 @@ describe('AutomationsClient', () => {
         active: true,
         trigger: { type: 'TAG', id: 5 },
         sendoutType: 'marketing',
-        finishTags: [{ id: 10 }],
+        tagActionsOnFinish: [{ tagId: 10, action: 'add' }],
       });
 
       expect(fetchMock.mock.calls).toHaveLength(2);
@@ -353,7 +380,7 @@ describe('AutomationsClient', () => {
       expect(url).toBe('https://app.rule.io/api/v3/editor/automail');
       expect((init as RequestInit).method).toBe('POST');
       expect(body.message_type).toBe(2);
-      expect(body.finish_tags).toEqual([{ id: 10 }]);
+      expect(body.finish_tags).toEqual([{ id: 10, detach: false }]);
     });
   });
 
@@ -455,7 +482,7 @@ describe('AutomationsClient', () => {
         .mockResolvedValueOnce(createMockResponse({ data: WIRE_AUTOMATION }));
       const client = createClient(fetchMock);
 
-      await client.updateEmailAutomation(123, { finishTags: [] });
+      await client.updateEmailAutomation(123, { tagActionsOnFinish: [] });
 
       const putBody = JSON.parse((fetchMock.mock.calls[1]![1] as RequestInit).body as string);
 
@@ -472,11 +499,22 @@ describe('AutomationsClient', () => {
         .mockResolvedValueOnce(createMockResponse({ data: WIRE_AUTOMATION }));
       const client = createClient(fetchMock);
 
-      await client.updateEmailAutomation(123, { finishTags: [{ id: 99, detach: true }] });
+      await client.updateEmailAutomation(123, { tagActionsOnFinish: [{ tagId: 99, action: 'remove' }] });
 
       const putBody = JSON.parse((fetchMock.mock.calls[1]![1] as RequestInit).body as string);
 
       expect(putBody.finish_tags).toEqual([{ id: 99, detach: true }]);
+    });
+
+    it('throws RuleClientError when the same tagId appears more than once, before doing the GET', async () => {
+      const client = createClient(fetchMock);
+
+      await expect(
+        client.updateEmailAutomation(123, {
+          tagActionsOnFinish: [{ tagId: 5, action: 'add' }, { tagId: 5, action: 'remove' }],
+        })
+      ).rejects.toBeInstanceOf(RuleClientError);
+      expect(fetchMock.mock.calls).toHaveLength(0);
     });
   });
 

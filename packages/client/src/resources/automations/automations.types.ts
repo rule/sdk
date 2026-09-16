@@ -47,7 +47,13 @@ export interface AutomationTrigger {
 }
 
 /**
- * A finish tag as returned by the API, attached to an {@link Automation}.
+ * Whether a tag is added to or removed from the subscriber when the
+ * automation completes for them.
+ */
+export type AutomationFinishTagAction = 'add' | 'remove';
+
+/**
+ * A tag action as returned by the API, attached to an {@link Automation}.
  *
  * Mirrors the "Finish" step of the automation editor in the Rule.io UI,
  * where subscribers can be added to or removed from tags once they
@@ -55,32 +61,24 @@ export interface AutomationTrigger {
  */
 export interface AutomationFinishTag {
   /** Tag ID. */
-  id: number;
+  tagId: number;
   /** Tag name. */
   name: string;
-  /**
-   * `true` if this tag is removed from the subscriber when the automation
-   * completes for them (the UI's "Remove subscriber from tags" section);
-   * `false` if it is added instead (the UI's "Add subscriber to tags"
-   * section).
-   */
-  detach: boolean;
+  /** `'add'` to attach the tag, `'remove'` to detach it, on completion. */
+  action: AutomationFinishTagAction;
 }
 
 /**
- * A finish tag entry for create/update payloads.
+ * A tag action entry for create/update payloads.
  *
- * @see {@link CreateEmailAutomationPayload.finishTags},
- *   {@link UpdateEmailAutomationPayload.finishTags}
+ * @see {@link CreateEmailAutomationPayload.tagActionsOnFinish},
+ *   {@link UpdateEmailAutomationPayload.tagActionsOnFinish}
  */
 export interface AutomationFinishTagEntry {
   /** ID of an existing tag of type `custom` in the account. */
-  id: number;
-  /**
-   * `true` to remove this tag from the subscriber when the automation
-   * completes for them; `false` (the default when omitted) to add it.
-   */
-  detach?: boolean;
+  tagId: number;
+  /** `'add'` to attach the tag, `'remove'` to detach it, on completion. */
+  action: AutomationFinishTagAction;
 }
 
 // ── Entity ────────────────────────────────────────────────────────────────────
@@ -126,7 +124,7 @@ export interface Automation {
    *
    * `[]` if no finish tags are configured.
    */
-  finishTags: AutomationFinishTag[];
+  tagActionsOnFinish: AutomationFinishTag[];
   /** ISO 8601 timestamp of when the automation was created. */
   createdAt?: string;
   /** ISO 8601 timestamp of when the automation was last updated. */
@@ -172,8 +170,11 @@ export interface CreateEmailAutomationPayload {
   /**
    * Tags to attach to or remove from subscribers once the automation
    * completes for them. Omit to create the automation with no finish tags.
+   *
+   * Each `tagId` can appear at most once — the API rejects a request that
+   * both adds and removes the same tag.
    */
-  finishTags?: AutomationFinishTagEntry[];
+  tagActionsOnFinish?: AutomationFinishTagEntry[];
 }
 
 /**
@@ -210,7 +211,7 @@ export type CreateSmsAutomationPayload = CreateEmailAutomationPayload;
  *   active: true,
  *   trigger: { type: 'TAG', id: tagId },
  *   sendoutType: 'transactional',
- *   finishTags: [{ id: birthdayTagId }],
+ *   tagActionsOnFinish: [{ tagId: tagId, action: 'add' }],
  * });
  * ```
  */
@@ -240,8 +241,11 @@ export interface SetEmailAutomationPayload {
    * Tags to attach to or remove from subscribers once the automation
    * completes for them. Required, like the other fields — pass `[]` if the
    * automation should have no finish tags.
+   *
+   * Each `tagId` can appear at most once — the API rejects a request that
+   * both adds and removes the same tag.
    */
-  finishTags: AutomationFinishTagEntry[];
+  tagActionsOnFinish: AutomationFinishTagEntry[];
 }
 
 /**
@@ -257,7 +261,7 @@ export interface SetEmailAutomationPayload {
  *   active: true,
  *   trigger: { type: 'TAG', id: tagId },
  *   sendoutType: 'transactional',
- *   finishTags: [{ id: birthdayTagId }],
+ *   tagActionsOnFinish: [{ tagId: tagId, action: 'add' }],
  * });
  * ```
  */
@@ -313,8 +317,11 @@ export interface UpdateEmailAutomationPayload {
    * tags unchanged. Pass an empty array `[]` to remove all finish tags, or
    * a full list to replace the existing set (this is a replacement, not a
    * merge — tags not included are removed).
+   *
+   * Each `tagId` can appear at most once — the API rejects a request that
+   * both adds and removes the same tag.
    */
-  finishTags?: AutomationFinishTagEntry[];
+  tagActionsOnFinish?: AutomationFinishTagEntry[];
 }
 
 /**
