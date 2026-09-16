@@ -197,7 +197,7 @@ export type CreateSmsAutomationPayload = CreateEmailAutomationPayload;
 /**
  * Payload for `AutomationsClient.setEmailAutomation` (full replacement).
  *
- * All four fields are required — the API replaces the entire automation body.
+ * All fields are required — the API replaces the entire automation body.
  * Omitted fields revert to API defaults, not the previous values.
  *
  * The message type is fixed to `'email'` by the method. If the automation
@@ -210,6 +210,7 @@ export type CreateSmsAutomationPayload = CreateEmailAutomationPayload;
  *   active: true,
  *   trigger: { type: 'TAG', id: tagId },
  *   sendoutType: 'transactional',
+ *   finishTags: [{ id: birthdayTagId }],
  * });
  * ```
  */
@@ -237,21 +238,16 @@ export interface SetEmailAutomationPayload {
   sendoutType: AutomationSendoutType;
   /**
    * Tags to attach to or remove from subscribers once the automation
-   * completes for them.
-   *
-   * Unlike the other fields on this payload, `finishTags` does **not**
-   * revert to a default when omitted — the API leaves the automation's
-   * existing finish tags unchanged. Pass an empty array `[]` to remove all
-   * finish tags, or a full list to replace the existing set (this is a
-   * replacement, not a merge — tags not included are removed).
+   * completes for them. Required, like the other fields — pass `[]` if the
+   * automation should have no finish tags.
    */
-  finishTags?: AutomationFinishTagEntry[];
+  finishTags: AutomationFinishTagEntry[];
 }
 
 /**
  * Payload for `AutomationsClient.setSmsAutomation` (full replacement).
  *
- * All four fields are required — the API replaces the entire automation body.
+ * All fields are required — the API replaces the entire automation body.
  * The message type is fixed to `'text_message'` by the method.
  *
  * @example
@@ -261,6 +257,7 @@ export interface SetEmailAutomationPayload {
  *   active: true,
  *   trigger: { type: 'TAG', id: tagId },
  *   sendoutType: 'transactional',
+ *   finishTags: [{ id: birthdayTagId }],
  * });
  * ```
  */

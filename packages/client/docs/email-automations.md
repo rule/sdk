@@ -87,13 +87,9 @@ await client.automations.updateEmailAutomation(automationId, {
 });
 ```
 
-`finishTags` behaves differently from the other fields on `updateEmailAutomation()` and `setEmailAutomation()` — the distinction matters because it is a full replacement, not a per-tag merge:
+Passing a list always **replaces** the existing set — it is not a per-tag merge, so tags left out are removed.
 
-| What you pass | Effect |
-|---|---|
-| Omitted entirely | Existing finish tags are left **unchanged** |
-| `[]` | All finish tags are **removed** |
-| `[{ id, detach? }, ...]` | Existing finish tags are **replaced** with this list — tags not included are removed |
+On `updateEmailAutomation()` (partial update), omitting `finishTags` leaves the existing finish tags unchanged, exactly like every other field on that method. On `setEmailAutomation()` (full replacement), `finishTags` is required like the other fields — see [Full replacement](#full-replacement) below.
 
 Reading back an automation returns the resolved tag name alongside each entry:
 
@@ -110,9 +106,7 @@ for (const tag of automation?.finishTags ?? []) {
 
 ## Full replacement
 
-Use `setEmailAutomation()` to completely replace an automation's fields. All four required fields (`name`, `active`, `trigger`, `sendoutType`) revert to API defaults if omitted — this is a complete replacement, not a merge. If the automation does not exist, it is created.
-
-`finishTags` is the exception: see [Finish tags](#finish-tags) above — omitting it leaves existing finish tags unchanged rather than reverting them.
+Use `setEmailAutomation()` to completely replace an automation's fields. All fields — including `finishTags` — are required and fully replace the existing values; this is a complete replacement, not a merge. If the automation does not exist, it is created. Pass `finishTags: []` if the automation should have no finish tags.
 
 ```typescript
 await client.automations.setEmailAutomation(automationId, {
@@ -120,6 +114,7 @@ await client.automations.setEmailAutomation(automationId, {
   active: true,
   trigger: { type: 'TAG', id: tagId },
   sendoutType: 'transactional',
+  finishTags: [{ id: birthdayTagId }],
 });
 ```
 

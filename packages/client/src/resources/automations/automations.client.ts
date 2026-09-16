@@ -121,10 +121,6 @@ export class AutomationsClient extends BaseResource {
    * values. This is a complete replacement, not a merge. If the automation
    * does not exist, it is created as an email automation.
    *
-   * `finishTags` is the exception: omitting it leaves the automation's
-   * existing finish tags unchanged rather than clearing them — see
-   * {@link SetEmailAutomationPayload.finishTags}.
-   *
    * @param id - Automation ID.
    * @param payload - Full replacement body. No `messageType` field — fixed to
    *   `'email'` by the method.
@@ -137,6 +133,7 @@ export class AutomationsClient extends BaseResource {
    *   active: true,
    *   trigger: { type: 'TAG', id: tagId },
    *   sendoutType: 'transactional',
+   *   finishTags: [{ id: birthdayTagId }],
    * });
    * ```
    */
@@ -146,7 +143,7 @@ export class AutomationsClient extends BaseResource {
       active: payload.active,
       trigger: payload.trigger,
       sendout_type: mapSendoutTypeToWire(payload.sendoutType),
-      finish_tags: payload.finishTags?.map(mapFinishTagEntryToWire),
+      finish_tags: payload.finishTags?.map(mapFinishTagEntryToWire) ?? [],
     };
 
     try {
@@ -175,9 +172,6 @@ export class AutomationsClient extends BaseResource {
    * the API.
    *
    * The `trigger.type` must be uppercase (`'TAG'` or `'SEGMENT'`).
-   *
-   * Unlike the other fields, `finishTags` is not merged with the existing
-   * value when provided — see {@link UpdateEmailAutomationPayload.finishTags}.
    *
    * @param id - Automation ID.
    * @param partial - Fields to update. All fields are optional.
@@ -382,10 +376,6 @@ export class AutomationsClient extends BaseResource {
    * All four required fields fully replace the existing values. If the
    * automation does not exist, it is created as an SMS automation.
    *
-   * `finishTags` is the exception: omitting it leaves the automation's
-   * existing finish tags unchanged rather than clearing them — see
-   * {@link SetSmsAutomationPayload.finishTags}.
-   *
    * @param id - Automation ID.
    * @param payload - Full replacement body. No `messageType` field — fixed to
    *   `'text_message'` by the method.
@@ -398,6 +388,7 @@ export class AutomationsClient extends BaseResource {
    *   active: true,
    *   trigger: { type: 'TAG', id: tagId },
    *   sendoutType: 'transactional',
+   *   finishTags: [{ id: birthdayTagId }],
    * });
    * ```
    */
@@ -407,7 +398,7 @@ export class AutomationsClient extends BaseResource {
       active: payload.active,
       trigger: payload.trigger,
       sendout_type: mapSendoutTypeToWire(payload.sendoutType),
-      finish_tags: payload.finishTags?.map(mapFinishTagEntryToWire),
+      finish_tags: payload.finishTags?.map(mapFinishTagEntryToWire) ?? [],
     };
 
     try {

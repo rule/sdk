@@ -10,6 +10,7 @@ import {
   type MockFetch,
 } from '../../core/mock-fetch.js';
 import { AutomationsClient } from './automations.client.js';
+import type { SetEmailAutomationPayload, SetSmsAutomationPayload } from './automations.types.js';
 
 const WIRE_AUTOMATION = {
   id: 123,
@@ -204,6 +205,7 @@ describe('AutomationsClient', () => {
         active: true,
         trigger: { type: 'TAG', id: 42 },
         sendoutType: 'transactional',
+        finishTags: [],
       });
 
       expect(fetchMock.mock.calls).toHaveLength(1);
@@ -219,6 +221,7 @@ describe('AutomationsClient', () => {
         active: true,
         trigger: { type: 'TAG', id: 42 },
         sendout_type: 2,
+        finish_tags: [],
       });
       expect(result.id).toBe(123);
     });
@@ -234,6 +237,7 @@ describe('AutomationsClient', () => {
         active: true,
         trigger: { type: 'TAG', id: 5 },
         sendoutType: 'marketing',
+        finishTags: [],
       });
 
       expect(fetchMock.mock.calls).toHaveLength(2);
@@ -247,7 +251,13 @@ describe('AutomationsClient', () => {
       const client = createClient(fetchMock);
 
       await expect(
-        client.setEmailAutomation(1, { name: 'N', active: true, trigger: { type: 'TAG', id: 5 }, sendoutType: 'marketing' })
+        client.setEmailAutomation(1, {
+          name: 'N',
+          active: true,
+          trigger: { type: 'TAG', id: 5 },
+          sendoutType: 'marketing',
+          finishTags: [],
+        })
       ).rejects.toBeInstanceOf(RuleApiError);
     });
 
@@ -268,7 +278,7 @@ describe('AutomationsClient', () => {
       expect(body.finish_tags).toEqual([]);
     });
 
-    it('omits finish_tags from the PUT body when not provided — unlike the other 4 fields, this leaves existing finish tags unchanged rather than reverting to a default', async () => {
+    it('sends finish_tags: [] when finishTags is undefined at runtime (non-TS callers bypassing the required type)', async () => {
       fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_AUTOMATION }));
       const client = createClient(fetchMock);
 
@@ -277,11 +287,11 @@ describe('AutomationsClient', () => {
         active: true,
         trigger: { type: 'TAG', id: 42 },
         sendoutType: 'marketing',
-      });
+      } as SetEmailAutomationPayload);
 
       const body = JSON.parse((fetchMock.mock.calls[0]![1] as RequestInit).body as string);
 
-      expect(body).not.toHaveProperty('finish_tags');
+      expect(body.finish_tags).toEqual([]);
     });
   });
 
@@ -306,7 +316,7 @@ describe('AutomationsClient', () => {
       expect(body.finish_tags).toEqual([{ id: 10 }, { id: 11, detach: true }]);
     });
 
-    it('omits finish_tags from the PUT body when not provided (backward compat)', async () => {
+    it('sends finish_tags: [] when finishTags is undefined at runtime (non-TS callers bypassing the required type)', async () => {
       fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_AUTOMATION }));
       const client = createClient(fetchMock);
 
@@ -315,11 +325,11 @@ describe('AutomationsClient', () => {
         active: true,
         trigger: { type: 'TAG', id: 42 },
         sendoutType: 'transactional',
-      });
+      } as SetSmsAutomationPayload);
 
       const body = JSON.parse((fetchMock.mock.calls[0]![1] as RequestInit).body as string);
 
-      expect(body).not.toHaveProperty('finish_tags');
+      expect(body.finish_tags).toEqual([]);
     });
 
     it('includes finish_tags in the create-fallback POST body when automation does not exist (404)', async () => {
