@@ -23,6 +23,10 @@ import { MessagesClient } from '../messages/messages.client.js';
 import { TemplatesClient } from '../templates/templates.client.js';
 import type {
   Automation,
+  AutomationFinishTag,
+  AutomationFinishTagEntry,
+  AutomationFinishTagEntryWire,
+  AutomationFinishTagWire,
   AutomationListResponse,
   AutomationResponse,
   AutomationSendoutType,
@@ -69,6 +73,7 @@ export class AutomationsClient extends BaseResource {
       sendout_type: payload.sendoutType
         ? mapSendoutTypeToWire(payload.sendoutType)
         : undefined,
+      finish_tags: payload.finishTags?.map(mapFinishTagEntryToWire),
     };
     const res = await this.transport.post<AutomationResponse>('/editor/automail', {
       body: JSON.stringify(body),
@@ -112,9 +117,13 @@ export class AutomationsClient extends BaseResource {
    * Set (upsert) an email automation — fully replaces it if it exists,
    * creates it if not.
    *
-   * All four fields are required and fully replace the existing values. This is
-   * a complete replacement, not a merge. If the automation does not exist, it
-   * is created as an email automation.
+   * All four required fields are required and fully replace the existing
+   * values. This is a complete replacement, not a merge. If the automation
+   * does not exist, it is created as an email automation.
+   *
+   * `finishTags` is the exception: omitting it leaves the automation's
+   * existing finish tags unchanged rather than clearing them — see
+   * {@link SetEmailAutomationPayload.finishTags}.
    *
    * @param id - Automation ID.
    * @param payload - Full replacement body. No `messageType` field — fixed to
@@ -137,6 +146,7 @@ export class AutomationsClient extends BaseResource {
       active: payload.active,
       trigger: payload.trigger,
       sendout_type: mapSendoutTypeToWire(payload.sendoutType),
+      finish_tags: payload.finishTags?.map(mapFinishTagEntryToWire),
     };
 
     try {
@@ -165,6 +175,9 @@ export class AutomationsClient extends BaseResource {
    * the API.
    *
    * The `trigger.type` must be uppercase (`'TAG'` or `'SEGMENT'`).
+   *
+   * Unlike the other fields, `finishTags` is not merged with the existing
+   * value when provided — see {@link UpdateEmailAutomationPayload.finishTags}.
    *
    * @param id - Automation ID.
    * @param partial - Fields to update. All fields are optional.
@@ -219,6 +232,7 @@ export class AutomationsClient extends BaseResource {
       active,
       trigger,
       sendout_type: sendoutType,
+      finish_tags: partial.finishTags?.map(mapFinishTagEntryToWire),
     };
 
     const res = await this.transport.put<AutomationResponse>(`/editor/automail/${id}`, {
@@ -255,6 +269,7 @@ export class AutomationsClient extends BaseResource {
         ? mapSendoutTypeToWire(payload.sendoutType)
         : undefined,
       message_type: 2,
+      finish_tags: payload.finishTags?.map(mapFinishTagEntryToWire),
     };
     const res = await this.transport.post<AutomationResponse>('/editor/automail', {
       body: JSON.stringify(body),
@@ -364,8 +379,12 @@ export class AutomationsClient extends BaseResource {
    * Set (upsert) an SMS automation — fully replaces it if it exists, creates
    * it if not.
    *
-   * All four fields are required and fully replace the existing values. If the
+   * All four required fields fully replace the existing values. If the
    * automation does not exist, it is created as an SMS automation.
+   *
+   * `finishTags` is the exception: omitting it leaves the automation's
+   * existing finish tags unchanged rather than clearing them — see
+   * {@link SetEmailAutomationPayload.finishTags}.
    *
    * @param id - Automation ID.
    * @param payload - Full replacement body. No `messageType` field — fixed to
@@ -388,6 +407,7 @@ export class AutomationsClient extends BaseResource {
       active: payload.active,
       trigger: payload.trigger,
       sendout_type: mapSendoutTypeToWire(payload.sendoutType),
+      finish_tags: payload.finishTags?.map(mapFinishTagEntryToWire),
     };
 
     try {
@@ -607,8 +627,34 @@ function mapAutomationWireToEntity(wire: AutomationWire): Automation {
     sendoutType: wire.sendout_type
       ? mapSendoutTypeFromWire(wire.sendout_type.value)
       : undefined,
+    finishTags: wire.finish_tags
+      ? wire.finish_tags.map(mapFinishTagWireToEntity)
+      : wire.finish_tags,
     createdAt: wire.created_at,
     updatedAt: wire.updated_at,
+  };
+}
+
+/**
+ * Maps a public {@link AutomationFinishTagEntry} to its wire representation.
+ * @internal
+ */
+function mapFinishTagEntryToWire(entry: AutomationFinishTagEntry): AutomationFinishTagEntryWire {
+  return {
+    id: entry.id,
+    detach: entry.detach,
+  };
+}
+
+/**
+ * Maps a wire-format finish tag to the public {@link AutomationFinishTag} entity.
+ * @internal
+ */
+function mapFinishTagWireToEntity(wire: AutomationFinishTagWire): AutomationFinishTag {
+  return {
+    id: wire.id,
+    name: wire.name,
+    detach: wire.detach,
   };
 }
 

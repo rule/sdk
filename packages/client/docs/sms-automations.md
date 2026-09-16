@@ -72,9 +72,45 @@ await client.automations.updateSmsAutomation(automationId, {
 
 *→ [`UpdateSmsAutomationPayload`](/api/client/src/type-aliases/UpdateSmsAutomationPayload)*
 
+## Finish tags
+
+Finish tags mirror the "Finish" step of the automation editor in the Rule.io UI, where a subscriber can be added to or removed from tags once they complete the automation. Set them via `finishTags` on create or update:
+
+```typescript
+await client.automations.updateSmsAutomation(automationId, {
+  finishTags: [
+    { id: birthdayTagId },                    // add this tag (detach defaults to false)
+    { id: blackFridayTagId, detach: true },    // remove this tag instead
+  ],
+});
+```
+
+`finishTags` behaves differently from the other fields on `updateSmsAutomation()` and `setSmsAutomation()` — the distinction matters because it is a full replacement, not a per-tag merge:
+
+| What you pass | Effect |
+|---|---|
+| Omitted entirely | Existing finish tags are left **unchanged** |
+| `[]` | All finish tags are **removed** |
+| `[{ id, detach? }, ...]` | Existing finish tags are **replaced** with this list — tags not included are removed |
+
+Reading back an automation returns the resolved tag name alongside each entry:
+
+```typescript
+const automation = await client.automations.get(automationId);
+for (const tag of automation?.finishTags ?? []) {
+  console.log(tag.name, tag.detach ? 'removed' : 'added', 'on completion');
+}
+```
+
+`finishTags` is `null` when no finish tags are configured.
+
+*→ [`AutomationFinishTag`](/api/client/src/interfaces/AutomationFinishTag) · [`AutomationFinishTagEntry`](/api/client/src/interfaces/AutomationFinishTagEntry)*
+
 ## Full replacement
 
-Use `setSmsAutomation()` to completely replace an automation's fields. All four fields are required — omitted fields revert to API defaults, not the previous values. If the automation does not exist, it is created.
+Use `setSmsAutomation()` to completely replace an automation's fields. All four required fields (`name`, `active`, `trigger`, `sendoutType`) revert to API defaults if omitted — this is a complete replacement, not a merge. If the automation does not exist, it is created.
+
+`finishTags` is the exception: see [Finish tags](#finish-tags) above — omitting it leaves existing finish tags unchanged rather than reverting them.
 
 ```typescript
 await client.automations.setSmsAutomation(automationId, {

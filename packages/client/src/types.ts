@@ -68,6 +68,8 @@ export type {
 // ── Automations ──────────────────────────────────────────────────────────────
 export type {
   Automation,
+  AutomationFinishTag,
+  AutomationFinishTagEntry,
   AutomationSendoutType,
   AutomationTrigger,
   CreateDefaultSmsMessageParams,

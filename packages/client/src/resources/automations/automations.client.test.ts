@@ -77,6 +77,32 @@ describe('AutomationsClient', () => {
 
       expect(body.sendout_type).toBe(2);
     });
+
+    it('maps finishTags to finish_tags in the wire body', async () => {
+      fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_AUTOMATION }));
+      const client = createClient(fetchMock);
+
+      await client.createEmailAutomation({
+        name: 'Welcome email',
+        finishTags: [{ id: 10 }, { id: 11, detach: true }],
+      });
+
+      const body = JSON.parse((fetchMock.mock.calls[0]![1] as RequestInit).body as string);
+
+      expect(body.finish_tags).toEqual([{ id: 10 }, { id: 11, detach: true }]);
+      expect(body).not.toHaveProperty('finishTags');
+    });
+
+    it('omits finish_tags entirely when finishTags is not provided (backward compat)', async () => {
+      fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_AUTOMATION }));
+      const client = createClient(fetchMock);
+
+      await client.createEmailAutomation({ name: 'Welcome email' });
+
+      const body = JSON.parse((fetchMock.mock.calls[0]![1] as RequestInit).body as string);
+
+      expect(body).not.toHaveProperty('finish_tags');
+    });
   });
 
   describe('get', () => {
@@ -103,6 +129,39 @@ describe('AutomationsClient', () => {
       const client = createClient(fetchMock);
 
       await expect(client.get(1)).rejects.toBeInstanceOf(RuleApiError);
+    });
+
+    it('maps finish_tags to finishTags (id, name, detach)', async () => {
+      fetchMock.mockResolvedValueOnce(
+        createMockResponse({
+          data: {
+            ...WIRE_AUTOMATION,
+            finish_tags: [
+              { id: 196064, name: 'Birthday', detach: false },
+              { id: 215636, name: 'Black-Friday', detach: true },
+            ],
+          },
+        })
+      );
+      const client = createClient(fetchMock);
+
+      const result = await client.get(123);
+
+      expect(result!.finishTags).toEqual([
+        { id: 196064, name: 'Birthday', detach: false },
+        { id: 215636, name: 'Black-Friday', detach: true },
+      ]);
+    });
+
+    it('maps finish_tags: null to finishTags: null when no finish tags are configured', async () => {
+      fetchMock.mockResolvedValueOnce(
+        createMockResponse({ data: { ...WIRE_AUTOMATION, finish_tags: null } })
+      );
+      const client = createClient(fetchMock);
+
+      const result = await client.get(123);
+
+      expect(result!.finishTags).toBeNull();
     });
   });
 
@@ -161,6 +220,39 @@ describe('AutomationsClient', () => {
       await expect(
         client.setEmailAutomation(1, { name: 'N', active: true, trigger: { type: 'TAG', id: 5 }, sendoutType: 'marketing' })
       ).rejects.toBeInstanceOf(RuleApiError);
+    });
+
+    it('includes finish_tags: [] in the PUT body to explicitly clear finish tags', async () => {
+      fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_AUTOMATION }));
+      const client = createClient(fetchMock);
+
+      await client.setEmailAutomation(123, {
+        name: 'Welcome email',
+        active: true,
+        trigger: { type: 'TAG', id: 42 },
+        sendoutType: 'marketing',
+        finishTags: [],
+      });
+
+      const body = JSON.parse((fetchMock.mock.calls[0]![1] as RequestInit).body as string);
+
+      expect(body.finish_tags).toEqual([]);
+    });
+
+    it('omits finish_tags from the PUT body when not provided — unlike the other 4 fields, this leaves existing finish tags unchanged rather than reverting to a default', async () => {
+      fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_AUTOMATION }));
+      const client = createClient(fetchMock);
+
+      await client.setEmailAutomation(123, {
+        name: 'Welcome email',
+        active: true,
+        trigger: { type: 'TAG', id: 42 },
+        sendoutType: 'marketing',
+      });
+
+      const body = JSON.parse((fetchMock.mock.calls[0]![1] as RequestInit).body as string);
+
+      expect(body).not.toHaveProperty('finish_tags');
     });
   });
 
@@ -241,6 +333,49 @@ describe('AutomationsClient', () => {
       const client = createClient(fetchMock);
 
       await expect(client.updateEmailAutomation(1, { name: 'Rename' })).rejects.toBeInstanceOf(RuleClientError);
+    });
+
+    it('omits finish_tags from the PUT body when not provided — leaves existing finish tags unchanged rather than clearing them (verified against the live API: PUT without the key preserves prior finish_tags)', async () => {
+      fetchMock
+        .mockResolvedValueOnce(createMockResponse({ data: WIRE_AUTOMATION }))
+        .mockResolvedValueOnce(createMockResponse({ data: WIRE_AUTOMATION }));
+      const client = createClient(fetchMock);
+
+      await client.updateEmailAutomation(123, { name: 'Renamed' });
+
+      const putBody = JSON.parse((fetchMock.mock.calls[1]![1] as RequestInit).body as string);
+
+      expect(putBody).not.toHaveProperty('finish_tags');
+    });
+
+    it('includes finish_tags: [] in the PUT body when explicitly clearing all finish tags', async () => {
+      fetchMock
+        .mockResolvedValueOnce(createMockResponse({ data: WIRE_AUTOMATION }))
+        .mockResolvedValueOnce(createMockResponse({ data: WIRE_AUTOMATION }));
+      const client = createClient(fetchMock);
+
+      await client.updateEmailAutomation(123, { finishTags: [] });
+
+      const putBody = JSON.parse((fetchMock.mock.calls[1]![1] as RequestInit).body as string);
+
+      expect(putBody.finish_tags).toEqual([]);
+    });
+
+    it('replaces finish_tags with the full provided list — not a merge with the existing set', async () => {
+      fetchMock
+        .mockResolvedValueOnce(
+          createMockResponse({
+            data: { ...WIRE_AUTOMATION, finish_tags: [{ id: 1, name: 'Old', detach: false }] },
+          })
+        )
+        .mockResolvedValueOnce(createMockResponse({ data: WIRE_AUTOMATION }));
+      const client = createClient(fetchMock);
+
+      await client.updateEmailAutomation(123, { finishTags: [{ id: 99, detach: true }] });
+
+      const putBody = JSON.parse((fetchMock.mock.calls[1]![1] as RequestInit).body as string);
+
+      expect(putBody.finish_tags).toEqual([{ id: 99, detach: true }]);
     });
   });
 
