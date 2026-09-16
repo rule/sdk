@@ -105,6 +105,35 @@ describe('AutomationsClient', () => {
     });
   });
 
+  describe('createSmsAutomation', () => {
+    it('maps finishTags to finish_tags in the wire body', async () => {
+      fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_AUTOMATION }));
+      const client = createClient(fetchMock);
+
+      await client.createSmsAutomation({
+        name: 'Welcome SMS',
+        finishTags: [{ id: 10 }, { id: 11, detach: true }],
+      });
+
+      const body = JSON.parse((fetchMock.mock.calls[0]![1] as RequestInit).body as string);
+
+      expect(body.message_type).toBe(2);
+      expect(body.finish_tags).toEqual([{ id: 10 }, { id: 11, detach: true }]);
+      expect(body).not.toHaveProperty('finishTags');
+    });
+
+    it('omits finish_tags entirely when finishTags is not provided (backward compat)', async () => {
+      fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_AUTOMATION }));
+      const client = createClient(fetchMock);
+
+      await client.createSmsAutomation({ name: 'Welcome SMS' });
+
+      const body = JSON.parse((fetchMock.mock.calls[0]![1] as RequestInit).body as string);
+
+      expect(body).not.toHaveProperty('finish_tags');
+    });
+  });
+
   describe('get', () => {
     it('returns the automation as a camelCase entity on 200', async () => {
       fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_AUTOMATION }));
@@ -253,6 +282,68 @@ describe('AutomationsClient', () => {
       const body = JSON.parse((fetchMock.mock.calls[0]![1] as RequestInit).body as string);
 
       expect(body).not.toHaveProperty('finish_tags');
+    });
+  });
+
+  describe('setSmsAutomation', () => {
+    it('includes finish_tags in the PUT body when automation exists', async () => {
+      fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_AUTOMATION }));
+      const client = createClient(fetchMock);
+
+      await client.setSmsAutomation(123, {
+        name: 'Welcome SMS',
+        active: true,
+        trigger: { type: 'TAG', id: 42 },
+        sendoutType: 'transactional',
+        finishTags: [{ id: 10 }, { id: 11, detach: true }],
+      });
+
+      const [url, init] = fetchMock.mock.calls[0]!;
+      const body = JSON.parse((init as RequestInit).body as string);
+
+      expect(url).toBe('https://app.rule.io/api/v3/editor/automail/123');
+      expect((init as RequestInit).method).toBe('PUT');
+      expect(body.finish_tags).toEqual([{ id: 10 }, { id: 11, detach: true }]);
+    });
+
+    it('omits finish_tags from the PUT body when not provided (backward compat)', async () => {
+      fetchMock.mockResolvedValueOnce(createMockResponse({ data: WIRE_AUTOMATION }));
+      const client = createClient(fetchMock);
+
+      await client.setSmsAutomation(123, {
+        name: 'Welcome SMS',
+        active: true,
+        trigger: { type: 'TAG', id: 42 },
+        sendoutType: 'transactional',
+      });
+
+      const body = JSON.parse((fetchMock.mock.calls[0]![1] as RequestInit).body as string);
+
+      expect(body).not.toHaveProperty('finish_tags');
+    });
+
+    it('includes finish_tags in the create-fallback POST body when automation does not exist (404)', async () => {
+      fetchMock
+        .mockResolvedValueOnce(createMockErrorResponse({}, 404))
+        .mockResolvedValueOnce(createMockResponse({ data: WIRE_AUTOMATION }));
+      const client = createClient(fetchMock);
+
+      await client.setSmsAutomation(1, {
+        name: 'New SMS',
+        active: true,
+        trigger: { type: 'TAG', id: 5 },
+        sendoutType: 'marketing',
+        finishTags: [{ id: 10 }],
+      });
+
+      expect(fetchMock.mock.calls).toHaveLength(2);
+      const [url, init] = fetchMock.mock.calls[1]!;
+      const body = JSON.parse((init as RequestInit).body as string);
+
+      expect(url).toBe('https://app.rule.io/api/v3/editor/automail');
+      expect((init as RequestInit).method).toBe('POST');
+      expect(body.message_type).toBe(2);
+      expect(body.finish_tags).toEqual([{ id: 10 }]);
     });
   });
 

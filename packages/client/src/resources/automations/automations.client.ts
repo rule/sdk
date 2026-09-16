@@ -384,7 +384,7 @@ export class AutomationsClient extends BaseResource {
    *
    * `finishTags` is the exception: omitting it leaves the automation's
    * existing finish tags unchanged rather than clearing them — see
-   * {@link SetEmailAutomationPayload.finishTags}.
+   * {@link SetSmsAutomationPayload.finishTags}.
    *
    * @param id - Automation ID.
    * @param payload - Full replacement body. No `messageType` field — fixed to
