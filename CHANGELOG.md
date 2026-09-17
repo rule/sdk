@@ -1,3 +1,29 @@
+## 0.4.0-beta.15 (2026-09-17)
+
+### 🚀 Features
+
+- **client:** add finishTags support to automation create/update/set methods ([8fb4620c](https://github.com/rule/sdk/commit/8fb4620c))
+- ⚠️  **client:** make finishTags required on set*Automation, drop docs exception ([#170](https://github.com/rule/sdk/issues/170))
+- ⚠️  **client:** rename finishTags to tagActionsOnFinish, replace detach boolean with action ([#170](https://github.com/rule/sdk/issues/170))
+- ⚠️  **client:** add tagActionsOnFinish support to automation create/update/set methods ([#170](https://github.com/rule/sdk/pull/170))
+
+### 🩹 Fixes
+
+- **client:** normalize Automation.finishTags to [] instead of null ([#170](https://github.com/rule/sdk/issues/170))
+- **client:** report all duplicate tagIds in tagActionsOnFinish, not just the first ([#170](https://github.com/rule/sdk/issues/170))
+- **client:** re-export AutomationFinishTagAction from the public barrel ([#170](https://github.com/rule/sdk/issues/170))
+
+### ⚠️  Breaking Changes
+
+- **client:** add tagActionsOnFinish support to automation create/update/set methods  ([#170](https://github.com/rule/sdk/pull/170))
+- **client:** rename finishTags to tagActionsOnFinish, replace detach boolean with action  ([#170](https://github.com/rule/sdk/issues/170))
+- **client:** make finishTags required on set*Automation, drop docs exception  ([#170](https://github.com/rule/sdk/issues/170))
+
+### ❤️ Thank You
+
+- Oleksandr Ryzhyk @webmarket7
+- Serhij Zubrin
+
 ## 0.4.0-beta.14 (2026-09-04)
 
 ### 🩹 Fixes
