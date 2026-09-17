@@ -668,15 +668,20 @@ function validateTagActionsOnFinish(entries: AutomationFinishTagEntry[] | undefi
   if (!entries) return;
 
   const seen = new Set<number>();
+  const duplicates = new Set<number>();
 
   for (const entry of entries) {
     if (seen.has(entry.tagId)) {
-      throw new RuleClientError(
-        `tagActionsOnFinish contains tagId ${entry.tagId} more than once — each tag can appear at most once`
-      );
+      duplicates.add(entry.tagId);
+    } else {
+      seen.add(entry.tagId);
     }
+  }
 
-    seen.add(entry.tagId);
+  if (duplicates.size > 0) {
+    throw new RuleClientError(
+      `tagActionsOnFinish contains duplicate tagId(s): ${[...duplicates].join(', ')} — each tag can appear at most once`
+    );
   }
 }
 

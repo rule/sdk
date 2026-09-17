@@ -116,6 +116,22 @@ describe('AutomationsClient', () => {
       ).rejects.toBeInstanceOf(RuleClientError);
       expect(fetchMock.mock.calls).toHaveLength(0);
     });
+
+    it('lists every duplicate tagId in the error message, not just the first', async () => {
+      const client = createClient(fetchMock);
+
+      await expect(
+        client.createEmailAutomation({
+          name: 'Welcome email',
+          tagActionsOnFinish: [
+            { tagId: 10, action: 'add' },
+            { tagId: 20, action: 'add' },
+            { tagId: 10, action: 'remove' },
+            { tagId: 20, action: 'remove' },
+          ],
+        })
+      ).rejects.toThrow('tagId(s): 10, 20');
+    });
   });
 
   describe('createSmsAutomation', () => {
