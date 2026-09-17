@@ -69,6 +69,7 @@ export type {
 export type {
   Automation,
   AutomationFinishTag,
+  AutomationFinishTagAction,
   AutomationFinishTagEntry,
   AutomationSendoutType,
   AutomationTrigger,
