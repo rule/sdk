@@ -46,6 +46,41 @@ export interface AutomationTrigger {
   name?: string;
 }
 
+/**
+ * Whether a tag is added to or removed from the subscriber when the
+ * automation completes for them.
+ */
+export type AutomationFinishTagAction = 'add' | 'remove';
+
+/**
+ * A tag action as returned by the API, attached to an {@link Automation}.
+ *
+ * Mirrors the "Finish" step of the automation editor in the Rule.io UI,
+ * where subscribers can be added to or removed from tags once they
+ * complete the automation.
+ */
+export interface AutomationFinishTag {
+  /** Tag ID. */
+  tagId: number;
+  /** Tag name. */
+  name: string;
+  /** `'add'` to attach the tag, `'remove'` to detach it, on completion. */
+  action: AutomationFinishTagAction;
+}
+
+/**
+ * A tag action entry for create/update payloads.
+ *
+ * @see {@link CreateEmailAutomationPayload.tagActionsOnFinish},
+ *   {@link UpdateEmailAutomationPayload.tagActionsOnFinish}
+ */
+export interface AutomationFinishTagEntry {
+  /** ID of an existing tag of type `custom` in the account. */
+  tagId: number;
+  /** `'add'` to attach the tag, `'remove'` to detach it, on completion. */
+  action: AutomationFinishTagAction;
+}
+
 // ── Entity ────────────────────────────────────────────────────────────────────
 
 /**
@@ -83,6 +118,13 @@ export interface Automation {
    * Mapped from the API's numeric status descriptor object.
    */
   sendoutType?: AutomationSendoutType;
+  /**
+   * Tags attached to or removed from the subscriber once this automation
+   * completes for them.
+   *
+   * `[]` if no finish tags are configured.
+   */
+  tagActionsOnFinish: AutomationFinishTag[];
   /** ISO 8601 timestamp of when the automation was created. */
   createdAt?: string;
   /** ISO 8601 timestamp of when the automation was last updated. */
@@ -125,6 +167,14 @@ export interface CreateEmailAutomationPayload {
    * `'transactional'` = triggered transactional email.
    */
   sendoutType?: AutomationSendoutType;
+  /**
+   * Tags to attach to or remove from subscribers once the automation
+   * completes for them. Omit to create the automation with no finish tags.
+   *
+   * Each `tagId` can appear at most once — the API rejects a request that
+   * both adds and removes the same tag.
+   */
+  tagActionsOnFinish?: AutomationFinishTagEntry[];
 }
 
 /**
@@ -148,7 +198,7 @@ export type CreateSmsAutomationPayload = CreateEmailAutomationPayload;
 /**
  * Payload for `AutomationsClient.setEmailAutomation` (full replacement).
  *
- * All four fields are required — the API replaces the entire automation body.
+ * All fields are required — the API replaces the entire automation body.
  * Omitted fields revert to API defaults, not the previous values.
  *
  * The message type is fixed to `'email'` by the method. If the automation
@@ -161,6 +211,7 @@ export type CreateSmsAutomationPayload = CreateEmailAutomationPayload;
  *   active: true,
  *   trigger: { type: 'TAG', id: tagId },
  *   sendoutType: 'transactional',
+ *   tagActionsOnFinish: [{ tagId: tagId, action: 'add' }],
  * });
  * ```
  */
@@ -186,12 +237,21 @@ export interface SetEmailAutomationPayload {
    * `'transactional'` = triggered transactional email.
    */
   sendoutType: AutomationSendoutType;
+  /**
+   * Tags to attach to or remove from subscribers once the automation
+   * completes for them. Required, like the other fields — pass `[]` if the
+   * automation should have no finish tags.
+   *
+   * Each `tagId` can appear at most once — the API rejects a request that
+   * both adds and removes the same tag.
+   */
+  tagActionsOnFinish: AutomationFinishTagEntry[];
 }
 
 /**
  * Payload for `AutomationsClient.setSmsAutomation` (full replacement).
  *
- * All four fields are required — the API replaces the entire automation body.
+ * All fields are required — the API replaces the entire automation body.
  * The message type is fixed to `'text_message'` by the method.
  *
  * @example
@@ -201,6 +261,7 @@ export interface SetEmailAutomationPayload {
  *   active: true,
  *   trigger: { type: 'TAG', id: tagId },
  *   sendoutType: 'transactional',
+ *   tagActionsOnFinish: [{ tagId: tagId, action: 'add' }],
  * });
  * ```
  */
@@ -248,6 +309,19 @@ export interface UpdateEmailAutomationPayload {
    * `'transactional'` = triggered transactional email.
    */
   sendoutType?: AutomationSendoutType;
+  /**
+   * New finish tags — attached to or removed from subscribers once the
+   * automation completes for them.
+   *
+   * Omit this field entirely to leave the automation's existing finish
+   * tags unchanged. Pass an empty array `[]` to remove all finish tags, or
+   * a full list to replace the existing set (this is a replacement, not a
+   * merge — tags not included are removed).
+   *
+   * Each `tagId` can appear at most once — the API rejects a request that
+   * both adds and removes the same tag.
+   */
+  tagActionsOnFinish?: AutomationFinishTagEntry[];
 }
 
 /**
@@ -373,6 +447,25 @@ export interface AutomationTriggerWire {
 }
 
 /**
+ * Wire-format finish tag as returned by the API.
+ * @internal
+ */
+export interface AutomationFinishTagWire {
+  id: number;
+  name: string;
+  detach: boolean;
+}
+
+/**
+ * Wire-format finish tag entry accepted by create/update request bodies.
+ * @internal
+ */
+export interface AutomationFinishTagEntryWire {
+  id: number;
+  detach?: boolean;
+}
+
+/**
  * Wire-format automation entity from the v3 `/editor/automail` endpoint.
  * @internal
  */
@@ -387,6 +480,10 @@ export interface AutomationWire {
     key: string;
     description: string;
   };
+  /**
+   * Present when the automail has finish tags configured; `null` otherwise.
+   */
+  finish_tags?: AutomationFinishTagWire[] | null;
   created_at?: string;
   updated_at?: string;
 }
@@ -402,12 +499,16 @@ export interface CreateAutomationBody {
   sendout_type?: number;
   /** `1` = email, `2` = SMS. Omit to default to email. */
   message_type?: 1 | 2;
+  finish_tags?: AutomationFinishTagEntryWire[];
 }
 
 /**
  * Wire body for PUT `/editor/automail/:id`.
  *
- * All four fields are required by the API for a complete PUT.
+ * `name`, `active`, `trigger`, and `sendout_type` are required by the API
+ * for a complete PUT. `finish_tags` is optional — omitting the key leaves
+ * the automail's existing finish tags unchanged; the API does not require
+ * it for a "complete" PUT the way it does the other four fields.
  * @internal
  */
 export interface UpdateAutomationBody {
@@ -415,6 +516,7 @@ export interface UpdateAutomationBody {
   active: boolean;
   trigger: AutomationTriggerWire;
   sendout_type: number;
+  finish_tags?: AutomationFinishTagEntryWire[];
 }
 
 /**

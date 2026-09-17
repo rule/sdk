@@ -23,6 +23,10 @@ import { MessagesClient } from '../messages/messages.client.js';
 import { TemplatesClient } from '../templates/templates.client.js';
 import type {
   Automation,
+  AutomationFinishTag,
+  AutomationFinishTagEntry,
+  AutomationFinishTagEntryWire,
+  AutomationFinishTagWire,
   AutomationListResponse,
   AutomationResponse,
   AutomationSendoutType,
@@ -62,6 +66,8 @@ export class AutomationsClient extends BaseResource {
    * ```
    */
   async createEmailAutomation(payload: CreateEmailAutomationPayload): Promise<Automation> {
+    validateTagActionsOnFinish(payload.tagActionsOnFinish);
+
     const body: CreateAutomationBody = {
       name: payload.name,
       description: payload.description,
@@ -69,6 +75,7 @@ export class AutomationsClient extends BaseResource {
       sendout_type: payload.sendoutType
         ? mapSendoutTypeToWire(payload.sendoutType)
         : undefined,
+      finish_tags: payload.tagActionsOnFinish?.map(mapFinishTagEntryToWire),
     };
     const res = await this.transport.post<AutomationResponse>('/editor/automail', {
       body: JSON.stringify(body),
@@ -112,9 +119,9 @@ export class AutomationsClient extends BaseResource {
    * Set (upsert) an email automation — fully replaces it if it exists,
    * creates it if not.
    *
-   * All four fields are required and fully replace the existing values. This is
-   * a complete replacement, not a merge. If the automation does not exist, it
-   * is created as an email automation.
+   * All five required fields are required and fully replace the existing
+   * values. This is a complete replacement, not a merge. If the automation
+   * does not exist, it is created as an email automation.
    *
    * @param id - Automation ID.
    * @param payload - Full replacement body. No `messageType` field — fixed to
@@ -128,15 +135,19 @@ export class AutomationsClient extends BaseResource {
    *   active: true,
    *   trigger: { type: 'TAG', id: tagId },
    *   sendoutType: 'transactional',
+   *   tagActionsOnFinish: [{ tagId: tagId, action: 'add' }],
    * });
    * ```
    */
   async setEmailAutomation(id: number, payload: SetEmailAutomationPayload): Promise<Automation> {
+    validateTagActionsOnFinish(payload.tagActionsOnFinish);
+
     const body: UpdateAutomationBody = {
       name: payload.name,
       active: payload.active,
       trigger: payload.trigger,
       sendout_type: mapSendoutTypeToWire(payload.sendoutType),
+      finish_tags: payload.tagActionsOnFinish?.map(mapFinishTagEntryToWire) ?? [],
     };
 
     try {
@@ -185,6 +196,8 @@ export class AutomationsClient extends BaseResource {
    * ```
    */
   async updateEmailAutomation(id: number, partial: UpdateEmailAutomationPayload): Promise<Automation> {
+    validateTagActionsOnFinish(partial.tagActionsOnFinish);
+
     const existing = await this.get(id);
 
     if (existing === null) {
@@ -219,6 +232,7 @@ export class AutomationsClient extends BaseResource {
       active,
       trigger,
       sendout_type: sendoutType,
+      finish_tags: partial.tagActionsOnFinish?.map(mapFinishTagEntryToWire),
     };
 
     const res = await this.transport.put<AutomationResponse>(`/editor/automail/${id}`, {
@@ -247,6 +261,8 @@ export class AutomationsClient extends BaseResource {
    * ```
    */
   async createSmsAutomation(payload: CreateSmsAutomationPayload): Promise<Automation> {
+    validateTagActionsOnFinish(payload.tagActionsOnFinish);
+
     const body: CreateAutomationBody = {
       name: payload.name,
       description: payload.description,
@@ -255,6 +271,7 @@ export class AutomationsClient extends BaseResource {
         ? mapSendoutTypeToWire(payload.sendoutType)
         : undefined,
       message_type: 2,
+      finish_tags: payload.tagActionsOnFinish?.map(mapFinishTagEntryToWire),
     };
     const res = await this.transport.post<AutomationResponse>('/editor/automail', {
       body: JSON.stringify(body),
@@ -364,7 +381,7 @@ export class AutomationsClient extends BaseResource {
    * Set (upsert) an SMS automation — fully replaces it if it exists, creates
    * it if not.
    *
-   * All four fields are required and fully replace the existing values. If the
+   * All five required fields fully replace the existing values. If the
    * automation does not exist, it is created as an SMS automation.
    *
    * @param id - Automation ID.
@@ -379,15 +396,19 @@ export class AutomationsClient extends BaseResource {
    *   active: true,
    *   trigger: { type: 'TAG', id: tagId },
    *   sendoutType: 'transactional',
+   *   tagActionsOnFinish: [{ tagId: tagId, action: 'add' }],
    * });
    * ```
    */
   async setSmsAutomation(id: number, payload: SetSmsAutomationPayload): Promise<Automation> {
+    validateTagActionsOnFinish(payload.tagActionsOnFinish);
+
     const body: UpdateAutomationBody = {
       name: payload.name,
       active: payload.active,
       trigger: payload.trigger,
       sendout_type: mapSendoutTypeToWire(payload.sendoutType),
+      finish_tags: payload.tagActionsOnFinish?.map(mapFinishTagEntryToWire) ?? [],
     };
 
     try {
@@ -607,9 +628,61 @@ function mapAutomationWireToEntity(wire: AutomationWire): Automation {
     sendoutType: wire.sendout_type
       ? mapSendoutTypeFromWire(wire.sendout_type.value)
       : undefined,
+    tagActionsOnFinish: (wire.finish_tags ?? []).map(mapFinishTagWireToEntity),
     createdAt: wire.created_at,
     updatedAt: wire.updated_at,
   };
+}
+
+/**
+ * Maps a public {@link AutomationFinishTagEntry} to its wire representation.
+ * @internal
+ */
+function mapFinishTagEntryToWire(entry: AutomationFinishTagEntry): AutomationFinishTagEntryWire {
+  return {
+    id: entry.tagId,
+    detach: entry.action === 'remove',
+  };
+}
+
+/**
+ * Maps a wire-format finish tag to the public {@link AutomationFinishTag} entity.
+ * @internal
+ */
+function mapFinishTagWireToEntity(wire: AutomationFinishTagWire): AutomationFinishTag {
+  return {
+    tagId: wire.id,
+    name: wire.name,
+    action: wire.detach ? 'remove' : 'add',
+  };
+}
+
+/**
+ * Throws if the same tag id appears more than once in a tag-actions-on-finish
+ * list — the API rejects a `finish_tags` list with duplicate ids regardless
+ * of action, but with an error keyed to the wire-level field name, which is
+ * confusing since the SDK never exposes that name to callers.
+ * @internal
+ */
+function validateTagActionsOnFinish(entries: AutomationFinishTagEntry[] | undefined): void {
+  if (!entries) return;
+
+  const seen = new Set<number>();
+  const duplicates = new Set<number>();
+
+  for (const entry of entries) {
+    if (seen.has(entry.tagId)) {
+      duplicates.add(entry.tagId);
+    } else {
+      seen.add(entry.tagId);
+    }
+  }
+
+  if (duplicates.size > 0) {
+    throw new RuleClientError(
+      `tagActionsOnFinish contains duplicate tagId(s): ${[...duplicates].join(', ')} — each tag can appear at most once`
+    );
+  }
 }
 
 /**
