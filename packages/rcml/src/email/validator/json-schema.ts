@@ -49,6 +49,9 @@ const JSON_SCHEMA_BY_VALIDATOR: Partial<Record<RcmlAttributeValidatorsEnum, Json
   [RcmlAttributeValidatorsEnum.SocialMode]: { enum: ['horizontal', 'vertical'] },
   [RcmlAttributeValidatorsEnum.SocialIconColor]: { enum: ['brand', 'black', 'white'] },
   [RcmlAttributeValidatorsEnum.SocialIconShape]: { enum: ['original', 'circle', 'square'] },
+  [RcmlAttributeValidatorsEnum.SocialNetwork]: {
+    enum: ['facebook', 'instagram', 'linkedin', 'tiktok', 'x', 'web'],
+  },
   [RcmlAttributeValidatorsEnum.TableLayout]: { enum: ['auto', 'fixed'] },
   [RcmlAttributeValidatorsEnum.Target]: { enum: ['_blank', '_self', '_parent', '_top'] },
   [RcmlAttributeValidatorsEnum.TextDecoration]: {

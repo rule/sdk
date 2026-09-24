@@ -556,6 +556,42 @@ describe('extractLinksFromAttributes', () => {
       extractLinksFromAttributes([social as unknown as AnyAttrChild]).facebook?.url
     ).toBe('https://first.example/')
   })
+
+  it('maps name="web" (the correct RCML value) to the website slot', () => {
+    const social = {
+      tagName: 'rc-social',
+      id: 'so',
+      children: [
+        {
+          tagName: 'rc-social-element',
+          id: 'web',
+          attributes: { name: 'web', href: 'https://acme.example/' },
+        } as unknown as RcmlSocialElement,
+      ],
+    } as unknown as RcmlSocial
+
+    expect(
+      extractLinksFromAttributes([social as unknown as AnyAttrChild]).website
+    ).toEqual({ type: 'website', url: 'https://acme.example/' })
+  })
+
+  it('also maps the legacy name="website" value to the website slot (reads documents written before this fix)', () => {
+    const social = {
+      tagName: 'rc-social',
+      id: 'so',
+      children: [
+        {
+          tagName: 'rc-social-element',
+          id: 'legacy',
+          attributes: { name: 'website', href: 'https://acme.example/' },
+        } as unknown as RcmlSocialElement,
+      ],
+    } as unknown as RcmlSocial
+
+    expect(
+      extractLinksFromAttributes([social as unknown as AnyAttrChild]).website
+    ).toEqual({ type: 'website', url: 'https://acme.example/' })
+  })
 })
 
 describe('extractFontsFromHead', () => {
@@ -720,6 +756,44 @@ describe('upsertSocialOverlay', () => {
     expect(
       (social.children[0] as RcmlSocialElement).attributes.href
     ).toBe('https://fb.example/')
+  })
+
+  it('writes name="web" for the website slot, not the theme bucket key "website"', () => {
+    const children: AnyAttrChild[] = []
+
+    upsertSocialOverlay(children, [
+      { type: 'website', url: 'https://acme.example/' },
+    ])
+
+    const social = children[0] as unknown as RcmlSocial
+
+    expect((social.children[0] as RcmlSocialElement).attributes.name).toBe('web')
+  })
+
+  it('heals a pre-existing legacy name="website" element to "web" on re-apply, even when the href is unchanged', () => {
+    const children = [
+      {
+        tagName: 'rc-social',
+        id: 'so',
+        children: [
+          {
+            tagName: 'rc-social-element',
+            id: 'legacy',
+            attributes: { name: 'website', href: 'https://acme.example/' },
+          },
+        ],
+      } as unknown as AnyAttrChild,
+    ]
+
+    upsertSocialOverlay(children, [
+      { type: 'website', url: 'https://acme.example/' },
+    ])
+
+    const social = children[0] as unknown as RcmlSocial
+
+    expect(social.children.length).toBe(1)
+    expect((social.children[0] as RcmlSocialElement).attributes.name).toBe('web')
+    expect((social.children[0] as RcmlSocialElement).id).toBe('legacy')
   })
 })
 

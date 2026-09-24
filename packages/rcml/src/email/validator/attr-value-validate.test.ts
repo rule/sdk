@@ -102,6 +102,61 @@ describe('validateAttrValues — bad attribute values', () => {
 
     expect(issues.length).toBeGreaterThanOrEqual(2)
   })
+
+  it('flags an rc-social-element name that is not a known social network', () => {
+    const doc = {
+      tagName: 'rcml',
+      children: [
+        { tagName: 'rc-head', children: [] },
+        {
+          tagName: 'rc-body',
+          children: [
+            {
+              tagName: 'rc-social',
+              children: [
+                {
+                  tagName: 'rc-social-element',
+                  attributes: { name: 'website', href: 'https://acme.example/' },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    }
+    const issues = validateAttrValues(doc)
+
+    expect(issues).toHaveLength(1)
+    expect(issues[0]).toMatchObject({
+      code: 'ATTR_INVALID_VALUE',
+      path: '/children/1/children/0/children/0/attributes/name',
+    })
+  })
+
+  it('accepts "web" as an rc-social-element name (the value Rule\'s RCML schema actually uses for the website slot)', () => {
+    const doc = {
+      tagName: 'rcml',
+      children: [
+        { tagName: 'rc-head', children: [] },
+        {
+          tagName: 'rc-body',
+          children: [
+            {
+              tagName: 'rc-social',
+              children: [
+                {
+                  tagName: 'rc-social-element',
+                  attributes: { name: 'web', href: 'https://acme.example/' },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    }
+
+    expect(validateAttrValues(doc)).toEqual([])
+  })
 })
 
 describe('validateAttrValues — shape defence', () => {

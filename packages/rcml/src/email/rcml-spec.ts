@@ -87,6 +87,7 @@ const ENUM_ALLOWED_VALUES: Partial<Record<V, string[]>> = {
   [V.SocialMode]: ['horizontal', 'vertical'],
   [V.SocialIconColor]: ['brand', 'black', 'white'],
   [V.SocialIconShape]: ['original', 'circle', 'square'],
+  [V.SocialNetwork]: ['facebook', 'instagram', 'linkedin', 'tiktok', 'x', 'web'],
   [V.TableLayout]: ['auto', 'fixed'],
   [V.Target]: ['_blank', '_self', '_parent', '_top'],
   [V.TextDecoration]: ['none', 'underline', 'overline', 'line-through'],

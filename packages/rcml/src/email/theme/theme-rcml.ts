@@ -687,6 +687,30 @@ function upsertClassNode(
 
 // ──────────────────────────────────────────────────────────────────────────
 // rc-social
+
+/**
+ * Maps a theme's social-link slot key to the RCML wire value written into
+ * `<rc-social-element name="…">`. Only `'website'` differs — Rule's RCML
+ * schema (and its own frontend) names that slot `'web'`; the other five
+ * slots use the same string on both sides.
+ */
+function themeLinkTypeToRcmlName(type: EmailThemeSocialLinkType): string {
+  return type === 'website' ? 'web' : type
+}
+
+/**
+ * Reverse of {@link themeLinkTypeToRcmlName} — maps an RCML `name` value
+ * back to the theme's social-link slot key. Accepts both the correct wire
+ * value (`'web'`) and the legacy value some already-saved documents carry
+ * (`'website'`, written by a previous version of this package), so
+ * documents from either source round-trip. Returns `undefined` for
+ * anything else.
+ */
+function rcmlNameToThemeLinkType(name: string): EmailThemeSocialLinkType | undefined {
+  if (name === 'web') return 'website'
+
+  return isKnownSocialLinkType(name) ? name : undefined
+}
 // ──────────────────────────────────────────────────────────────────────────
 
 /**
@@ -735,28 +759,35 @@ export function upsertSocialOverlay(
   }
 
   const elements = existing.children as RcmlSocialElement[]
-  const byName = new Map<string, RcmlSocialElement>()
+  const byType = new Map<EmailThemeSocialLinkType, RcmlSocialElement>()
 
   for (const el of elements.slice()) {
     const name = el.attributes.name as string | undefined
+    const type = typeof name === 'string' ? rcmlNameToThemeLinkType(name) : undefined
 
-    if (typeof name !== 'string') continue
+    if (!type) continue
 
-    if (byName.has(name)) {
+    if (byType.has(type)) {
       elements.splice(elements.indexOf(el), 1)
     } else {
-      byName.set(name, el)
+      byType.set(type, el)
     }
   }
 
   for (const link of safeLinks) {
-    const existingEl = byName.get(link.type)
+    const existingEl = byType.get(link.type)
+    const rcmlName = themeLinkTypeToRcmlName(link.type)
 
     if (existingEl) {
-      if ((existingEl.attributes.href as string | undefined) !== link.url) {
+      // Also re-writes `name` when it still carries the legacy 'website'
+      // value, so re-applying the theme heals an already-saved document.
+      if (
+        (existingEl.attributes.href as string | undefined) !== link.url ||
+        existingEl.attributes.name !== rcmlName
+      ) {
         existingEl.attributes = {
           ...existingEl.attributes,
-          name: link.type,
+          name: rcmlName,
           href: link.url,
         } as RcmlSocialElement['attributes']
       }
@@ -764,7 +795,7 @@ export function upsertSocialOverlay(
       const newElement = buildSocialElement(link)
 
       elements.push(newElement)
-      byName.set(link.type, newElement)
+      byType.set(link.type, newElement)
     }
   }
 }
@@ -774,7 +805,10 @@ function buildSocialElement(link: EmailThemeSocialLink): RcmlSocialElement {
   return {
     id: newId(),
     tagName: 'rc-social-element',
-    attributes: { name: link.type, href: link.url } as RcmlSocialElement['attributes'],
+    attributes: {
+      name: themeLinkTypeToRcmlName(link.type),
+      href: link.url,
+    } as RcmlSocialElement['attributes'],
   }
 }
 
@@ -1079,11 +1113,13 @@ export function extractLinksFromAttributes(
 
     if (typeof name !== 'string' || typeof href !== 'string') continue
 
-    if (!isKnownSocialLinkType(name)) continue
+    const type = rcmlNameToThemeLinkType(name)
 
-    if (out[name] !== undefined) continue // first wins — mirrors dedup in apply
+    if (!type) continue
 
-    out[name] = { type: name, url: href }
+    if (out[type] !== undefined) continue // first wins — mirrors dedup in apply
+
+    out[type] = { type, url: href }
   }
 
   return out

@@ -130,6 +130,37 @@ describe('validateStructure — attribute-level issues', () => {
 
     expect(issues.some((i) => i.code === 'ATTR_INVALID_VALUE')).toBe(true)
   })
+
+  it('emits ATTR_INVALID_VALUE for rc-social-element name="website"', () => {
+    const doc = {
+      tagName: 'rcml',
+      children: [
+        {
+          tagName: 'rc-head',
+          children: [
+            {
+              tagName: 'rc-attributes',
+              children: [
+                {
+                  tagName: 'rc-social',
+                  children: [
+                    {
+                      tagName: 'rc-social-element',
+                      attributes: { name: 'website', href: 'https://acme.example/' },
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        EMPTY_BODY,
+      ],
+    }
+    const issues = validateStructure(doc)
+
+    expect(issues.some((i) => i.code === 'ATTR_INVALID_VALUE')).toBe(true)
+  })
 })
 
 describe('validateStructure — issue shape', () => {
