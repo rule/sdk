@@ -103,7 +103,7 @@ describe('validateAttrValues — bad attribute values', () => {
     expect(issues.length).toBeGreaterThanOrEqual(2)
   })
 
-  it('flags an rc-social-element name that is not a known social network (RL-4662 regression test)', () => {
+  it('flags an rc-social-element name that is not a known social network', () => {
     const doc = {
       tagName: 'rcml',
       children: [

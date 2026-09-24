@@ -128,7 +128,7 @@ describe('applyTheme — full EmailTheme', () => {
     expect(countAttrChildren(doc, 'rc-class')).toBe(7)
   })
 
-  it('writes name="web" for the website social link, matching Rule\'s RCML schema (RL-4662 regression test)', () => {
+  it('writes name="web" for the website social link, matching Rule\'s RCML schema', () => {
     const doc = applyTheme(
       minimalDoc(),
       createEmailTheme({
