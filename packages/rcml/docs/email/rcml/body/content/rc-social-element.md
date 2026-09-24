@@ -22,7 +22,7 @@ A single social media profile link inside an `<rc-social>` container. Displays a
 | `icon-shape` | `original` | `original` \| `circle` \| `square` | `circle` | Shape of the icon container. |
 | `icon-size` | — | px or percentage | `24px` | Icon size. Overrides the parent `<rc-social>` `icon-size`. |
 | `line-height` | `120%` | px or percentage | `120%` | Line height for the link label. |
-| `name` | — | String | `Twitter` | Platform display label (e.g. `"Twitter"`, `"Instagram"`). |
+| `name` | — | `facebook` \| `instagram` \| `linkedin` \| `tiktok` \| `x` \| `web` | `instagram` | Which social network this element represents — a machine-readable slot key, not display text. Use `content` for a visible label. |
 | `padding` | `4px` | px, 1–4 values | `4px 8px` | Padding around the entire element. |
 | `padding-top` | — | px or percentage | `4px` | Top padding. |
 | `padding-bottom` | — | px or percentage | `4px` | Bottom padding. |
@@ -50,7 +50,7 @@ None.
 {
   "tagName": "rc-social-element",
   "attributes": {
-    "name": "Instagram",
+    "name": "instagram",
     "href": "https://instagram.com/example",
     "icon-color": "brand",
     "icon-shape": "circle",
@@ -62,7 +62,7 @@ None.
 ## XML
 
 ```xml
-<rc-social-element name="Instagram" href="https://instagram.com/example" icon-color="brand" icon-shape="circle" icon-size="24px"></rc-social-element>
+<rc-social-element name="instagram" href="https://instagram.com/example" icon-color="brand" icon-shape="circle" icon-size="24px"></rc-social-element>
 ```
 
 ## Building
@@ -74,7 +74,7 @@ import { createSocialChildElement } from '@rule/rcml';
 
 createSocialChildElement({
   attrs: {
-    name: 'Instagram',
+    name: 'instagram',
     href: 'https://instagram.com/example',
     'icon-color': 'brand',
     'icon-shape': 'circle',

@@ -137,7 +137,7 @@ Here is a complete annotated example of the resulting `rc-head`:
             { "tagName": "rc-social-element", "attributes": { "name": "linkedin",  "href": "https://linkedin.com/company/yourbrand" } },
             { "tagName": "rc-social-element", "attributes": { "name": "tiktok",    "href": "https://tiktok.com/@yourbrand" } },
             { "tagName": "rc-social-element", "attributes": { "name": "x",         "href": "https://x.com/yourbrand" } },
-            { "tagName": "rc-social-element", "attributes": { "name": "website",   "href": "https://example.com" } }
+            { "tagName": "rc-social-element", "attributes": { "name": "web",       "href": "https://example.com" } }
           ]
         }
       ]

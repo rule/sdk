@@ -567,7 +567,7 @@ export function createDividerElement(options: DividerElementOptions = {}): RcmlD
  * createSocialElement({
  *   attrs: { mode: 'horizontal', align: 'center' },
  *   children: [
- *     createSocialChildElement({ attrs: { name: 'twitter', href: 'https://twitter.com/x' } }),
+ *     createSocialChildElement({ attrs: { name: 'x', href: 'https://twitter.com/x' } }),
  *     createSocialChildElement({ attrs: { name: 'facebook', href: 'https://facebook.com/x' } }),
  *   ],
  * })

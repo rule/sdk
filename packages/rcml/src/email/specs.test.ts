@@ -48,6 +48,12 @@ describe('rcmlSpec', () => {
       expect(tag.description.length, `${name} has empty description`).toBeGreaterThan(0)
     }
   })
+
+  it('rc-social-element name exposes the six social-network allowedValues, including "web" not "website"', () => {
+    expect(rcmlSpec.tags['rc-social-element'].attributes['name'].allowedValues).toEqual([
+      'facebook', 'instagram', 'linkedin', 'tiktok', 'x', 'web',
+    ])
+  })
 })
 
 // ---------------------------------------------------------------------------

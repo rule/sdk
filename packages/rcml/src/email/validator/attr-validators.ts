@@ -304,6 +304,17 @@ const socialIconShapeSchema = z.enum(['original', 'circle', 'square'], {
   errorMap: () => ({ message: "The value must be 'original', 'circle' or 'square'." }),
 })
 
+/**
+ * Which social network an `rc-social-element` represents. Matches Rule's
+ * backend `SocialNetworkEnum` — note `'web'` (not `'website'`) for the
+ * website slot.
+ */
+const socialNetworkSchema = z.enum(['facebook', 'instagram', 'linkedin', 'tiktok', 'x', 'web'], {
+  errorMap: () => ({
+    message: "The value must be 'facebook', 'instagram', 'linkedin', 'tiktok', 'x', or 'web'.",
+  }),
+})
+
 /** CSS `table-layout` keyword. */
 const tableLayoutSchema = z.enum(['auto', 'fixed'], {
   errorMap: () => ({ message: "The value must be 'auto' or 'fixed'." }),
@@ -395,6 +406,7 @@ export enum RcmlAttributeValidatorsEnum {
   SocialMode = 'socialMode',
   SocialIconColor = 'socialIconColor',
   SocialIconShape = 'socialIconShape',
+  SocialNetwork = 'socialNetwork',
   String = 'string',
   TableLayout = 'tableLayout',
   Target = 'target',
@@ -451,6 +463,7 @@ export const RCML_ATTR_VALIDATORS = {
   [RcmlAttributeValidatorsEnum.SocialMode]: socialModeSchema,
   [RcmlAttributeValidatorsEnum.SocialIconColor]: socialIconColorSchema,
   [RcmlAttributeValidatorsEnum.SocialIconShape]: socialIconShapeSchema,
+  [RcmlAttributeValidatorsEnum.SocialNetwork]: socialNetworkSchema,
   [RcmlAttributeValidatorsEnum.String]: stringSchema,
   [RcmlAttributeValidatorsEnum.TableLayout]: tableLayoutSchema,
   [RcmlAttributeValidatorsEnum.Target]: targetSchema,
