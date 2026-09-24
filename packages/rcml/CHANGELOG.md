@@ -1,3 +1,18 @@
+## 0.4.0-beta.16 (2026-09-24)
+
+### 🩹 Fixes
+
+- **rcml:** wire SocialNetwork into JSON_SCHEMA_BY_VALIDATOR and ENUM_ALLOWED_VALUES ([#172](https://github.com/rule/sdk/issues/172))
+- ⚠️  **rcml:** write/read "web" not "website" for the website social-link slot ([7725b6b1](https://github.com/rule/sdk/commit/7725b6b1))
+
+### ⚠️  Breaking Changes
+
+- **rcml:** write/read "web" not "website" for the website social-link slot  ([7725b6b1](https://github.com/rule/sdk/commit/7725b6b1))
+
+### ❤️ Thank You
+
+- Serhij Zubrin
+
 ## 0.4.0-beta.15 (2026-09-17)
 
 This was a version bump only for rcml to align it with other projects, there were no code changes.
