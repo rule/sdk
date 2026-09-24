@@ -128,6 +128,26 @@ describe('applyTheme — full EmailTheme', () => {
     expect(countAttrChildren(doc, 'rc-class')).toBe(7)
   })
 
+  it('writes name="web" for the website social link, matching Rule\'s RCML schema (RL-4662 regression test)', () => {
+    const doc = applyTheme(
+      minimalDoc(),
+      createEmailTheme({
+        brandStyleId: 123,
+        links: [{ type: 'website', url: 'https://acme.example/' }],
+      })
+    )
+    const social = findAttrChild<RcmlSocial>(doc, 'rc-social')
+    const websiteElement = (social?.children as RcmlSocialElement[] | undefined)?.find(
+      (el) => el.attributes.href === 'https://acme.example/'
+    )
+
+    expect(websiteElement?.attributes.name).toBe('web')
+
+    const result = safeValidateEmailTemplate(doc)
+
+    expect(result.success).toBe(true)
+  })
+
   it('updates rc-brand-style id', () => {
     const doc = applyTheme(minimalDoc(), createEmailTheme({ brandStyleId: 77 }))
     const brand = getHead(doc).children.find(

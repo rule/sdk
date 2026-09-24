@@ -1709,9 +1709,9 @@ const socialElementSpec = {
       examples: ['120%'],
     },
     name: {
-      validator: V.String,
-      description: 'Platform name used as the link label text (e.g. "Twitter", "Facebook").',
-      examples: ['Twitter', 'Facebook', 'Instagram'],
+      validator: V.SocialNetwork,
+      description: 'Which social network this element represents. Use `content` for a visible label instead — this is a machine-readable slot key, not display text.',
+      examples: ['facebook', 'instagram', 'web'],
     },
     padding: {
       validator: V.Padding,

@@ -52,7 +52,7 @@ Social media links container. Holds `<rc-social-element>` children representing 
     {
       "tagName": "rc-social-element",
       "attributes": {
-        "name": "Twitter",
+        "name": "x",
         "href": "https://twitter.com/example",
         "icon-color": "brand"
       }
@@ -65,7 +65,7 @@ Social media links container. Holds `<rc-social-element>` children representing 
 
 ```xml
 <rc-social mode="horizontal" align="center">
-  <rc-social-element name="Twitter" href="https://twitter.com/example" icon-color="brand"></rc-social-element>
+  <rc-social-element name="x" href="https://twitter.com/example" icon-color="brand"></rc-social-element>
 </rc-social>
 ```
 
@@ -80,7 +80,7 @@ createSocialElement({
   attrs: { mode: 'horizontal', align: 'center' },
   children: [
     createSocialChildElement({
-      attrs: { name: 'Twitter', href: 'https://twitter.com/example', 'icon-color': 'brand' },
+      attrs: { name: 'x', href: 'https://twitter.com/example', 'icon-color': 'brand' },
     }),
   ],
 })

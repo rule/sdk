@@ -242,11 +242,11 @@ describe('createDividerElement', () => {
 describe('createSocialChildElement', () => {
   it('builds with required attrs', () => {
     const node = createSocialChildElement({
-      attrs: { name: 'twitter', href: 'https://twitter.com/x' },
+      attrs: { name: 'x', href: 'https://twitter.com/x' },
     })
 
     expect(node.tagName).toBe('rc-social-element')
-    expect(node.attributes.name).toBe('twitter')
+    expect(node.attributes.name).toBe('x')
   })
 
   it('carries content (label) when provided', () => {

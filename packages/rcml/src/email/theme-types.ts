@@ -72,7 +72,9 @@ export interface EmailThemeImage {
 
 /**
  * The six social-link slots the theme supports. Matches the rcml
- * `<rc-social-element name="…">` naming.
+ * `<rc-social-element name="…">` naming for five of the six — `'website'`
+ * is this theme API's slot key, written to RCML as `name="web"` (the value
+ * Rule's RCML schema and frontend actually use for that slot).
  *
  * @public
  */
