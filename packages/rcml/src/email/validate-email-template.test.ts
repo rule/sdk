@@ -607,6 +607,41 @@ describe('validateEmailTemplate — non-PM content fields', () => {
     expect(safeValidateEmailTemplate(doc).success).toBe(true)
   })
 
+  it('accepts rc-preview with a { type: "text", text } content object (the shape the API returns on read)', () => {
+    const doc = {
+      tagName: 'rcml',
+      children: [
+        {
+          tagName: 'rc-head',
+          children: [
+            { tagName: 'rc-preview', content: { type: 'text', text: 'Check out our latest deals' } },
+          ],
+        },
+        { tagName: 'rc-body', children: [] },
+      ],
+    } as unknown as RcmlDocument
+
+    expect(safeValidateEmailTemplate(doc).success).toBe(true)
+  })
+
+  it('rejects rc-preview with an invalid object shape', () => {
+    const doc = {
+      tagName: 'rcml',
+      children: [
+        {
+          tagName: 'rc-head',
+          children: [
+            // @ts-expect-error — intentionally wrong shape
+            { tagName: 'rc-preview', content: { type: 'html', text: 'wrong type' } },
+          ],
+        },
+        { tagName: 'rc-body', children: [] },
+      ],
+    } as unknown as RcmlDocument
+
+    expect(safeValidateEmailTemplate(doc).success).toBe(false)
+  })
+
   it('rejects rc-plain-text with wrong content shape', () => {
     const doc = {
       tagName: 'rcml',

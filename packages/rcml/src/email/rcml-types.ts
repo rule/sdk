@@ -141,11 +141,21 @@ export interface RcmlAttributes {
   children: RcmlAttributesChild[]
 }
 
-/** `<rc-preview>` — preheader text shown in inbox previews. @public */
+/**
+ * `<rc-preview>` — preheader text shown in inbox previews.
+ *
+ * `content` accepts a plain string (the shape builders produce) or a
+ * `{ type: 'text', text }` object (the shape the Rule.io API returns on
+ * read — it serialises every leaf's content uniformly, with no special
+ * case for `rc-preview`). Both are equivalent; treat them as the same
+ * preheader text.
+ *
+ * @public
+ */
 export interface RcmlPreview {
   id?: string
   tagName: 'rc-preview'
-  content?: string
+  content?: string | { type: 'text'; text: string }
 }
 
 /** `<rc-class>` — a named group of attributes applicable via the `rc-class` attribute. @public */
