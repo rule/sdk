@@ -1,3 +1,16 @@
+## 0.4.0-beta.17 (2026-10-05)
+
+### 🩹 Fixes
+
+- **rcml:** accept both string and object forms for rc-preview.content ([0f681fb1](https://github.com/rule/sdk/commit/0f681fb1))
+- **rcml:** report content oneOf mismatches as ATTR_INVALID_VALUE, not CHILD_INVALID ([#174](https://github.com/rule/sdk/issues/174))
+- **rcml:** accept both string and object forms for rc-preview.content ([#174](https://github.com/rule/sdk/pull/174))
+
+### ❤️ Thank You
+
+- Oleksandr Ryzhyk @webmarket7
+- Serhij Zubrin
+
 ## 0.4.0-beta.16 (2026-09-24)
 
 ### 🩹 Fixes
