@@ -624,14 +624,14 @@ describe('validateEmailTemplate — non-PM content fields', () => {
     expect(safeValidateEmailTemplate(doc).success).toBe(true)
   })
 
-  it('rejects rc-preview with an invalid object shape', () => {
+  it('rejects rc-preview with an invalid object shape, reporting it as a content (not child-placement) issue', () => {
     const doc = {
       tagName: 'rcml',
       children: [
         {
           tagName: 'rc-head',
           children: [
-            // @ts-expect-error — intentionally wrong shape
+            // intentionally wrong shape — content is deliberately invalid at runtime
             { tagName: 'rc-preview', content: { type: 'html', text: 'wrong type' } },
           ],
         },
@@ -639,7 +639,18 @@ describe('validateEmailTemplate — non-PM content fields', () => {
       ],
     } as unknown as RcmlDocument
 
-    expect(safeValidateEmailTemplate(doc).success).toBe(false)
+    const result = safeValidateEmailTemplate(doc)
+
+    expect(result.success).toBe(false)
+
+    if (!result.success) {
+      expect(result.errors).toContainEqual(
+        expect.objectContaining({
+          path: '/children/0/children/0/content',
+          code: EmailTemplateErrorCodes.ATTR_INVALID_VALUE,
+        })
+      )
+    }
   })
 
   it('rejects rc-plain-text with wrong content shape', () => {
@@ -649,7 +660,7 @@ describe('validateEmailTemplate — non-PM content fields', () => {
         {
           tagName: 'rc-head',
           children: [
-            // @ts-expect-error — intentionally wrong shape
+            // intentionally wrong shape — content is deliberately invalid at runtime
             { tagName: 'rc-plain-text', content: 'just a string, not an object' },
           ],
         },
@@ -726,7 +737,7 @@ describe('validateEmailTemplate — non-PM content fields', () => {
                 {
                   tagName: 'rc-column',
                   children: [
-                    // @ts-expect-error — intentionally wrong shape
+                    // intentionally wrong shape — content is deliberately invalid at runtime
                     { tagName: 'rc-raw', content: '<p>wrong</p>' },
                   ],
                 },
