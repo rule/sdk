@@ -607,6 +607,57 @@ describe('validateEmailTemplate — non-PM content fields', () => {
     expect(safeValidateEmailTemplate(doc).success).toBe(true)
   })
 
+  it('accepts rc-preview with a { type: "text", text } content object (the shape the API returns on read)', () => {
+    const doc = {
+      tagName: 'rcml',
+      children: [
+        {
+          tagName: 'rc-head',
+          children: [
+            { tagName: 'rc-preview', content: { type: 'text', text: 'Check out our latest deals' } },
+          ],
+        },
+        { tagName: 'rc-body', children: [] },
+      ],
+    } as unknown as RcmlDocument
+
+    expect(safeValidateEmailTemplate(doc).success).toBe(true)
+  })
+
+  it('rejects rc-preview with an invalid object shape, reporting it as a content (not child-placement) issue', () => {
+    const doc = {
+      tagName: 'rcml',
+      children: [
+        {
+          tagName: 'rc-head',
+          children: [
+            // intentionally wrong shape — content is deliberately invalid at runtime
+            { tagName: 'rc-preview', content: { type: 'html', text: 'wrong type' } },
+          ],
+        },
+        { tagName: 'rc-body', children: [] },
+      ],
+    } as unknown as RcmlDocument
+
+    const result = safeValidateEmailTemplate(doc)
+
+    expect(result.success).toBe(false)
+
+    if (!result.success) {
+      // The object also fails the oneOf's plain-string branch with its own
+      // `type`-keyword ATTR_INVALID_VALUE at the same path — pin the
+      // message too, so this specifically protects the oneOf-case mapping
+      // in ajv-validate.ts (not just that *some* ATTR_INVALID_VALUE fired).
+      expect(result.errors).toContainEqual(
+        expect.objectContaining({
+          path: '/children/0/children/0/content',
+          code: EmailTemplateErrorCodes.ATTR_INVALID_VALUE,
+          message: 'Content does not match any allowed shape for this element.',
+        })
+      )
+    }
+  })
+
   it('rejects rc-plain-text with wrong content shape', () => {
     const doc = {
       tagName: 'rcml',
@@ -614,7 +665,7 @@ describe('validateEmailTemplate — non-PM content fields', () => {
         {
           tagName: 'rc-head',
           children: [
-            // @ts-expect-error — intentionally wrong shape
+            // intentionally wrong shape — content is deliberately invalid at runtime
             { tagName: 'rc-plain-text', content: 'just a string, not an object' },
           ],
         },
@@ -691,7 +742,7 @@ describe('validateEmailTemplate — non-PM content fields', () => {
                 {
                   tagName: 'rc-column',
                   children: [
-                    // @ts-expect-error — intentionally wrong shape
+                    // intentionally wrong shape — content is deliberately invalid at runtime
                     { tagName: 'rc-raw', content: '<p>wrong</p>' },
                   ],
                 },
