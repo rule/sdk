@@ -186,7 +186,24 @@ const TAGS_WITH_SIMPLE_CONTENT: Partial<
   Record<RcmlTagName, { schema: JsonSchema; required: boolean }>
 > = {
   [RcmlTagNamesEnum.Preview]: {
-    schema: { type: 'string' },
+    // Accepts both the plain string builders produce and the
+    // { type: 'text', text } object the API returns on read — it
+    // serialises every leaf's content uniformly, with no special case
+    // for rc-preview. See rcml-types.ts's RcmlPreview.content JSDoc.
+    schema: {
+      oneOf: [
+        { type: 'string' },
+        {
+          type: 'object',
+          properties: {
+            type: { const: 'text' },
+            text: { type: 'string' },
+          },
+          required: ['type', 'text'],
+          additionalProperties: false,
+        },
+      ],
+    },
     required: false,
   },
   [RcmlTagNamesEnum.PlainText]: {

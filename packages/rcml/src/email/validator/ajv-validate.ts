@@ -137,6 +137,19 @@ function toIssue(err: ErrorObject): EmailTemplateValidationIssue {
     }
 
     case 'oneOf': {
+      // `oneOf` is used for two unrelated unions: a `children` array shape
+      // (e.g. rc-section's exclusive column[]-or-group choice) and a
+      // `content` value shape (e.g. rc-preview's string-or-object choice).
+      // AJV's instancePath always ends with the failing property name, so
+      // that's how we tell them apart.
+      if (path.endsWith('/content')) {
+        return {
+          path,
+          code: EmailTemplateErrorCodes.ATTR_INVALID_VALUE,
+          message: 'Content does not match any allowed shape for this element.',
+        }
+      }
+
       return {
         path,
         code: EmailTemplateErrorCodes.CHILD_INVALID,
