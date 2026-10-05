@@ -644,10 +644,15 @@ describe('validateEmailTemplate — non-PM content fields', () => {
     expect(result.success).toBe(false)
 
     if (!result.success) {
+      // The object also fails the oneOf's plain-string branch with its own
+      // `type`-keyword ATTR_INVALID_VALUE at the same path — pin the
+      // message too, so this specifically protects the oneOf-case mapping
+      // in ajv-validate.ts (not just that *some* ATTR_INVALID_VALUE fired).
       expect(result.errors).toContainEqual(
         expect.objectContaining({
           path: '/children/0/children/0/content',
           code: EmailTemplateErrorCodes.ATTR_INVALID_VALUE,
+          message: 'Content does not match any allowed shape for this element.',
         })
       )
     }
