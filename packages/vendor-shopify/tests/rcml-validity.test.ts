@@ -1,14 +1,14 @@
 /**
  * Every shopify template must render RCML that passes the schema
- * validator — with all optional sections populated (so each
- * `rc-class="rcml-brand-color"` section is exercised) and under both a
- * default theme (placeholder social slots) and a theme whose six social
- * slots are all configured (so the `website` slot's `web` name is
- * exercised).
+ * validator with every optional context branch populated (order
+ * confirmation twice: full sections, then the inline fallbacks those
+ * sections replace), under a theme with a logo, both with default
+ * placeholder social slots and with all six slots configured (so the
+ * `website` slot's `web` name is exercised).
  */
 
 import { describe, expect, it } from 'vitest';
-import { createEmailTheme, safeValidateEmailTemplate } from '@rule/rcml';
+import { createEmailTheme, EmailThemeImageType, safeValidateEmailTemplate } from '@rule/rcml';
 import type { EmailTheme, RcmlDocument } from '@rule/rcml';
 import { customField, loopValue } from '@rule/template-engine';
 import {
@@ -32,10 +32,14 @@ const products = {
   itemPrice: loopValue('price'),
 };
 
+const cf = (name: string, id: number) => customField('Order', name, id);
+const logo = [{ type: EmailThemeImageType.Logo, url: 'https://acme.example/logo.png' }];
+
 const themes: Record<string, EmailTheme> = {
-  'default theme (placeholder socials)': createEmailTheme({ brandStyleId: 1 }),
+  'default theme (placeholder socials)': createEmailTheme({ brandStyleId: 1, images: logo }),
   'theme with all six socials configured': createEmailTheme({
     brandStyleId: 1,
+    images: logo,
     links: [
       { type: 'facebook', url: 'https://facebook.com/acme' },
       { type: 'instagram', url: 'https://instagram.com/acme' },
@@ -47,17 +51,43 @@ const themes: Record<string, EmailTheme> = {
   }),
 };
 
+const financial = {
+  subtotal: cf('Subtotal', 10),
+  discount: cf('Discount', 11),
+  tax: cf('TotalTax', 12),
+  shippingCost: cf('ShippingCost', 13),
+  total,
+};
+
 const renders: Record<string, (theme: EmailTheme) => RcmlDocument> = {
-  'order-confirmation': (theme) =>
+  'order-confirmation (all sections)': (theme) =>
     createOrderConfirmationTemplate().render({
       theme,
       context: {
         recipient: { firstName },
-        order: { ref, date },
-        cart: { products },
-        financial: { total },
-        shippingAddress: { line1: customField('Order', 'ShippingAddress1', 6) },
+        order: { ref, date, paymentMethod: cf('Gateway', 14) },
+        cart: { products: { ...products, itemTotal: loopValue('total') } },
+        financial,
+        shippingAddress: {
+          line1: cf('ShippingAddress1', 6),
+          line2: cf('ShippingAddress2', 15),
+          zip: cf('ShippingZip', 16),
+          city: cf('ShippingCity', 17),
+          country: cf('ShippingCountryCode', 18),
+        },
         heroHeading: { prefix: 'Order ', suffix: ' confirmed' },
+        websiteUrl: 'https://acme.example/',
+        footer,
+      },
+    }),
+  'order-confirmation (inline fallbacks)': (theme) =>
+    createOrderConfirmationTemplate().render({
+      theme,
+      context: {
+        recipient: { firstName },
+        order: { ref },
+        cart: { items: cf('Names', 19) },
+        inlineShippingAddress: cf('ShippingAddress1', 6),
         websiteUrl: 'https://acme.example/',
         footer,
       },
@@ -67,11 +97,30 @@ const renders: Record<string, (theme: EmailTheme) => RcmlDocument> = {
       theme,
       context: {
         recipient: { firstName },
-        order: { ref, date },
+        order: { ref, date, paymentMethod: cf('Gateway', 14), customerEmail: cf('Email', 20) },
         trackingUrl: 'https://acme.example/track',
-        shippingDetails: { address: customField('Order', 'ShippingAddress1', 6) },
-        cart: { products },
-        financial: { total },
+        status: {
+          steps: [
+            { label: 'Ordered', bg: '#05CC87', fg: '#ffffff', width: '33%' },
+            { label: 'Shipped', bg: '#05CC87', fg: '#ffffff', width: '33%' },
+            { label: 'Delivered', bg: '#eeeeee', fg: '#333333', width: '34%' },
+          ],
+        },
+        seller: { company: cf('Company', 21), vatNumber: cf('VatNumber', 22) },
+        shippingDetails: {
+          address: cf('ShippingAddress1', 6),
+          carrier: cf('Carrier', 23),
+          tracking: cf('TrackingNumber', 24),
+          estimatedDelivery: cf('EstimatedDelivery', 25),
+        },
+        cart: { products: { ...products, itemTotal: loopValue('total') } },
+        financial,
+        buyer: { fullName: cf('FullName', 26), billingAddress: cf('BillingAddress', 27) },
+        legal: {
+          text: 'Terms apply.',
+          returnPolicy: { linkText: 'Returns', linkHref: 'https://acme.example/returns' },
+          terms: { linkText: 'Terms', linkHref: 'https://acme.example/terms' },
+        },
         footer,
       },
     }),
@@ -91,6 +140,7 @@ const renders: Record<string, (theme: EmailTheme) => RcmlDocument> = {
         recipient: { firstName },
         order: { ref, date },
         websiteUrl: 'https://acme.example/',
+        support: { linkText: 'Contact us', linkHref: 'https://acme.example/support' },
         footer,
       },
     }),
@@ -100,8 +150,9 @@ const renders: Record<string, (theme: EmailTheme) => RcmlDocument> = {
       context: {
         recipient: { firstName },
         websiteUrl: 'https://acme.example/',
-        benefits: ['Free shipping'],
+        benefits: ['Free shipping', 'Early access'],
         discount: { code: 'WELCOME10' },
+        closing: 'See you soon!',
         footer,
       },
     }),
