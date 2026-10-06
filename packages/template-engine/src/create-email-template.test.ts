@@ -99,6 +99,34 @@ describe('createEmailTemplate', () => {
     expect(json).toContain('instagram')
   })
 
+  it('skips social slots still holding the default placeholder URL', () => {
+    // createEmailTheme seeds all six slots with placeholder URLs; none was
+    // supplied by the consumer, so no social section should render.
+    // (applyTheme still writes the slot defaults into rc-head's
+    // rc-attributes for the editor; only the rendered body matters here.)
+    const doc = JSON.parse(
+      render({ ...createEmailTheme({ brandStyleId: 1 }), images: {} }),
+    ) as { children: unknown[] }
+    const body = JSON.stringify(doc.children[1])
+
+    expect(body).not.toContain('rc-social')
+    expect(body).not.toContain('https://www.example.com/')
+  })
+
+  it('renders the website slot with the schema name "web"', () => {
+    const json = render({
+      ...createEmailTheme({
+        brandStyleId: 1,
+        links: [{ type: 'website', url: 'https://acme.example/' }],
+      }),
+      images: {},
+    })
+
+    expect(json).toContain('"name":"web"')
+    expect(json).not.toContain('"name":"website"')
+    expect(json).toContain('https://acme.example/')
+  })
+
   it('honours a caller-supplied TemplateRef serializer', () => {
     const upper: TemplateRefSerializer = {
       serializeCustomField: (r) => `CF<${r.group}.${r.name}>`.toUpperCase(),

@@ -10,8 +10,11 @@
  * 3. Project theme-driven context fields into the compile context so
  *    the XML's structural guards can see them:
  *      - `logoUrl` ← `theme.images.logo?.url`
- *      - `socialLinks` ← `Object.values(theme.links)` (undefined when
- *        the theme has no social slots populated)
+ *      - `socialLinks` ← `getConfiguredSocialLinks(theme.links)` (the
+ *        slots still holding a default placeholder URL are skipped), each
+ *        entry extended with `name`, the `<rc-social-element name>` value
+ *        (`'web'` for the theme's `'website'` slot); undefined when no
+ *        slot is configured
  * 4. Compile, parse to RCML, apply the theme.
  *
  * The only template-specific pieces are the file paths and the two
@@ -31,7 +34,7 @@
  */
 
 import type { EmailTheme, RcmlDocument } from '@rule/rcml'
-import { applyTheme, xmlToRcml } from '@rule/rcml'
+import { applyTheme, getConfiguredSocialLinks, xmlToRcml } from '@rule/rcml'
 
 import { compileTemplate } from './compile.js'
 import { loadCopy } from './load-copy.js'
@@ -49,8 +52,9 @@ export interface EmailTemplateRenderArgs<TCopy, TContext> {
   /**
    * Theme applied to the compiled RCML. Also projected into the
    * compile context: `theme.images.logo?.url` → `logoUrl`, and
-   * `Object.values(theme.links)` → `socialLinks` (undefined when
-   * empty).
+   * `getConfiguredSocialLinks(theme.links)` → `socialLinks`, each entry
+   * carrying the RCML `name` to render (undefined when none is
+   * configured).
    */
   readonly theme: EmailTheme
   /**
@@ -105,7 +109,14 @@ export function createEmailTemplate<TCopy, TContext>(
     render({ context, theme, copy: copyOverride, serializer }) {
       const copy = { ...defaultCopy, ...copyOverride }
       const logoUrl = theme.images.logo?.url
-      const themeSocials = Object.values(theme.links)
+      // Only consumer-supplied links: createEmailTheme seeds every slot with
+      // a placeholder URL. The schema names the website slot 'web', so
+      // templates render `name`, never the theme `type` (mirrors
+      // themeLinkTypeToRcmlName in @rule/rcml).
+      const themeSocials = getConfiguredSocialLinks(theme.links).map((link) => ({
+        ...link,
+        name: link.type === 'website' ? 'web' : link.type,
+      }))
       const socialLinks = themeSocials.length > 0 ? themeSocials : undefined
       const { xml } = compileTemplate<TCopy, unknown>({
         template,

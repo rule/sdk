@@ -87,7 +87,7 @@ Pure v3 XML. `<?copy?>` for text, `@{…}` for attribute bindings, `<?if?>` / `<
 <?if socialLinks?>
   <rc-social align="center">
     <?for let link of socialLinks?>
-      <rc-social-element name="@{link.type}" href="@{link.url}"/>
+      <rc-social-element name="@{link.name}" href="@{link.url}"/>
     <?endfor?>
   </rc-social>
 <?endif?>
@@ -171,7 +171,7 @@ Drives the public `render({ context, theme, copy? })` path; no direct imports of
 - **Merge** the caller's `copy?: Partial<TCopy>` over the defaults at each `render` call.
 - **Project theme fields** into the compile context:
   - `theme.images.logo?.url` → `logoUrl` (XML sees it via `<?if logoUrl?>` / `@{logoUrl}`).
-  - Non-empty `Object.values(theme.links)` → `socialLinks` (XML sees it via `<?if socialLinks?>` / `<?for let link of socialLinks?>`).
+  - Non-empty `getConfiguredSocialLinks(theme.links)` (slots left at their default placeholder URL are skipped) → `socialLinks` (XML sees it via `<?if socialLinks?>` / `<?for let link of socialLinks?>`). Each entry adds `name`, the `<rc-social-element name>` value (`web` for the theme's `website` slot); render `@{link.name}`, not `@{link.type}`.
 - **Serialize `TemplateRef` values** at the stringify step via a pluggable `TemplateRefSerializer`. The default emits the RFM `::placeholder{…}` / `::loop-value{…}` strings Rule.io's backend expects; pass `render({ serializer })` to target a different format.
 - **Parse and theme** — `xmlToRcml(xml)` then `applyTheme(doc, theme)`. The theme contributes element-level stylings via `<rc-class>` bindings (`rcml-logo-style`, `rcml-brand-color`, `rcml-h1-style`, etc.) — so templates that declare `rc-class="rcml-brand-color"` pick up the theme's secondary color automatically, without carrying it through context.
 
