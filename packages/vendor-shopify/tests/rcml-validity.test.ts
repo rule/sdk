@@ -9,7 +9,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { createEmailTheme, safeValidateEmailTemplate } from '@rule/rcml';
-import type { EmailTheme } from '@rule/rcml';
+import type { EmailTheme, RcmlDocument } from '@rule/rcml';
 import { customField, loopValue } from '@rule/template-engine';
 import {
   createAbandonedCartTemplate,
@@ -47,7 +47,7 @@ const themes: Record<string, EmailTheme> = {
   }),
 };
 
-const renders: Record<string, (theme: EmailTheme) => unknown> = {
+const renders: Record<string, (theme: EmailTheme) => RcmlDocument> = {
   'order-confirmation': (theme) =>
     createOrderConfirmationTemplate().render({
       theme,

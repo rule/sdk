@@ -63,7 +63,7 @@ export function assertValidRCMLDocument(doc: unknown): asserts doc is RcmlDocume
 
   // Full schema check, not just shape: catches attributes and values
   // Rule's validator rejects (e.g. a social element named 'website').
-  const result = safeValidateEmailTemplate(doc);
+  const result = safeValidateEmailTemplate(d);
 
   expect(result.success ? [] : result.errors).toEqual([]);
 }
