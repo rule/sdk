@@ -23,10 +23,11 @@ import { createEmailTheme } from '@rule/rcml';
 /**
  * Default test theme. Built from `createEmailTheme` then has its `links`
  * map explicitly cleared — the factory's `resetLinksTo([])` keeps the
- * default six social-link URLs, which would otherwise flip on the
- * `rc-social` block even for templates built without socials on
- * purpose. The shopify tests that assert `not.toContain('rc-social')`
- * depend on the clean-slate default.
+ * default six social-link URLs. Template bodies skip those placeholder
+ * slots (`getConfiguredSocialLinks`), but `applyTheme` still writes them
+ * into rc-head's `<rc-attributes>` as an `rc-social` default. The
+ * shopify tests that assert `not.toContain('rc-social')` depend on the
+ * clean-slate default.
  */
 export const TEST_THEME: EmailTheme = {
   ...createEmailTheme({

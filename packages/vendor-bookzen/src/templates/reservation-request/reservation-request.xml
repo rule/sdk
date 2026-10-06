@@ -41,7 +41,7 @@
         <rc-column padding="0 20px">
           <rc-social align="center">
             <?for let link of socialLinks?>
-              <rc-social-element name="@{link.type}" href="@{link.url}"/>
+              <rc-social-element name="@{link.name}" href="@{link.url}"/>
             <?endfor?>
           </rc-social>
         </rc-column>

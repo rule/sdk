@@ -20,6 +20,7 @@ Full-width horizontal band that holds one or more columns. The primary layout ro
 | `border-top` | — | CSS border shorthand | `2px solid #000000` | Top border only. |
 | `border-radius` | — | px or %, 1–4 values | `8px` | Rounded corners on the section. |
 | `css-class` | — | String | `hero-section` | HTML class names applied to the rendered element. |
+| `rc-class` | — | String | `rcml-brand-color` | Name of an [`<rc-class>`](../../head/rc-class.md) whose styles are inherited. `rcml-brand-color` gives the section the theme's Secondary colour as its background. |
 | `direction` | `ltr` | `ltr` \| `rtl` | `rtl` | Text and layout direction for the section. |
 | `full-width` | — | `full-width` \| `false` | `full-width` | Makes the section bleed edge-to-edge beyond the body width. |
 | `hide` | — | `desktop` \| `mobile` | `mobile` | Hides the section on the specified device type. |

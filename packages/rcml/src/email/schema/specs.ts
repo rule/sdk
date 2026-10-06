@@ -199,6 +199,11 @@ const sectionSpec = {
   category: 'layout',
   description: "Full-width horizontal band that typically holds one or more columns, optionally wrapped in an rc-group. The primary building block for email layout rows. Empty sections are structurally valid but rarely useful. Maximum 20 direct children. When rc-group is present, it must be the section's only child (columns live inside the group, not alongside it).",
   attrs: {
+    'rc-class': {
+      validator: V.String,
+      description: 'Name of an rc-class defined in rc-head whose styles are inherited by this section. Vendor templates use "rcml-brand-color" so applyTheme gives the section the theme Secondary colour as its background.',
+      examples: ['rcml-brand-color'],
+    },
     'background-color': {
       validator: V.Color,
       description: 'Solid background colour for the section.',

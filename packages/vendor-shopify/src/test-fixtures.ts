@@ -9,7 +9,7 @@ import { expect } from 'vitest';
 import type { EmailTheme } from '@rule/rcml';
 import { EmailThemeColorType, EmailThemeImageType } from '@rule/rcml';
 import type { RcmlDocument } from '@rule/rcml';
-import { createEmailTheme } from '@rule/rcml';
+import { createEmailTheme, safeValidateEmailTemplate } from '@rule/rcml';
 
 // ============================================================================
 // Shared theme fixture
@@ -23,10 +23,11 @@ import { createEmailTheme } from '@rule/rcml';
 /**
  * Default test theme. Built from `createEmailTheme` then has its `links`
  * map explicitly cleared — the factory's `resetLinksTo([])` keeps the
- * default six social-link URLs, which would otherwise flip on the
- * `rc-social` block even for templates built without socials on
- * purpose. The shopify tests that assert `not.toContain('rc-social')`
- * depend on the clean-slate default.
+ * default six social-link URLs. Template bodies skip those placeholder
+ * slots (`getConfiguredSocialLinks`), but `applyTheme` still writes them
+ * into rc-head's `<rc-attributes>` as an `rc-social` default. The
+ * shopify tests that assert `not.toContain('rc-social')` depend on the
+ * clean-slate default.
  */
 export const TEST_THEME: EmailTheme = {
   ...createEmailTheme({
@@ -68,8 +69,9 @@ export const TEST_THEME_WITH_SOCIALS: EmailTheme = {
 // ============================================================================
 
 /**
- * Assert that a value is a structurally valid RCML document (rcml root with
- * rc-head + rc-body, and at least one child in the body).
+ * Assert that a value is a valid RCML document: rcml root with rc-head +
+ * rc-body, at least one child in the body, and it passes
+ * `safeValidateEmailTemplate`.
  */
 export function assertValidRCMLDocument(doc: unknown): asserts doc is RcmlDocument {
   const d = doc as RcmlDocument;
@@ -79,6 +81,12 @@ export function assertValidRCMLDocument(doc: unknown): asserts doc is RcmlDocume
   expect(d.children[0].tagName).toBe('rc-head');
   expect(d.children[1].tagName).toBe('rc-body');
   expect(d.children[1].children.length).toBeGreaterThan(0);
+
+  // Full schema check, not just shape: catches attributes and values
+  // Rule's validator rejects (e.g. a social element named 'website').
+  const result = safeValidateEmailTemplate(d);
+
+  expect(result.success ? [] : result.errors).toEqual([]);
 }
 
 /**

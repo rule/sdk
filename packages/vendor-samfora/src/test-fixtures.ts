@@ -10,7 +10,7 @@ import { expect } from 'vitest';
 import type { EmailTheme } from '@rule/rcml';
 import { EmailThemeColorType, EmailThemeImageType } from '@rule/rcml';
 import type { RcmlDocument } from '@rule/rcml';
-import { createEmailTheme } from '@rule/rcml';
+import { createEmailTheme, safeValidateEmailTemplate } from '@rule/rcml';
 
 /** Default test theme. Has a logo, no social links. */
 export const TEST_THEME: EmailTheme = {
@@ -33,18 +33,24 @@ export const TEST_THEME: EmailTheme = {
   links: {},
 };
 
-/** Theme with two social links populated. */
+/**
+ * Theme with three social links populated. Includes the `website` slot,
+ * whose RCML name is `web`, so the schema check in
+ * `assertValidRCMLDocument` covers that mapping.
+ */
 export const TEST_THEME_WITH_SOCIALS: EmailTheme = {
   ...TEST_THEME,
   links: {
     facebook: { type: 'facebook', url: 'https://facebook.com/example' },
     instagram: { type: 'instagram', url: 'https://instagram.com/example' },
+    website: { type: 'website', url: 'https://example.org/' },
   },
 };
 
 /**
- * Assert that a value is a structurally valid RCML document
- * (rcml root with rc-head + rc-body, body has at least one child).
+ * Assert that a value is a valid RCML document: rcml root with
+ * rc-head + rc-body, body has at least one child, and it passes
+ * `safeValidateEmailTemplate`.
  */
 export function assertValidRCMLDocument(doc: unknown): asserts doc is RcmlDocument {
   const d = doc as RcmlDocument;
@@ -54,6 +60,12 @@ export function assertValidRCMLDocument(doc: unknown): asserts doc is RcmlDocume
   expect(d.children[0].tagName).toBe('rc-head');
   expect(d.children[1].tagName).toBe('rc-body');
   expect(d.children[1].children.length).toBeGreaterThan(0);
+
+  // Full schema check, not just shape: catches attributes and values
+  // Rule's validator rejects (e.g. a social element named 'website').
+  const result = safeValidateEmailTemplate(d);
+
+  expect(result.success ? [] : result.errors).toEqual([]);
 }
 
 /** Serialise an RCML document to JSON (for substring assertions). */

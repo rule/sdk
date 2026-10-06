@@ -96,6 +96,27 @@ describe('validateEmailTemplate — JSON AST input', () => {
     expect(result.errors.some((e) => e.code === EmailTemplateErrorCodes.ATTR_UNKNOWN)).toBe(true)
   })
 
+  it('accepts rc-class on rc-section (theme Secondary colour via rcml-brand-color)', () => {
+    const doc: RcmlDocument = {
+      tagName: 'rcml',
+      children: [
+        { tagName: 'rc-head', children: [] },
+        {
+          tagName: 'rc-body',
+          children: [
+            {
+              tagName: 'rc-section',
+              attributes: { 'rc-class': 'rcml-brand-color', padding: '20px 0' },
+              children: [{ tagName: 'rc-column', children: [] }],
+            },
+          ],
+        },
+      ],
+    }
+
+    expect(safeValidateEmailTemplate(doc)).toEqual({ success: true, data: doc })
+  })
+
   it('rejects an invalid padding value (via Zod)', () => {
     const bad: RcmlDocument = {
       tagName: 'rcml',
