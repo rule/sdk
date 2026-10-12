@@ -67,6 +67,8 @@ describe('createReservationCancellationTemplate', () => {
       context: fullContext(),
       theme: TEST_THEME_WITH_SOCIALS,
     })
+
+    assertValidRCMLDocument(doc)
     const json = docToString(doc)
 
     expect(json).toContain('rc-social')

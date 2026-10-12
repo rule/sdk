@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { customField } from './refs/factories.js'
 import type { TemplateRefSerializer } from './refs/types.js'
 import { createEmailTemplate } from './create-email-template.js'
-import { createEmailTheme, EmailThemeImageType } from '@rule/rcml'
+import { createEmailTheme, DEFAULT_LINKS_MAP, EmailThemeImageType } from '@rule/rcml'
 import type { EmailTheme } from '@rule/rcml'
 
 interface FixtureCopy {
@@ -97,6 +97,34 @@ describe('createEmailTemplate', () => {
     expect(json).toContain('rc-social')
     expect(json).toContain('facebook')
     expect(json).toContain('instagram')
+  })
+
+  it('skips social slots still holding the default placeholder URL', () => {
+    // createEmailTheme seeds all six slots with placeholder URLs; none was
+    // supplied by the consumer, so no social section should render.
+    // (applyTheme still writes the slot defaults into rc-head's
+    // rc-attributes; only the rendered body matters here.)
+    const doc = JSON.parse(
+      render({ ...createEmailTheme({ brandStyleId: 1 }), images: {} }),
+    ) as { children: unknown[] }
+    const body = JSON.stringify(doc.children[1])
+
+    expect(body).not.toContain('rc-social')
+    expect(body).not.toContain(DEFAULT_LINKS_MAP.web.url)
+  })
+
+  it('renders the web slot with name="web"', () => {
+    const json = render({
+      ...createEmailTheme({
+        brandStyleId: 1,
+        links: [{ type: 'web', url: 'https://acme.example/' }],
+      }),
+      images: {},
+    })
+
+    expect(json).toContain('"name":"web"')
+    expect(json).not.toContain('"name":"website"')
+    expect(json).toContain('https://acme.example/')
   })
 
   it('honours a caller-supplied TemplateRef serializer', () => {

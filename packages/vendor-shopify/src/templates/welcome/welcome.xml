@@ -13,7 +13,7 @@
     <?endif?>
 
     <!-- Hero banner (brand-color background) -->
-    <rc-section padding="20px 0" rc-class="rcml-brand-color">
+    <rc-section padding="20px 0">
       <rc-column padding="0 20px">
         <rc-heading rc-class="rcml-h1-style"><?copy heading?></rc-heading>
       </rc-column>
@@ -52,7 +52,7 @@
       <rc-section padding="0">
         <rc-column padding="0 20px"><rc-divider padding="10px 0"/></rc-column>
       </rc-section>
-      <rc-section padding="20px 0" rc-class="rcml-brand-color">
+      <rc-section padding="20px 0">
         <rc-column padding="0 20px">
           <rc-heading rc-class="rcml-h2-style" align="center"><?copy discountHeading?></rc-heading>
           <rc-text rc-class="rcml-p-style" align="center"><?copy discountMessage?></rc-text>
