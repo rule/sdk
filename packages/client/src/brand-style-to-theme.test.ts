@@ -7,6 +7,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  DEFAULT_LINKS_MAP,
   EmailThemeColorType,
   EmailThemeFontStyleType,
   EmailThemeImageType,
@@ -185,10 +186,10 @@ describe('emailThemeFromBrandStyle — partial input', () => {
     );
 
     // Empty and whitespace-only links are dropped.
-    expect(theme.links.facebook?.url).toBe('https://www.facebook.com/');
-    expect(theme.links.instagram?.url).toBe('https://www.instagram.com/');
+    expect(theme.links.facebook?.url).toBe(DEFAULT_LINKS_MAP.facebook.url);
+    expect(theme.links.instagram?.url).toBe(DEFAULT_LINKS_MAP.instagram.url);
     // javascript: URI is blocked by @braintree/sanitize-url → about:blank → dropped.
-    expect(theme.links.linkedin?.url).toBe('https://www.linkedin.com/');
+    expect(theme.links.linkedin?.url).toBe(DEFAULT_LINKS_MAP.linkedin.url);
     // A string without a protocol is passed through as-is by sanitize-url.
     expect(theme.links.x?.url).toBe('not-a-url');
 
@@ -340,6 +341,52 @@ describe('resolveBrandTheme', () => {
     };
 
     await expect(resolveBrandTheme(client)).rejects.toThrow(RuleClientError);
+  });
+});
+
+describe('emailThemeFromBrandStyle + applyTheme — brand style without links', () => {
+  // The Rule editor compares the template's rc-social with the brand style's
+  // links by exact string; a brand style without links resolves to the
+  // editor's own defaults. If rc-head carries different placeholders the
+  // editor shows the brand style as "Custom".
+  it('writes the editor default hrefs into rc-head for every social slot', () => {
+    const theme = emailThemeFromBrandStyle(fullBrandStyle({ links: [] }));
+    const doc = applyTheme(
+      {
+        tagName: 'rcml',
+        id: 'doc',
+        children: [
+          {
+            tagName: 'rc-head',
+            id: 'h',
+            children: [
+              { tagName: 'rc-brand-style', id: 'b', attributes: { id: 0 } },
+              { tagName: 'rc-attributes', id: 'a', children: [] },
+            ],
+          },
+          { tagName: 'rc-body', id: 'bd', children: [] },
+        ],
+      } as never,
+      theme
+    );
+
+    const head = doc.children[0] as { children: Array<{ tagName: string; children?: unknown[] }> };
+    const attributes = head.children.find((c) => c.tagName === 'rc-attributes');
+    const social = (attributes?.children ?? []).find(
+      (c) => (c as { tagName: string }).tagName === 'rc-social'
+    ) as { children: Array<{ attributes: { name: string; href: string } }> } | undefined;
+    const hrefByName = Object.fromEntries(
+      (social?.children ?? []).map((el) => [el.attributes.name, el.attributes.href])
+    );
+
+    expect(hrefByName).toEqual({
+      facebook: 'https://facebook.com',
+      instagram: 'https://www.instagram.com',
+      linkedin: 'https://www.linkedin.com',
+      tiktok: 'https://www.tiktok.com',
+      x: 'https://www.x.com',
+      web: 'https://www.website.com',
+    });
   });
 });
 

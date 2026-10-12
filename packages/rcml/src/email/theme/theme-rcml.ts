@@ -731,7 +731,7 @@ export function upsertSocialOverlay(
 
   const safeLinks: EmailThemeSocialLink[] = themeLinks.map((link) => ({
     type: link.type,
-    url: ensureSafeUrl(link.url, `social link ${link.type}`),
+    url: ensureSafeSocialUrl(link.url, `social link ${link.type}`),
   }))
 
   const idx = children.findIndex((c) => c.tagName === 'rc-social')
@@ -1260,6 +1260,27 @@ function ensureSafeUrl(url: string, context: string): string {
   }
 
   return safe
+}
+
+/**
+ * {@link ensureSafeUrl} for social-link hrefs. `sanitizeUrl` normalises a
+ * bare origin by appending a slash (`https://facebook.com` becomes
+ * `https://facebook.com/`). The Rule editor compares a template's social
+ * hrefs with the brand style's by exact string, so that slash alone makes
+ * the editor show the brand style as "Custom". When appending the slash is
+ * the only thing sanitisation changed, the URL is returned as given.
+ *
+ * @param url     - The URL to sanitise.
+ * @param context - Short label for the slot, used in the thrown error.
+ * @returns       The sanitised URL, without a slash the sanitiser added.
+ *
+ * @throws {@link EmailThemeApplyError} when `url` fails sanitisation.
+ */
+function ensureSafeSocialUrl(url: string, context: string): string {
+  const safe = ensureSafeUrl(url, context)
+  const trimmed = url.trim()
+
+  return safe === `${trimmed}/` ? trimmed : safe
 }
 
 /** Wrap `value` in single quotes if it isn't already quoted. */
