@@ -133,7 +133,7 @@ describe('applyTheme — full EmailTheme', () => {
       minimalDoc(),
       createEmailTheme({
         brandStyleId: 123,
-        links: [{ type: 'website', url: 'https://acme.example/' }],
+        links: [{ type: 'web', url: 'https://acme.example/' }],
       })
     )
     const social = findAttrChild<RcmlSocial>(doc, 'rc-social')
@@ -216,7 +216,7 @@ describe('applyTheme — full EmailTheme', () => {
         { type: 'linkedin', url: 'https://www.linkedin.com/' },
         { type: 'tiktok', url: 'https://www.tiktok.com/' },
         { type: 'x', url: 'https://x.com/' },
-        { type: 'website', url: 'https://www.example.com/' },
+        { type: 'web', url: 'https://www.example.com/' },
       ],
       images: [{ type: EmailThemeImageType.Logo, url: 'https://example.com/logo.png' }],
       fonts: [],

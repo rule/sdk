@@ -45,7 +45,7 @@ export const DEFAULT_LINKS_MAP: Record<EmailThemeSocialLinkType, EmailThemeSocia
   linkedin: { type: 'linkedin', url: 'https://www.linkedin.com/' },
   tiktok: { type: 'tiktok', url: 'https://www.tiktok.com/' },
   x: { type: 'x', url: 'https://x.com/' },
-  website: { type: 'website', url: 'https://www.example.com/' },
+  web: { type: 'web', url: 'https://www.example.com/' },
 }
 
 /**

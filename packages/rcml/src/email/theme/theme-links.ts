@@ -20,7 +20,7 @@ const LINK_ORDER: readonly EmailThemeSocialLinkType[] = [
   'linkedin',
   'tiktok',
   'x',
-  'website',
+  'web',
 ]
 
 /**

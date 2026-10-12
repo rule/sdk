@@ -37,7 +37,7 @@ describe('DEFAULT_COLORS_MAP', () => {
 describe('DEFAULT_LINKS_MAP', () => {
   it('has an entry for every social slot', () => {
     expect(Object.keys(DEFAULT_LINKS_MAP).sort()).toEqual(
-      ['facebook', 'instagram', 'linkedin', 'tiktok', 'website', 'x'].sort()
+      ['facebook', 'instagram', 'linkedin', 'tiktok', 'web', 'x'].sort()
     )
   })
 
@@ -137,12 +137,12 @@ describe('getConfiguredSocialLinks', () => {
     const result = getConfiguredSocialLinks({
       ...DEFAULT_LINKS_MAP,
       facebook: { type: 'facebook', url: 'https://facebook.com/acme' },
-      website: { type: 'website', url: 'https://acme.example/' },
+      web: { type: 'web', url: 'https://acme.example/' },
     })
 
     expect(result).toEqual([
       { type: 'facebook', url: 'https://facebook.com/acme' },
-      { type: 'website', url: 'https://acme.example/' },
+      { type: 'web', url: 'https://acme.example/' },
     ])
   })
 

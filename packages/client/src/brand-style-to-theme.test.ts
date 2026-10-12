@@ -102,7 +102,7 @@ describe('emailThemeFromBrandStyle — full input', () => {
     const types = Object.values(theme.links).map((l) => l!.type);
 
     expect(types).toContain('facebook');
-    expect(types).toContain('website');
+    expect(types).toContain('web');
     expect(types).toContain('x'); // twitter → x
     expect(types).not.toContain('youtube');
   });
@@ -193,7 +193,7 @@ describe('emailThemeFromBrandStyle — partial input', () => {
     expect(theme.links.x?.url).toBe('not-a-url');
 
     // A safe URL is trimmed and applied.
-    expect(theme.links.website?.url).toBe('https://acme.example/');
+    expect(theme.links.web?.url).toBe('https://acme.example/');
   });
 
   it('drops font url when it is empty or unsafe (applyTheme rejects unsafe font urls)', () => {
