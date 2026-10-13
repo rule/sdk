@@ -390,6 +390,73 @@ describe('emailThemeFromBrandStyle + applyTheme — brand style without links', 
   });
 });
 
+describe('emailThemeFromBrandStyle — brand style links are kept as given', () => {
+  // `sanitizeUrl` appends a slash to a bare origin. The Rule editor compares
+  // a template's social hrefs with the brand style's own links by exact
+  // string, so that slash alone makes it show the brand style as "Custom".
+  const linkOf = (type: 'facebook' | 'website', link: string) => ({
+    id: 30, brandStyleId: 99999, type, link, createdAt: NOW, updatedAt: NOW,
+  });
+  const themeFor = (link: string) =>
+    emailThemeFromBrandStyle(fullBrandStyle({ links: [linkOf('facebook', link)] }));
+
+  it('leaves a bare origin without an appended slash', () => {
+    expect(themeFor('https://acme.example').links.facebook?.url).toBe('https://acme.example');
+  });
+
+  it('trims surrounding whitespace around a bare origin', () => {
+    expect(themeFor('  https://acme.example  ').links.facebook?.url).toBe('https://acme.example');
+  });
+
+  it('keeps a slash the brand style has and any path', () => {
+    expect(themeFor('https://acme.example/').links.facebook?.url).toBe('https://acme.example/');
+    expect(themeFor('https://acme.example/brand').links.facebook?.url).toBe('https://acme.example/brand');
+  });
+
+  it('keeps the normalisation when it is more than an appended slash', () => {
+    expect(themeFor('https://acme.example?ref=1').links.facebook?.url).toBe('https://acme.example/?ref=1');
+  });
+
+  it('still drops blank and unsafe links', () => {
+    expect(themeFor('javascript:alert(1)').links.facebook?.url).toBe(DEFAULT_LINKS_MAP.facebook.url);
+    expect(themeFor('   ').links.facebook?.url).toBe(DEFAULT_LINKS_MAP.facebook.url);
+  });
+
+  it('writes the brand style hrefs into rc-head unchanged (facebook and website)', () => {
+    const theme = emailThemeFromBrandStyle(
+      fullBrandStyle({
+        links: [
+          linkOf('facebook', 'https://acme.example'),
+          linkOf('website', 'https://acme.example'),
+        ],
+      })
+    );
+    const doc = applyTheme(
+      {
+        tagName: 'rcml',
+        id: 'doc',
+        children: [
+          {
+            tagName: 'rc-head',
+            id: 'h',
+            children: [
+              { tagName: 'rc-brand-style', id: 'b', attributes: { id: 0 } },
+              { tagName: 'rc-attributes', id: 'a', children: [] },
+            ],
+          },
+          { tagName: 'rc-body', id: 'bd', children: [] },
+        ],
+      } as never,
+      theme
+    );
+    const hrefs = [...JSON.stringify(doc).matchAll(/"name":"(facebook|web)","href":"([^"]*)"/g)].map(
+      (m) => `${m[1]}=${m[2]}`
+    );
+
+    expect(hrefs).toEqual(['facebook=https://acme.example', 'web=https://acme.example']);
+  });
+});
+
 describe('emailThemeFromBrandStyle + applyTheme — end-to-end', () => {
   it('produces a document whose head reflects the brand style', () => {
     const theme = emailThemeFromBrandStyle(fullBrandStyle());

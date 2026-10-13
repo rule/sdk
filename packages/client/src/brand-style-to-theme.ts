@@ -126,10 +126,24 @@ function mapLinks(brandLinks: BrandStyleLink[]): EmailThemeSocialLink[] {
 
     if (safeUrl === 'about:blank') continue;
 
-    out.push({ type: themeType, url: safeUrl });
+    out.push({ type: themeType, url: keepSlashAsGiven(link.link, safeUrl) });
   }
 
   return out;
+}
+
+/**
+ * `sanitizeUrl` normalises a bare origin by appending a slash
+ * (`https://acme.example` becomes `https://acme.example/`). The Rule editor
+ * compares a template's social hrefs with the brand style's own links by
+ * exact string, so that slash alone makes it show the brand style as
+ * "Custom". When appending the slash is the only thing sanitisation changed,
+ * keep the URL as the brand style has it.
+ */
+function keepSlashAsGiven(url: string, safe: string): string {
+  const trimmed = url.trim();
+
+  return safe === `${trimmed}/` ? trimmed : safe;
 }
 
 function mapImages(brandImages: BrandStyleImage[]): EmailThemeImage[] {
