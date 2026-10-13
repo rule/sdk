@@ -21,8 +21,7 @@ import type { CustomFieldRef } from '@rule/template-engine'
  * skip the room row, `reservation.checkOutDate` for single-date
  * stays, `reservation.totalPrice` to skip the price row.
  *
- * Theme-derived fields (logo, brand-color, social links) come from
- * `theme`. All caller-visible labels live in copy defaults.
+ * Theme-derived fields (logo, social links) come from `theme`. All caller-visible labels live in copy defaults.
  */
 export interface ReservationConfirmationTemplateContext {
   recipient: {

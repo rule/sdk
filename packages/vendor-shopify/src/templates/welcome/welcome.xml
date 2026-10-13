@@ -12,7 +12,7 @@
       </rc-section>
     <?endif?>
 
-    <!-- Hero banner (brand-color background) -->
+    <!-- Hero banner -->
     <rc-section padding="20px 0">
       <rc-column padding="0 20px">
         <rc-heading rc-class="rcml-h1-style"><?copy heading?></rc-heading>

@@ -43,10 +43,9 @@ import type { CustomFieldRef, LoopValueRef } from '@rule/template-engine'
  * `theme.links` into the compile context so the XML's `<?if?>` gates
  * and `<?for?>` loop can see them. The logo image URL is also
  * rendered on the `<rc-logo>` element via `applyTheme`'s
- * `rcml-logo-style` class binding. The secondary-color background on
- * the total-row section comes from `theme.colors.secondary` via
- * `applyTheme`'s `rcml-brand-color` class binding. Callers filter by
- * curating their theme.
+ * `rcml-logo-style` class binding. The total-row section uses the
+ * default section background (the theme's Body colour). Callers filter
+ * by curating their theme.
  *
  * Footer-link labels and RFM structure live inline in the
  * `footerLinks` copy entry — callers override that entry to change
