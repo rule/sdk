@@ -102,7 +102,7 @@ describe('emailThemeFromBrandStyle — full input', () => {
     const types = Object.values(theme.links).map((l) => l!.type);
 
     expect(types).toContain('facebook');
-    expect(types).toContain('website');
+    expect(types).toContain('web');
     expect(types).toContain('x'); // twitter → x
     expect(types).not.toContain('youtube');
   });
@@ -193,7 +193,7 @@ describe('emailThemeFromBrandStyle — partial input', () => {
     expect(theme.links.x?.url).toBe('not-a-url');
 
     // A safe URL is trimmed and applied.
-    expect(theme.links.website?.url).toBe('https://acme.example/');
+    expect(theme.links.web?.url).toBe('https://acme.example/');
   });
 
   it('drops font url when it is empty or unsafe (applyTheme rejects unsafe font urls)', () => {
@@ -380,5 +380,37 @@ describe('emailThemeFromBrandStyle + applyTheme — end-to-end', () => {
     expect(serialised).toContain("'Merriweather'"); // title font
     expect(serialised).toContain("'Open Sans'"); // body font
     expect(serialised).toContain('https://fonts.example/merriweather.css');
+  });
+
+  it('writes the API "website" link as name="web" in the resulting RCML', () => {
+    const theme = emailThemeFromBrandStyle(
+      fullBrandStyle({
+        links: [
+          { id: 34, brandStyleId: 99999, type: 'website', link: 'https://acme.example/', createdAt: NOW, updatedAt: NOW },
+        ],
+      }),
+    );
+    const doc = applyTheme(
+      {
+        tagName: 'rcml',
+        id: 'doc',
+        children: [
+          {
+            tagName: 'rc-head',
+            id: 'h',
+            children: [
+              { tagName: 'rc-brand-style', id: 'b', attributes: { id: 0 } },
+              { tagName: 'rc-attributes', id: 'a', children: [] },
+            ],
+          },
+          { tagName: 'rc-body', id: 'bd', children: [] },
+        ],
+      } as never,
+      theme,
+    );
+    const serialised = JSON.stringify(doc);
+
+    expect(serialised).toContain('"name":"web","href":"https://acme.example/"');
+    expect(serialised).not.toContain('"name":"website"');
   });
 });

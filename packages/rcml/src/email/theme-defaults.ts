@@ -12,6 +12,7 @@ import type {
   EmailThemeSocialLink,
   EmailThemeSocialLinkType,
 } from './theme-types.js'
+import { migrateLegacySocialLink } from './theme/legacy-social-link.js'
 import {
   EmailThemeColorType,
   EmailThemeFontStyleType,
@@ -45,7 +46,7 @@ export const DEFAULT_LINKS_MAP: Record<EmailThemeSocialLinkType, EmailThemeSocia
   linkedin: { type: 'linkedin', url: 'https://www.linkedin.com/' },
   tiktok: { type: 'tiktok', url: 'https://www.tiktok.com/' },
   x: { type: 'x', url: 'https://x.com/' },
-  website: { type: 'website', url: 'https://www.example.com/' },
+  web: { type: 'web', url: 'https://www.example.com/' },
 }
 
 /**
@@ -58,6 +59,10 @@ export const DEFAULT_LINKS_MAP: Record<EmailThemeSocialLinkType, EmailThemeSocia
  * when the consumer never supplied socials. `createEmailTheme` always
  * seeds `theme.links` with the defaults so a naive
  * `Object.values(theme.links).length > 0` check is always true.
+ *
+ * A legacy `'website'` entry (from a theme persisted before the slot was
+ * renamed to `'web'`) is returned as `'web'`; entries with an unknown
+ * `type` are ignored.
  *
  * Edge case: if a consumer happens to set a URL to *exactly* the
  * default placeholder string (e.g. `'https://www.facebook.com/'`),
@@ -72,10 +77,16 @@ export function getConfiguredSocialLinks(
 ): EmailThemeSocialLink[] {
   const result: EmailThemeSocialLink[] = []
 
-  for (const link of Object.values(links)) {
+  for (const entry of Object.values(links)) {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (link === undefined) continue
-    if (link.url === DEFAULT_LINKS_MAP[link.type].url) continue
+    if (entry === undefined) continue
+
+    // A persisted theme may still carry the legacy 'website' slot; it is
+    // returned as 'web'. Entries with an unknown type are ignored.
+    const link = migrateLegacySocialLink(entry)
+    const placeholder = DEFAULT_LINKS_MAP[link.type] as EmailThemeSocialLink | undefined
+
+    if (placeholder === undefined || link.url === placeholder.url) continue
     result.push(link)
   }
 

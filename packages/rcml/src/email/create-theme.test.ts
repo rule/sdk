@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
+import type { EmailThemeSocialLink } from './theme-types.js'
 import { createEmailTheme } from './create-theme.js'
 import {
   DEFAULT_COLORS_MAP,
@@ -78,6 +79,15 @@ describe('createEmailTheme — individual overrides', () => {
     expect(theme.links.facebook?.url).toBe('https://fb.example/acme')
     // Unspecified slot still at default (not cleared).
     expect(theme.links.instagram?.url).toBe(DEFAULT_LINKS_MAP.instagram.url)
+  })
+
+  it('treats a legacy "website" link as the "web" slot', () => {
+    const theme = createEmailTheme({
+      links: [{ type: 'website', url: 'https://acme.example/' }] as unknown as EmailThemeSocialLink[],
+    })
+
+    expect(theme.links.web?.url).toBe('https://acme.example/')
+    expect(Object.keys(theme.links)).not.toContain('website')
   })
 
   it('applies images via full replace', () => {

@@ -571,8 +571,8 @@ describe('extractLinksFromAttributes', () => {
     } as unknown as RcmlSocial
 
     expect(
-      extractLinksFromAttributes([social as unknown as AnyAttrChild]).website
-    ).toEqual({ type: 'website', url: 'https://acme.example/' })
+      extractLinksFromAttributes([social as unknown as AnyAttrChild]).web
+    ).toEqual({ type: 'web', url: 'https://acme.example/' })
   })
 
   it('also maps the legacy name="website" value to the website slot (reads documents written before this fix)', () => {
@@ -589,8 +589,8 @@ describe('extractLinksFromAttributes', () => {
     } as unknown as RcmlSocial
 
     expect(
-      extractLinksFromAttributes([social as unknown as AnyAttrChild]).website
-    ).toEqual({ type: 'website', url: 'https://acme.example/' })
+      extractLinksFromAttributes([social as unknown as AnyAttrChild]).web
+    ).toEqual({ type: 'web', url: 'https://acme.example/' })
   })
 })
 
@@ -758,11 +758,11 @@ describe('upsertSocialOverlay', () => {
     ).toBe('https://fb.example/')
   })
 
-  it('writes name="web" for the website slot, not the theme bucket key "website"', () => {
+  it('writes name="web" for the web slot, the same value as the theme slot key', () => {
     const children: AnyAttrChild[] = []
 
     upsertSocialOverlay(children, [
-      { type: 'website', url: 'https://acme.example/' },
+      { type: 'web', url: 'https://acme.example/' },
     ])
 
     const social = children[0] as unknown as RcmlSocial
@@ -786,7 +786,7 @@ describe('upsertSocialOverlay', () => {
     ]
 
     upsertSocialOverlay(children, [
-      { type: 'website', url: 'https://acme.example/' },
+      { type: 'web', url: 'https://acme.example/' },
     ])
 
     const social = children[0] as unknown as RcmlSocial

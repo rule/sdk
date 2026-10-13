@@ -689,25 +689,14 @@ function upsertClassNode(
 // rc-social
 
 /**
- * Maps a theme's social-link slot key to the RCML wire value written into
- * `<rc-social-element name="…">`. Only `'website'` differs — Rule's RCML
- * schema (and its own frontend) names that slot `'web'`; the other five
- * slots use the same string on both sides.
- */
-function themeLinkTypeToRcmlName(type: EmailThemeSocialLinkType): string {
-  return type === 'website' ? 'web' : type
-}
-
-/**
- * Reverse of {@link themeLinkTypeToRcmlName} — maps an RCML `name` value
- * back to the theme's social-link slot key. Accepts both the correct wire
- * value (`'web'`) and the legacy value some already-saved documents carry
- * (`'website'`, written by a previous version of this package), so
- * documents from either source round-trip. Returns `undefined` for
- * anything else.
+ * Maps an RCML `<rc-social-element name>` value to the theme's social-link
+ * slot key. The two are identical; the one exception is the legacy value
+ * `'website'` that earlier versions of this package wrote for the website
+ * slot, which is accepted and mapped to `'web'` so already-saved documents
+ * still round-trip. Returns `undefined` for anything else.
  */
 function rcmlNameToThemeLinkType(name: string): EmailThemeSocialLinkType | undefined {
-  if (name === 'web') return 'website'
+  if (name === 'website') return 'web'
 
   return isKnownSocialLinkType(name) ? name : undefined
 }
@@ -776,18 +765,17 @@ export function upsertSocialOverlay(
 
   for (const link of safeLinks) {
     const existingEl = byType.get(link.type)
-    const rcmlName = themeLinkTypeToRcmlName(link.type)
 
     if (existingEl) {
       // Also re-writes `name` when it still carries the legacy 'website'
       // value, so re-applying the theme heals an already-saved document.
       if (
         (existingEl.attributes.href as string | undefined) !== link.url ||
-        existingEl.attributes.name !== rcmlName
+        existingEl.attributes.name !== link.type
       ) {
         existingEl.attributes = {
           ...existingEl.attributes,
-          name: rcmlName,
+          name: link.type,
           href: link.url,
         } as RcmlSocialElement['attributes']
       }
@@ -806,7 +794,7 @@ function buildSocialElement(link: EmailThemeSocialLink): RcmlSocialElement {
     id: newId(),
     tagName: 'rc-social-element',
     attributes: {
-      name: themeLinkTypeToRcmlName(link.type),
+      name: link.type,
       href: link.url,
     } as RcmlSocialElement['attributes'],
   }
@@ -1233,7 +1221,7 @@ const KNOWN_SOCIAL_LINK_TYPES: ReadonlySet<EmailThemeSocialLinkType> = new Set([
   'linkedin',
   'tiktok',
   'x',
-  'website',
+  'web',
 ])
 
 /** Type guard: is `name` one of the six known social-link types? */

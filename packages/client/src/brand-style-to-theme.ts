@@ -65,7 +65,7 @@ const LINK_TYPE_TO_THEME_LINK: Partial<
   linkedin: 'linkedin',
   tiktok: 'tiktok',
   twitter: 'x',
-  website: 'website',
+  website: 'web',
 };
 
 /**
