@@ -11,6 +11,7 @@ import type {
   RcmlSocial,
   RcmlSocialElement,
 } from './rcml-types.js'
+import type { EmailTheme, EmailThemePatch } from './theme-types.js'
 import { createEmailTheme } from './create-theme.js'
 import {
   EmailThemeColorType,
@@ -146,6 +147,54 @@ describe('applyTheme — full EmailTheme', () => {
     const result = safeValidateEmailTemplate(doc)
 
     expect(result.success).toBe(true)
+  })
+
+  describe('legacy "website" social link type', () => {
+    // A theme persisted before the 'website' -> 'web' rename (themes are plain
+    // JSON-safe objects) and callers that still pass the old key. The public
+    // type no longer allows it, so the inputs are cast.
+    const legacyLink = { type: 'website', url: 'https://acme.example/' }
+    const legacyTheme = {
+      ...createEmailTheme({ brandStyleId: 123 }),
+      links: { website: legacyLink },
+    } as unknown as EmailTheme
+    const legacyPatch = { brandStyleId: 123, links: [legacyLink] } as unknown as EmailThemePatch
+
+    function socialNames(doc: RcmlDocument): string[] {
+      const social = findAttrChild<RcmlSocial>(doc, 'rc-social')
+
+      return (social?.children as RcmlSocialElement[]).map((el) => el.attributes.name as string)
+    }
+
+    it.each([
+      ['a patch', legacyPatch],
+      ['a persisted theme object', legacyTheme],
+    ])('writes name="web" for %s', (_label, input) => {
+      const doc = applyTheme(minimalDoc(), input)
+
+      expect(socialNames(doc)).toEqual(['web'])
+      expect(safeValidateEmailTemplate(doc).success).toBe(true)
+    })
+
+    it.each([
+      ['a patch', legacyPatch],
+      ['a persisted theme object', legacyTheme],
+    ])('updates the existing web element instead of appending a second one (%s)', (_label, input) => {
+      const seeded = applyTheme(
+        minimalDoc(),
+        createEmailTheme({ brandStyleId: 123, links: [{ type: 'web', url: 'https://old.example/' }] })
+      )
+      const doc = applyTheme(seeded, input)
+      const social = findAttrChild<RcmlSocial>(doc, 'rc-social')
+      const names = socialNames(doc)
+
+      expect(names.filter((n) => n === 'web')).toHaveLength(1)
+      expect(names).not.toContain('website')
+      expect(
+        (social?.children as RcmlSocialElement[]).find((el) => el.attributes.name === 'web')
+          ?.attributes.href
+      ).toBe('https://acme.example/')
+    })
   })
 
   it('updates rc-brand-style id', () => {

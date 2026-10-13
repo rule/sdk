@@ -146,6 +146,30 @@ describe('getConfiguredSocialLinks', () => {
     ])
   })
 
+  it('returns a legacy "website" key (persisted theme) as the "web" slot instead of throwing', () => {
+    const result = getConfiguredSocialLinks({
+      website: { type: 'website', url: 'https://acme.example/' },
+    } as unknown as Parameters<typeof getConfiguredSocialLinks>[0])
+
+    expect(result).toEqual([{ type: 'web', url: 'https://acme.example/' }])
+  })
+
+  it('treats a legacy "website" link at the default URL as not configured', () => {
+    const result = getConfiguredSocialLinks({
+      website: { type: 'website', url: DEFAULT_LINKS_MAP.web.url },
+    } as unknown as Parameters<typeof getConfiguredSocialLinks>[0])
+
+    expect(result).toEqual([])
+  })
+
+  it('ignores an entry with an unknown type instead of throwing', () => {
+    const result = getConfiguredSocialLinks({
+      myspace: { type: 'myspace', url: 'https://myspace.example/acme' },
+    } as unknown as Parameters<typeof getConfiguredSocialLinks>[0])
+
+    expect(result).toEqual([])
+  })
+
   it('skips slots that are absent from the map', () => {
     const result = getConfiguredSocialLinks({
       facebook: { type: 'facebook', url: 'https://facebook.com/acme' },
