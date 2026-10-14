@@ -14,6 +14,8 @@ import { randomUUID } from 'node:crypto'
 
 import { sanitizeUrl } from '@braintree/sanitize-url'
 
+import { sanitizeUrlKeepingForm } from '../sanitize-url-keeping-form.js'
+
 import type {
   RcmlAttributes,
   RcmlAttributesChild,
@@ -731,7 +733,7 @@ export function upsertSocialOverlay(
 
   const safeLinks: EmailThemeSocialLink[] = themeLinks.map((link) => ({
     type: link.type,
-    url: ensureSafeUrl(link.url, `social link ${link.type}`),
+    url: ensureSafeUrl(link.url, `social link ${link.type}`, sanitizeUrlKeepingForm),
   }))
 
   const idx = children.findIndex((c) => c.tagName === 'rc-social')
@@ -1244,16 +1246,23 @@ function newId(): string {
  * An unsafe or rejected URL triggers {@link EmailThemeApplyError} with
  * `context` in the message so the caller can see which slot failed.
  *
- * @param url     - The URL to sanitise.
- * @param context - Short label for the slot this URL belongs to (e.g.
- *                  `'logo image'`, `'social link facebook'`). Shows up
- *                  in the thrown error message.
- * @returns       The sanitised URL string.
+ * @param url      - The URL to sanitise.
+ * @param context  - Short label for the slot this URL belongs to (e.g.
+ *                   `'logo image'`, `'social link facebook'`). Shows up
+ *                   in the thrown error message.
+ * @param sanitize - The sanitiser to apply; `sanitizeUrl` by default.
+ *                   Social links pass {@link sanitizeUrlKeepingForm} so a
+ *                   URL that is already fine is not rewritten.
+ * @returns        The sanitised URL string.
  *
  * @throws {@link EmailThemeApplyError} when `url` fails sanitisation.
  */
-function ensureSafeUrl(url: string, context: string): string {
-  const safe = sanitizeUrl(url)
+function ensureSafeUrl(
+  url: string,
+  context: string,
+  sanitize: (url: string) => string = sanitizeUrl
+): string {
+  const safe = sanitize(url)
 
   if (!safe || safe === 'about:blank') {
     throw new EmailThemeApplyError(`applyTheme: invalid or unsafe URL for ${context}`)
