@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { customField } from './refs/factories.js'
 import type { TemplateRefSerializer } from './refs/types.js'
 import { createEmailTemplate } from './create-email-template.js'
-import { createEmailTheme, EmailThemeImageType } from '@rule/rcml'
+import { createEmailTheme, DEFAULT_LINKS_MAP, EmailThemeImageType } from '@rule/rcml'
 import type { EmailTheme } from '@rule/rcml'
 
 interface FixtureCopy {
@@ -97,6 +97,69 @@ describe('createEmailTemplate', () => {
     expect(json).toContain('rc-social')
     expect(json).toContain('facebook')
     expect(json).toContain('instagram')
+  })
+
+  describe('placeholder social slots', () => {
+    // `createEmailTheme` seeds every slot with a placeholder URL. Those were
+    // not supplied by the consumer and must not reach the rendered body.
+    // (`applyTheme` still writes the slot defaults into rc-head's
+    // rc-attributes; only the rendered body is checked here.)
+    const bodyOf = (theme: EmailTheme): string => {
+      const doc = JSON.parse(render(theme)) as { children: unknown[] }
+
+      return JSON.stringify(doc.children[1])
+    }
+
+    it('renders no social section for a default-seeded theme', () => {
+      const body = bodyOf({ ...createEmailTheme({ brandStyleId: 1 }), images: {} })
+
+      expect(body).not.toContain('rc-social')
+
+      for (const { url } of Object.values(DEFAULT_LINKS_MAP)) {
+        expect(body).not.toContain(url)
+      }
+    })
+
+    it('renders only the supplied links, not the placeholders around them', () => {
+      const body = bodyOf({
+        ...createEmailTheme({
+          brandStyleId: 1,
+          links: [{ type: 'facebook', url: 'https://facebook.com/acme' }],
+        }),
+        images: {},
+      })
+
+      expect(body).toContain('https://facebook.com/acme')
+      expect(body).not.toContain(DEFAULT_LINKS_MAP.instagram.url)
+      expect(body).not.toContain(DEFAULT_LINKS_MAP.linkedin.url)
+    })
+
+    it('treats placeholders written by earlier SDK versions as not configured', () => {
+      const body = bodyOf({
+        ...createEmailTheme({ brandStyleId: 1 }),
+        images: {},
+        links: {
+          facebook: { type: 'facebook', url: 'https://www.facebook.com/' },
+          instagram: { type: 'instagram', url: 'https://www.instagram.com/' },
+        },
+      })
+
+      expect(body).not.toContain('rc-social')
+    })
+  })
+
+  it('renders the web slot with name="web"', () => {
+    const json = render({
+      ...createEmailTheme({
+        brandStyleId: 1,
+        links: [{ type: 'web', url: 'https://acme.example/' }],
+      }),
+      images: {},
+    })
+
+    expect(json).toContain('"name":"web"')
+    expect(json).not.toContain('"name":"website"')
+    expect(json).toContain('https://acme.example/')
   })
 
   it('honours a caller-supplied TemplateRef serializer', () => {

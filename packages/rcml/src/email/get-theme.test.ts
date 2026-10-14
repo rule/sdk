@@ -4,7 +4,11 @@ import type { RcmlBody, RcmlDocument, RcmlHead } from './rcml-types.js'
 import { applyTheme } from './apply-theme.js'
 import { createEmailTheme } from './create-theme.js'
 import { getTheme } from './get-theme.js'
-import { DEFAULT_COLORS_MAP, DEFAULT_FONT_STYLES_MAP } from './theme-defaults.js'
+import {
+  DEFAULT_COLORS_MAP,
+  DEFAULT_FONT_STYLES_MAP,
+  DEFAULT_LINKS_MAP,
+} from './theme-defaults.js'
 import {
   EmailThemeColorType,
   EmailThemeFontStyleType,
@@ -152,7 +156,7 @@ describe('getTheme — links', () => {
     const theme = getTheme(doc)
 
     // tiktok not in the patch → default URL retained.
-    expect(theme.links.tiktok?.url).toBe('https://www.tiktok.com/')
+    expect(theme.links.tiktok?.url).toBe(DEFAULT_LINKS_MAP.tiktok.url)
   })
 
   it('ignores rc-social-element entries with unknown name', () => {

@@ -14,6 +14,8 @@ import { randomUUID } from 'node:crypto'
 
 import { sanitizeUrl } from '@braintree/sanitize-url'
 
+import { sanitizeUrlKeepingForm } from '../sanitize-url-keeping-form.js'
+
 import type {
   RcmlAttributes,
   RcmlAttributesChild,
@@ -689,25 +691,14 @@ function upsertClassNode(
 // rc-social
 
 /**
- * Maps a theme's social-link slot key to the RCML wire value written into
- * `<rc-social-element name="…">`. Only `'website'` differs — Rule's RCML
- * schema (and its own frontend) names that slot `'web'`; the other five
- * slots use the same string on both sides.
- */
-function themeLinkTypeToRcmlName(type: EmailThemeSocialLinkType): string {
-  return type === 'website' ? 'web' : type
-}
-
-/**
- * Reverse of {@link themeLinkTypeToRcmlName} — maps an RCML `name` value
- * back to the theme's social-link slot key. Accepts both the correct wire
- * value (`'web'`) and the legacy value some already-saved documents carry
- * (`'website'`, written by a previous version of this package), so
- * documents from either source round-trip. Returns `undefined` for
- * anything else.
+ * Maps an RCML `<rc-social-element name>` value to the theme's social-link
+ * slot key. The two are identical; the one exception is the legacy value
+ * `'website'` that earlier versions of this package wrote for the website
+ * slot, which is accepted and mapped to `'web'` so already-saved documents
+ * still round-trip. Returns `undefined` for anything else.
  */
 function rcmlNameToThemeLinkType(name: string): EmailThemeSocialLinkType | undefined {
-  if (name === 'web') return 'website'
+  if (name === 'website') return 'web'
 
   return isKnownSocialLinkType(name) ? name : undefined
 }
@@ -742,7 +733,7 @@ export function upsertSocialOverlay(
 
   const safeLinks: EmailThemeSocialLink[] = themeLinks.map((link) => ({
     type: link.type,
-    url: ensureSafeUrl(link.url, `social link ${link.type}`),
+    url: ensureSafeUrl(link.url, `social link ${link.type}`, sanitizeUrlKeepingForm),
   }))
 
   const idx = children.findIndex((c) => c.tagName === 'rc-social')
@@ -776,18 +767,17 @@ export function upsertSocialOverlay(
 
   for (const link of safeLinks) {
     const existingEl = byType.get(link.type)
-    const rcmlName = themeLinkTypeToRcmlName(link.type)
 
     if (existingEl) {
       // Also re-writes `name` when it still carries the legacy 'website'
       // value, so re-applying the theme heals an already-saved document.
       if (
         (existingEl.attributes.href as string | undefined) !== link.url ||
-        existingEl.attributes.name !== rcmlName
+        existingEl.attributes.name !== link.type
       ) {
         existingEl.attributes = {
           ...existingEl.attributes,
-          name: rcmlName,
+          name: link.type,
           href: link.url,
         } as RcmlSocialElement['attributes']
       }
@@ -806,7 +796,7 @@ function buildSocialElement(link: EmailThemeSocialLink): RcmlSocialElement {
     id: newId(),
     tagName: 'rc-social-element',
     attributes: {
-      name: themeLinkTypeToRcmlName(link.type),
+      name: link.type,
       href: link.url,
     } as RcmlSocialElement['attributes'],
   }
@@ -1233,7 +1223,7 @@ const KNOWN_SOCIAL_LINK_TYPES: ReadonlySet<EmailThemeSocialLinkType> = new Set([
   'linkedin',
   'tiktok',
   'x',
-  'website',
+  'web',
 ])
 
 /** Type guard: is `name` one of the six known social-link types? */
@@ -1256,16 +1246,23 @@ function newId(): string {
  * An unsafe or rejected URL triggers {@link EmailThemeApplyError} with
  * `context` in the message so the caller can see which slot failed.
  *
- * @param url     - The URL to sanitise.
- * @param context - Short label for the slot this URL belongs to (e.g.
- *                  `'logo image'`, `'social link facebook'`). Shows up
- *                  in the thrown error message.
- * @returns       The sanitised URL string.
+ * @param url      - The URL to sanitise.
+ * @param context  - Short label for the slot this URL belongs to (e.g.
+ *                   `'logo image'`, `'social link facebook'`). Shows up
+ *                   in the thrown error message.
+ * @param sanitize - The sanitiser to apply; `sanitizeUrl` by default.
+ *                   Social links pass {@link sanitizeUrlKeepingForm} so a
+ *                   URL that is already fine is not rewritten.
+ * @returns        The sanitised URL string.
  *
  * @throws {@link EmailThemeApplyError} when `url` fails sanitisation.
  */
-function ensureSafeUrl(url: string, context: string): string {
-  const safe = sanitizeUrl(url)
+function ensureSafeUrl(
+  url: string,
+  context: string,
+  sanitize: (url: string) => string = sanitizeUrl
+): string {
+  const safe = sanitize(url)
 
   if (!safe || safe === 'about:blank') {
     throw new EmailThemeApplyError(`applyTheme: invalid or unsafe URL for ${context}`)

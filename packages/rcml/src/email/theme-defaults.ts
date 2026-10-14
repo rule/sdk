@@ -12,6 +12,7 @@ import type {
   EmailThemeSocialLink,
   EmailThemeSocialLinkType,
 } from './theme-types.js'
+import { migrateLegacySocialLink } from './theme/legacy-social-link.js'
 import {
   EmailThemeColorType,
   EmailThemeFontStyleType,
@@ -37,30 +38,56 @@ export const DEFAULT_COLORS_MAP: Record<EmailThemeColorType, EmailThemeColor> = 
  * valid URL. Callers overlay real links through the `links` bucket of
  * {@link createEmailTheme} or {@link applyTheme}.
  *
+ * These values must match, byte for byte, the Rule editor's own social
+ * defaults (`defaultHref` in `social-media-links.model.ts` of the
+ * `rule/rule` frontend, `email-editor/core/models`). The editor compares
+ * the template's social links with the brand style's, and a brand style
+ * without links resolves to its own defaults; any difference (even a
+ * trailing slash) makes the editor show the brand style as "Custom".
+ *
  * @public
  */
 export const DEFAULT_LINKS_MAP: Record<EmailThemeSocialLinkType, EmailThemeSocialLink> = {
-  facebook: { type: 'facebook', url: 'https://www.facebook.com/' },
-  instagram: { type: 'instagram', url: 'https://www.instagram.com/' },
-  linkedin: { type: 'linkedin', url: 'https://www.linkedin.com/' },
-  tiktok: { type: 'tiktok', url: 'https://www.tiktok.com/' },
-  x: { type: 'x', url: 'https://x.com/' },
-  website: { type: 'website', url: 'https://www.example.com/' },
+  facebook: { type: 'facebook', url: 'https://facebook.com' },
+  instagram: { type: 'instagram', url: 'https://www.instagram.com' },
+  linkedin: { type: 'linkedin', url: 'https://www.linkedin.com' },
+  tiktok: { type: 'tiktok', url: 'https://www.tiktok.com' },
+  x: { type: 'x', url: 'https://www.x.com' },
+  web: { type: 'web', url: 'https://www.website.com' },
+}
+
+/**
+ * Placeholder URLs that earlier SDK versions wrote into templates. They
+ * are no longer produced, but templates created before the defaults were
+ * aligned with the editor still carry them, so {@link getConfiguredSocialLinks}
+ * keeps treating them as "not configured".
+ */
+const LEGACY_PLACEHOLDER_URLS: Readonly<Record<EmailThemeSocialLinkType, readonly string[]>> = {
+  facebook: ['https://www.facebook.com/'],
+  instagram: ['https://www.instagram.com/'],
+  linkedin: ['https://www.linkedin.com/'],
+  tiktok: ['https://www.tiktok.com/'],
+  x: ['https://x.com/'],
+  web: ['https://www.example.com/'],
 }
 
 /**
  * Filter `theme.links` to entries the consumer explicitly configured —
  * any slot whose URL still equals the corresponding {@link
- * DEFAULT_LINKS_MAP} placeholder is treated as not configured and
- * dropped.
+ * DEFAULT_LINKS_MAP} placeholder (or a placeholder written by an earlier
+ * SDK version) is treated as not configured and dropped.
  *
  * Use this in vendor templates that should *not* render a social block
  * when the consumer never supplied socials. `createEmailTheme` always
  * seeds `theme.links` with the defaults so a naive
  * `Object.values(theme.links).length > 0` check is always true.
  *
+ * A legacy `'website'` entry (from a theme persisted before the slot was
+ * renamed to `'web'`) is returned as `'web'`; entries with an unknown
+ * `type` are ignored.
+ *
  * Edge case: if a consumer happens to set a URL to *exactly* the
- * default placeholder string (e.g. `'https://www.facebook.com/'`),
+ * default placeholder string (e.g. `'https://facebook.com'`),
  * this helper treats it as unconfigured. Real social URLs almost
  * always include a username or path segment, so the false-negative
  * rate is negligible in practice.
@@ -72,10 +99,17 @@ export function getConfiguredSocialLinks(
 ): EmailThemeSocialLink[] {
   const result: EmailThemeSocialLink[] = []
 
-  for (const link of Object.values(links)) {
+  for (const entry of Object.values(links)) {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (link === undefined) continue
-    if (link.url === DEFAULT_LINKS_MAP[link.type].url) continue
+    if (entry === undefined) continue
+
+    // A persisted theme may still carry the legacy 'website' slot; it is
+    // returned as 'web'. Entries with an unknown type are ignored.
+    const link = migrateLegacySocialLink(entry)
+    const placeholder = DEFAULT_LINKS_MAP[link.type] as EmailThemeSocialLink | undefined
+
+    if (placeholder === undefined || link.url === placeholder.url) continue
+    if (LEGACY_PLACEHOLDER_URLS[link.type].includes(link.url)) continue
     result.push(link)
   }
 

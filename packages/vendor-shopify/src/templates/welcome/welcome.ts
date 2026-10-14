@@ -28,8 +28,7 @@ import type { CustomFieldRef } from '@rule/template-engine'
  * - `discount` (object with `code`) → welcome-discount callout.
  * - `closing` (string) → closing paragraph below the CTA.
  *
- * Theme-derived fields (logo, brand-color backgrounds, social links)
- * come from `theme`. All caller-visible labels live in the copy
+ * Theme-derived fields (logo, social links) come from `theme`. All caller-visible labels live in the copy
  * defaults — override via `copy: { … }`.
  */
 export interface WelcomeTemplateContext {

@@ -11,7 +11,9 @@ import type {
   RcmlSocial,
   RcmlSocialElement,
 } from './rcml-types.js'
+import type { EmailTheme, EmailThemePatch } from './theme-types.js'
 import { createEmailTheme } from './create-theme.js'
+import { DEFAULT_LINKS_MAP } from './theme-defaults.js'
 import {
   EmailThemeColorType,
   EmailThemeFontStyleType,
@@ -133,7 +135,7 @@ describe('applyTheme — full EmailTheme', () => {
       minimalDoc(),
       createEmailTheme({
         brandStyleId: 123,
-        links: [{ type: 'website', url: 'https://acme.example/' }],
+        links: [{ type: 'web', url: 'https://acme.example/' }],
       })
     )
     const social = findAttrChild<RcmlSocial>(doc, 'rc-social')
@@ -146,6 +148,54 @@ describe('applyTheme — full EmailTheme', () => {
     const result = safeValidateEmailTemplate(doc)
 
     expect(result.success).toBe(true)
+  })
+
+  describe('legacy "website" social link type', () => {
+    // A theme persisted before the 'website' -> 'web' rename (themes are plain
+    // JSON-safe objects) and callers that still pass the old key. The public
+    // type no longer allows it, so the inputs are cast.
+    const legacyLink = { type: 'website', url: 'https://acme.example/' }
+    const legacyTheme = {
+      ...createEmailTheme({ brandStyleId: 123 }),
+      links: { website: legacyLink },
+    } as unknown as EmailTheme
+    const legacyPatch = { brandStyleId: 123, links: [legacyLink] } as unknown as EmailThemePatch
+
+    function socialNames(doc: RcmlDocument): string[] {
+      const social = findAttrChild<RcmlSocial>(doc, 'rc-social')
+
+      return (social?.children as RcmlSocialElement[]).map((el) => el.attributes.name as string)
+    }
+
+    it.each([
+      ['a patch', legacyPatch],
+      ['a persisted theme object', legacyTheme],
+    ])('writes name="web" for %s', (_label, input) => {
+      const doc = applyTheme(minimalDoc(), input)
+
+      expect(socialNames(doc)).toEqual(['web'])
+      expect(safeValidateEmailTemplate(doc).success).toBe(true)
+    })
+
+    it.each([
+      ['a patch', legacyPatch],
+      ['a persisted theme object', legacyTheme],
+    ])('updates the existing web element instead of appending a second one (%s)', (_label, input) => {
+      const seeded = applyTheme(
+        minimalDoc(),
+        createEmailTheme({ brandStyleId: 123, links: [{ type: 'web', url: 'https://old.example/' }] })
+      )
+      const doc = applyTheme(seeded, input)
+      const social = findAttrChild<RcmlSocial>(doc, 'rc-social')
+      const names = socialNames(doc)
+
+      expect(names.filter((n) => n === 'web')).toHaveLength(1)
+      expect(names).not.toContain('website')
+      expect(
+        (social?.children as RcmlSocialElement[]).find((el) => el.attributes.name === 'web')
+          ?.attributes.href
+      ).toBe('https://acme.example/')
+    })
   })
 
   it('updates rc-brand-style id', () => {
@@ -211,12 +261,12 @@ describe('applyTheme — full EmailTheme', () => {
         { type: EmailThemeColorType.Background, hex: '#F3F3F3' },
       ],
       links: [
-        { type: 'facebook', url: 'https://www.facebook.com/' },
-        { type: 'instagram', url: 'https://www.instagram.com/' },
-        { type: 'linkedin', url: 'https://www.linkedin.com/' },
-        { type: 'tiktok', url: 'https://www.tiktok.com/' },
-        { type: 'x', url: 'https://x.com/' },
-        { type: 'website', url: 'https://www.example.com/' },
+        { type: 'facebook', url: DEFAULT_LINKS_MAP.facebook.url },
+        { type: 'instagram', url: DEFAULT_LINKS_MAP.instagram.url },
+        { type: 'linkedin', url: DEFAULT_LINKS_MAP.linkedin.url },
+        { type: 'tiktok', url: DEFAULT_LINKS_MAP.tiktok.url },
+        { type: 'x', url: DEFAULT_LINKS_MAP.x.url },
+        { type: 'web', url: DEFAULT_LINKS_MAP.web.url },
       ],
       images: [{ type: EmailThemeImageType.Logo, url: 'https://example.com/logo.png' }],
       fonts: [],
@@ -251,6 +301,56 @@ describe('applyTheme — full EmailTheme', () => {
     })
 
     expect(() => applyTheme(minimalDoc(), theme)).toThrow(EmailThemeApplyError)
+  })
+
+  describe('social hrefs keep the exact string the sanitiser would only normalise', () => {
+    // The Rule editor compares a template's social hrefs with the brand
+    // style's by exact string, and its own defaults are bare origins such as
+    // `https://facebook.com`. sanitizeUrl would turn those into
+    // `https://facebook.com/` (and also lowercases the host, adds punycode,
+    // ...), which makes the editor show "Custom".
+    const hrefOf = (url: string): string | undefined => {
+      const doc = applyTheme(minimalDoc(), { links: [{ type: 'facebook', url }] })
+      const social = findAttrChild<RcmlSocial>(doc, 'rc-social')
+
+      return (social?.children as RcmlSocialElement[] | undefined)?.find(
+        (el) => el.attributes.name === 'facebook'
+      )?.attributes.href
+    }
+
+    it('writes every editor default exactly, without an appended slash', () => {
+      const doc = applyTheme(minimalDoc(), createEmailTheme({ brandStyleId: 1 }))
+      const social = findAttrChild<RcmlSocial>(doc, 'rc-social')
+      const hrefs = (social?.children as RcmlSocialElement[] | undefined)?.map(
+        (el) => el.attributes.href
+      )
+
+      expect(hrefs).toEqual(Object.values(DEFAULT_LINKS_MAP).map((link) => link.url))
+    })
+
+    it('leaves a bare origin as given', () => {
+      expect(hrefOf('https://acme.example')).toBe('https://acme.example')
+    })
+
+    it('still trims surrounding whitespace', () => {
+      expect(hrefOf('  https://acme.example  ')).toBe('https://acme.example')
+    })
+
+    it('keeps a slash the caller supplied and any path', () => {
+      expect(hrefOf('https://acme.example/')).toBe('https://acme.example/')
+      expect(hrefOf('https://acme.example/brand')).toBe('https://acme.example/brand')
+    })
+
+    it('keeps host case, query, fragment and non-ASCII hosts as given', () => {
+      expect(hrefOf('https://Acme.Example')).toBe('https://Acme.Example')
+      expect(hrefOf('https://acme.example?ref=1')).toBe('https://acme.example?ref=1')
+      expect(hrefOf('https://acme.example#x')).toBe('https://acme.example#x')
+      expect(hrefOf('https://ÅÄÖ.se')).toBe('https://ÅÄÖ.se')
+    })
+
+    it('still rejects an unsafe href', () => {
+      expect(() => hrefOf('javascript:alert(1)')).toThrow(EmailThemeApplyError)
+    })
   })
 })
 

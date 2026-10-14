@@ -58,7 +58,7 @@
           <rc-divider padding="10px 0"/>
         </rc-column>
       </rc-section>
-      <rc-section padding="10px 0" rc-class="rcml-brand-color">
+      <rc-section padding="10px 0">
         <rc-column padding="0 20px">
           <rc-text rc-class="rcml-p-style"><?copy totalRow totalPriceCustomField=cart.totalPrice?></rc-text>
         </rc-column>

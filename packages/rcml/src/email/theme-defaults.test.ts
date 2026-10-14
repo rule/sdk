@@ -37,7 +37,7 @@ describe('DEFAULT_COLORS_MAP', () => {
 describe('DEFAULT_LINKS_MAP', () => {
   it('has an entry for every social slot', () => {
     expect(Object.keys(DEFAULT_LINKS_MAP).sort()).toEqual(
-      ['facebook', 'instagram', 'linkedin', 'tiktok', 'website', 'x'].sort()
+      ['facebook', 'instagram', 'linkedin', 'tiktok', 'web', 'x'].sort()
     )
   })
 
@@ -137,13 +137,37 @@ describe('getConfiguredSocialLinks', () => {
     const result = getConfiguredSocialLinks({
       ...DEFAULT_LINKS_MAP,
       facebook: { type: 'facebook', url: 'https://facebook.com/acme' },
-      website: { type: 'website', url: 'https://acme.example/' },
+      web: { type: 'web', url: 'https://acme.example/' },
     })
 
     expect(result).toEqual([
       { type: 'facebook', url: 'https://facebook.com/acme' },
-      { type: 'website', url: 'https://acme.example/' },
+      { type: 'web', url: 'https://acme.example/' },
     ])
+  })
+
+  it('returns a legacy "website" key (persisted theme) as the "web" slot instead of throwing', () => {
+    const result = getConfiguredSocialLinks({
+      website: { type: 'website', url: 'https://acme.example/' },
+    } as unknown as Parameters<typeof getConfiguredSocialLinks>[0])
+
+    expect(result).toEqual([{ type: 'web', url: 'https://acme.example/' }])
+  })
+
+  it('treats a legacy "website" link at the default URL as not configured', () => {
+    const result = getConfiguredSocialLinks({
+      website: { type: 'website', url: DEFAULT_LINKS_MAP.web.url },
+    } as unknown as Parameters<typeof getConfiguredSocialLinks>[0])
+
+    expect(result).toEqual([])
+  })
+
+  it('ignores an entry with an unknown type instead of throwing', () => {
+    const result = getConfiguredSocialLinks({
+      myspace: { type: 'myspace', url: 'https://myspace.example/acme' },
+    } as unknown as Parameters<typeof getConfiguredSocialLinks>[0])
+
+    expect(result).toEqual([])
   })
 
   it('skips slots that are absent from the map', () => {
@@ -162,5 +186,60 @@ describe('getConfiguredSocialLinks', () => {
     })
 
     expect(result).toEqual([])
+  })
+
+  it('still treats placeholders written by earlier SDK versions as not configured', () => {
+    // Templates created before DEFAULT_LINKS_MAP was aligned with the editor
+    // carry these values in their rc-head; getTheme reads them back verbatim.
+    const result = getConfiguredSocialLinks({
+      facebook: { type: 'facebook', url: 'https://www.facebook.com/' },
+      instagram: { type: 'instagram', url: 'https://www.instagram.com/' },
+      linkedin: { type: 'linkedin', url: 'https://www.linkedin.com/' },
+      tiktok: { type: 'tiktok', url: 'https://www.tiktok.com/' },
+      x: { type: 'x', url: 'https://x.com/' },
+      web: { type: 'web', url: 'https://www.example.com/' },
+    })
+
+    expect(result).toEqual([])
+  })
+
+  it('treats the old placeholder of a theme persisted with the legacy "website" key as not configured', () => {
+    // Both renames at once: the slot was 'website' and its placeholder was
+    // 'https://www.example.com/' in themes saved by earlier SDK versions.
+    const result = getConfiguredSocialLinks({
+      website: { type: 'website', url: 'https://www.example.com/' },
+    } as unknown as Parameters<typeof getConfiguredSocialLinks>[0])
+
+    expect(result).toEqual([])
+  })
+
+  it('does not treat a legacy placeholder as a placeholder for a different slot', () => {
+    const result = getConfiguredSocialLinks({
+      x: { type: 'x', url: 'https://www.facebook.com/' },
+    })
+
+    expect(result).toEqual([{ type: 'x', url: 'https://www.facebook.com/' }])
+  })
+})
+
+describe('DEFAULT_LINKS_MAP — Rule editor contract', () => {
+  // The Rule editor compares a template's social links with the brand
+  // style's by exact string. A brand style without links resolves to the
+  // editor's own defaults, so these must match them byte for byte. Source of
+  // truth: `defaultHref` in `social-media-links.model.ts` (rule/rule,
+  // frontend-v5/src/app/libs/email-editor/core/models). If this test fails
+  // after an intentional change, update the editor defaults accordingly (and
+  // vice versa), otherwise templates start showing as "Custom".
+  it('matches the editor defaults exactly (no trailing slash)', () => {
+    expect(
+      Object.fromEntries(Object.values(DEFAULT_LINKS_MAP).map((link) => [link.type, link.url])),
+    ).toEqual({
+      facebook: 'https://facebook.com',
+      instagram: 'https://www.instagram.com',
+      linkedin: 'https://www.linkedin.com',
+      tiktok: 'https://www.tiktok.com',
+      x: 'https://www.x.com',
+      web: 'https://www.website.com',
+    })
   })
 })

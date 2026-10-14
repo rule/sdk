@@ -16,6 +16,7 @@ import {
   EmailThemeFontStyleType,
   EmailThemeImageType,
   createEmailTheme,
+  sanitizeUrlKeepingForm,
 } from '@rule/rcml';
 import type {
   EmailThemeColor,
@@ -65,7 +66,7 @@ const LINK_TYPE_TO_THEME_LINK: Partial<
   linkedin: 'linkedin',
   tiktok: 'tiktok',
   twitter: 'x',
-  website: 'website',
+  website: 'web',
 };
 
 /**
@@ -121,8 +122,9 @@ function mapLinks(brandLinks: BrandStyleLink[]): EmailThemeSocialLink[] {
 
     if (themeType === undefined) continue;
 
-    // Brand-style API can return blank or otherwise unsafe URLs.
-    const safeUrl = sanitizeUrl(link.link);
+    // Brand-style API can return blank or otherwise unsafe URLs. A safe URL is
+    // kept as the brand style has it: the editor compares by exact string.
+    const safeUrl = sanitizeUrlKeepingForm(link.link);
 
     if (safeUrl === 'about:blank') continue;
 

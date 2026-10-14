@@ -34,10 +34,9 @@ import type { CustomFieldRef } from '@rule/template-engine'
  *   link beside it.
  *
  * The logo section and the social-links section are driven by the
- * theme (`theme.images.logo` / `theme.links`). The secondary-color
- * backgrounds on the hero banner and order-details section come from
- * `theme.colors.secondary` via `applyTheme`'s `rcml-brand-color`
- * class binding. Callers filter by curating their theme.
+ * theme (`theme.images.logo` / `theme.links`). The hero banner and
+ * order-details section use the default section background (the theme's
+ * Body colour). Callers filter by curating their theme.
  *
  * All free-text (heading, greeting, message, follow-up, CTA label,
  * support paragraph text) lives in the copy defaults — override the

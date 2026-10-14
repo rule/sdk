@@ -39,8 +39,7 @@ import type { CustomFieldRef, LoopValueRef } from '@rule/template-engine'
  * - `buyer` → customer name / billing address rows.
  * - `legal` → legal text / return-policy link / terms link.
  *
- * Theme-derived fields (logo, secondary background, social links)
- * flow from `theme`. All caller-visible labels live in the copy
+ * Theme-derived fields (logo, social links) flow from `theme`. All caller-visible labels live in the copy
  * defaults.
  */
 export interface ShippingUpdateTemplateContext {

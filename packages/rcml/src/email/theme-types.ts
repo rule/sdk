@@ -71,10 +71,9 @@ export interface EmailThemeImage {
 }
 
 /**
- * The six social-link slots the theme supports. Matches the rcml
- * `<rc-social-element name="…">` naming for five of the six — `'website'`
- * is this theme API's slot key, written to RCML as `name="web"` (the value
- * Rule's RCML schema and frontend actually use for that slot).
+ * The six social-link slots the theme supports. Each value is written
+ * verbatim to `<rc-social-element name="…">`, so it matches the RCML schema
+ * (and Rule's frontend) naming, including `'web'` for the website slot.
  *
  * @public
  */
@@ -84,7 +83,7 @@ export type EmailThemeSocialLinkType =
   | 'linkedin'
   | 'tiktok'
   | 'x'
-  | 'website'
+  | 'web'
 
 /**
  * One entry in the theme's social-link map — a slot `type` paired with

@@ -12,6 +12,7 @@ import type {
   EmailThemeSocialLinkType,
 } from '../theme-types.js'
 import { DEFAULT_LINKS_MAP } from '../theme-defaults.js'
+import { migrateLegacySocialLink } from './legacy-social-link.js'
 import { deepClone } from './utils.js'
 
 const LINK_ORDER: readonly EmailThemeSocialLinkType[] = [
@@ -20,7 +21,7 @@ const LINK_ORDER: readonly EmailThemeSocialLinkType[] = [
   'linkedin',
   'tiktok',
   'x',
-  'website',
+  'web',
 ]
 
 /**
@@ -28,7 +29,8 @@ const LINK_ORDER: readonly EmailThemeSocialLinkType[] = [
  * {@link DEFAULT_LINKS_MAP} and overlaying each entry in `links` keyed by
  * its `type`. Slot types not present in `links` keep the default URL;
  * entries whose `type` is not one of the six
- * {@link EmailThemeSocialLinkType} values are dropped silently. Each
+ * {@link EmailThemeSocialLinkType} values are dropped silently, except the
+ * legacy `'website'` type, which is treated as `'web'`. Each
  * provided entry is shallow-copied into the result so later mutation of
  * `links` does not affect the returned theme.
  *
@@ -44,7 +46,9 @@ export function resetLinksTo(theme: EmailTheme, links: EmailThemeSocialLink[]): 
   const next: Partial<Record<EmailThemeSocialLinkType, EmailThemeSocialLink>> =
     deepClone(DEFAULT_LINKS_MAP)
 
-  for (const link of links) {
+  for (const entry of links) {
+    const link = migrateLegacySocialLink(entry)
+
     if (LINK_ORDER.includes(link.type)) {
       next[link.type] = { ...link }
     }

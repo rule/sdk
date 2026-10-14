@@ -42,7 +42,7 @@
     <?endif?>
 
     <!-- Details box: heading + optional rows -->
-    <rc-section padding="20px 0" rc-class="rcml-brand-color">
+    <rc-section padding="20px 0">
       <rc-column padding="0 20px">
         <rc-heading rc-class="rcml-h2-style"><?copy detailsHeading?></rc-heading>
         <?if !order.date?>
@@ -96,7 +96,7 @@
       <rc-section padding="0">
         <rc-column padding="0 20px"><rc-divider padding="10px 0"/></rc-column>
       </rc-section>
-      <rc-section padding="20px 0" rc-class="rcml-brand-color">
+      <rc-section padding="20px 0">
         <rc-column padding="0 20px">
           <?if financial.subtotal?>
             <rc-text rc-class="rcml-p-style"><?copy subtotalRow subtotal=financial.subtotal?></rc-text>
