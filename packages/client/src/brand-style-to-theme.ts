@@ -16,6 +16,7 @@ import {
   EmailThemeFontStyleType,
   EmailThemeImageType,
   createEmailTheme,
+  sanitizeUrlKeepingForm,
 } from '@rule/rcml';
 import type {
   EmailThemeColor,
@@ -121,29 +122,16 @@ function mapLinks(brandLinks: BrandStyleLink[]): EmailThemeSocialLink[] {
 
     if (themeType === undefined) continue;
 
-    // Brand-style API can return blank or otherwise unsafe URLs.
-    const safeUrl = sanitizeUrl(link.link);
+    // Brand-style API can return blank or otherwise unsafe URLs. A safe URL is
+    // kept as the brand style has it: the editor compares by exact string.
+    const safeUrl = sanitizeUrlKeepingForm(link.link);
 
     if (safeUrl === 'about:blank') continue;
 
-    out.push({ type: themeType, url: keepSlashAsGiven(link.link, safeUrl) });
+    out.push({ type: themeType, url: safeUrl });
   }
 
   return out;
-}
-
-/**
- * `sanitizeUrl` normalises a bare origin by appending a slash
- * (`https://acme.example` becomes `https://acme.example/`). The Rule editor
- * compares a template's social hrefs with the brand style's own links by
- * exact string, so that slash alone makes it show the brand style as
- * "Custom". When appending the slash is the only thing sanitisation changed,
- * keep the URL as the brand style has it.
- */
-function keepSlashAsGiven(url: string, safe: string): string {
-  const trimmed = url.trim();
-
-  return safe === `${trimmed}/` ? trimmed : safe;
 }
 
 function mapImages(brandImages: BrandStyleImage[]): EmailThemeImage[] {

@@ -391,9 +391,10 @@ describe('emailThemeFromBrandStyle + applyTheme — brand style without links', 
 });
 
 describe('emailThemeFromBrandStyle — brand style links are kept as given', () => {
-  // `sanitizeUrl` appends a slash to a bare origin. The Rule editor compares
-  // a template's social hrefs with the brand style's own links by exact
-  // string, so that slash alone makes it show the brand style as "Custom".
+  // `sanitizeUrl` normalises a URL (appends a slash to a bare origin,
+  // lowercases the host, ...). The Rule editor compares a template's social
+  // hrefs with the brand style's own links by exact string, so that alone
+  // makes it show the brand style as "Custom".
   const linkOf = (type: 'facebook' | 'website', link: string) => ({
     id: 30, brandStyleId: 99999, type, link, createdAt: NOW, updatedAt: NOW,
   });
@@ -413,8 +414,16 @@ describe('emailThemeFromBrandStyle — brand style links are kept as given', () 
     expect(themeFor('https://acme.example/brand').links.facebook?.url).toBe('https://acme.example/brand');
   });
 
-  it('keeps the normalisation when it is more than an appended slash', () => {
-    expect(themeFor('https://acme.example?ref=1').links.facebook?.url).toBe('https://acme.example/?ref=1');
+  it('keeps host case, query, fragment and non-ASCII hosts as given', () => {
+    // sanitizeUrl would normalise each of these; the editor stores the link as typed.
+    for (const link of [
+      'https://Acme.Example',
+      'https://acme.example?ref=1',
+      'https://acme.example#x',
+      'https://ÅÄÖ.se',
+    ]) {
+      expect(themeFor(link).links.facebook?.url).toBe(link);
+    }
   });
 
   it('still drops blank and unsafe links', () => {

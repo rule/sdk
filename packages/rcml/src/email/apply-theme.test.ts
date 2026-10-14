@@ -303,11 +303,12 @@ describe('applyTheme — full EmailTheme', () => {
     expect(() => applyTheme(minimalDoc(), theme)).toThrow(EmailThemeApplyError)
   })
 
-  describe('social hrefs keep the exact string the sanitiser would only append a slash to', () => {
+  describe('social hrefs keep the exact string the sanitiser would only normalise', () => {
     // The Rule editor compares a template's social hrefs with the brand
     // style's by exact string, and its own defaults are bare origins such as
     // `https://facebook.com`. sanitizeUrl would turn those into
-    // `https://facebook.com/`, which makes the editor show "Custom".
+    // `https://facebook.com/` (and also lowercases the host, adds punycode,
+    // ...), which makes the editor show "Custom".
     const hrefOf = (url: string): string | undefined => {
       const doc = applyTheme(minimalDoc(), { links: [{ type: 'facebook', url }] })
       const social = findAttrChild<RcmlSocial>(doc, 'rc-social')
@@ -340,8 +341,15 @@ describe('applyTheme — full EmailTheme', () => {
       expect(hrefOf('https://acme.example/brand')).toBe('https://acme.example/brand')
     })
 
-    it('keeps the normalisation when it is more than an appended slash', () => {
-      expect(hrefOf('https://acme.example?ref=1')).toBe('https://acme.example/?ref=1')
+    it('keeps host case, query, fragment and non-ASCII hosts as given', () => {
+      expect(hrefOf('https://Acme.Example')).toBe('https://Acme.Example')
+      expect(hrefOf('https://acme.example?ref=1')).toBe('https://acme.example?ref=1')
+      expect(hrefOf('https://acme.example#x')).toBe('https://acme.example#x')
+      expect(hrefOf('https://ÅÄÖ.se')).toBe('https://ÅÄÖ.se')
+    })
+
+    it('still rejects an unsafe href', () => {
+      expect(() => hrefOf('javascript:alert(1)')).toThrow(EmailThemeApplyError)
     })
   })
 })
