@@ -1,3 +1,33 @@
+## 0.4.0-beta.18 (2026-10-14)
+
+### 🩹 Fixes
+
+- **client:** keep brand-style link URLs as given when sanitising only adds a slash (RL-4777) ([8e923439](https://github.com/rule/sdk/commit/8e923439))
+- ⚠️  **rcml:** rename theme social link slot 'website' to 'web' ([31722679](https://github.com/rule/sdk/commit/31722679))
+- **rcml:** migrate legacy 'website' social links at runtime ([17cea5c2](https://github.com/rule/sdk/commit/17cea5c2))
+- ⚠️  **rcml:** rename theme social link slot 'website' to 'web' ([#177](https://github.com/rule/sdk/pull/177))
+- **rcml:** align default social links with the Rule editor (RL-4777) ([217343ce](https://github.com/rule/sdk/commit/217343ce))
+- **rcml:** keep social-link URLs as given when sanitising only normalises them (RL-4777) ([#179](https://github.com/rule/sdk/issues/179))
+- **rcml:** align default social links with the Rule editor (RL-4777) ([#179](https://github.com/rule/sdk/pull/179))
+- **vendors:** validate vendor RCML against the schema and skip placeholder socials ([39642a40](https://github.com/rule/sdk/commit/39642a40))
+- **vendors:** validate vendor RCML against the schema ([#178](https://github.com/rule/sdk/pull/178))
+
+### ⚠️  Breaking Changes
+
+- **rcml:** rename theme social link slot 'website' to 'web'  ([#177](https://github.com/rule/sdk/pull/177))
+- **rcml:** rename theme social link slot 'website' to 'web'  ([31722679](https://github.com/rule/sdk/commit/31722679))
+  EmailThemeSocialLinkType 'website' is now 'web'.
+  Replace `{ type: 'website', ... }` with `{ type: 'web', ... }` in
+  createEmailTheme `links`, and `theme.links.website` with `theme.links.web`.
+  Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+### ❤️ Thank You
+
+- Claude Sonnet 5.5
+- Oleksandr Ryzhyk @webmarket7
+- Serhij Zubrin
+- Serhij-Zubrin @Serhij-Zubrin
+
 ## 0.4.0-beta.17 (2026-10-05)
 
 ### 🩹 Fixes
