@@ -37,8 +37,8 @@ import type { CustomFieldRef, LoopValueRef } from '@rule/template-engine'
  * - `heroHeading` → hero heading "{prefix}{orderRef}{suffix}"
  *   between the greeting and the details box.
  *
- * Theme-derived fields (logo, secondary background, social links)
- * flow from `theme`, not context. All caller-visible labels live in
+ * Theme-derived fields (logo, social links) flow from `theme`, not
+ * context. All caller-visible labels live in
  * the copy defaults — override via `copy: { … }` to customize or
  * localize.
  */

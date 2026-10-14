@@ -49,7 +49,7 @@
     <?endif?>
 
     <!-- Order details -->
-    <rc-section padding="20px 0" rc-class="rcml-brand-color">
+    <rc-section padding="20px 0">
       <rc-column padding="0 20px">
         <rc-text rc-class="rcml-p-style"><?copy orderRefRow orderRef=order.ref?></rc-text>
         <?if order.date?>
@@ -121,7 +121,7 @@
 
     <!-- Financial summary -->
     <?if financial?>
-      <rc-section padding="20px 0" rc-class="rcml-brand-color">
+      <rc-section padding="20px 0">
         <rc-column padding="0 20px">
           <?if financial.subtotal?>
             <rc-text rc-class="rcml-p-style"><?copy subtotalRow subtotal=financial.subtotal?></rc-text>

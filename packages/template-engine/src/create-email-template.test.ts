@@ -148,6 +148,20 @@ describe('createEmailTemplate', () => {
     })
   })
 
+  it('renders the web slot with name="web"', () => {
+    const json = render({
+      ...createEmailTheme({
+        brandStyleId: 1,
+        links: [{ type: 'web', url: 'https://acme.example/' }],
+      }),
+      images: {},
+    })
+
+    expect(json).toContain('"name":"web"')
+    expect(json).not.toContain('"name":"website"')
+    expect(json).toContain('https://acme.example/')
+  })
+
   it('honours a caller-supplied TemplateRef serializer', () => {
     const upper: TemplateRefSerializer = {
       serializeCustomField: (r) => `CF<${r.group}.${r.name}>`.toUpperCase(),

@@ -173,7 +173,7 @@ Drives the public `render({ context, theme, copy? })` path; no direct imports of
   - `theme.images.logo?.url` → `logoUrl` (XML sees it via `<?if logoUrl?>` / `@{logoUrl}`).
   - Non-empty `getConfiguredSocialLinks(theme.links)` (slots left at their default placeholder URL are skipped) → `socialLinks` (XML sees it via `<?if socialLinks?>` / `<?for let link of socialLinks?>`).
 - **Serialize `TemplateRef` values** at the stringify step via a pluggable `TemplateRefSerializer`. The default emits the RFM `::placeholder{…}` / `::loop-value{…}` strings Rule.io's backend expects; pass `render({ serializer })` to target a different format.
-- **Parse and theme** — `xmlToRcml(xml)` then `applyTheme(doc, theme)`. The theme contributes element-level stylings via `<rc-class>` bindings (`rcml-logo-style`, `rcml-brand-color`, `rcml-h1-style`, etc.) — so templates that declare `rc-class="rcml-brand-color"` pick up the theme's secondary color automatically, without carrying it through context.
+- **Parse and theme** — `xmlToRcml(xml)` then `applyTheme(doc, theme)`. The theme contributes element-level stylings via `<rc-class>` bindings (`rcml-logo-style`, `rcml-brand-color`, `rcml-h1-style`, etc.) — so elements that declare a theme class pick up its styling without carrying it through context. `rc-class="rcml-brand-color"` (the theme's secondary color) is not supported on `<rc-section>`: the schema rejects it and the email editor does not apply it.
 
 Net effect: the caller-facing context is the **minimum data the template actually needs**. Theme-derived things stay in the theme. Copy stays in JSON. Refs stay as descriptors until the last possible moment.
 
