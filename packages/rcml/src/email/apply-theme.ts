@@ -20,6 +20,7 @@ import type {
 } from './theme-types.js'
 import { EmailThemeColorType, EmailThemeImageType } from './theme-types.js'
 import { DEFAULT_FONT_STYLES_MAP } from './theme-defaults.js'
+import { migrateLegacySocialLink } from './theme/legacy-social-link.js'
 import {
   type AnyAttrChild,
   EmailThemeApplyError,
@@ -231,9 +232,13 @@ function normalizeInput(input: EmailTheme | EmailThemePatch): NormalizedInput {
   }
 
   if (input.links !== undefined) {
-    out.links = Array.isArray(input.links)
-      ? input.links
-      : Object.values(input.links).filter((x): x is EmailThemeSocialLink => x !== undefined)
+    // Legacy 'website' entries (patches or persisted themes) become 'web'
+    // so they match the existing element and write a valid `name`.
+    out.links = (
+      Array.isArray(input.links)
+        ? input.links
+        : Object.values(input.links).filter((x): x is EmailThemeSocialLink => x !== undefined)
+    ).map(migrateLegacySocialLink)
   }
 
   if (input.images !== undefined) {

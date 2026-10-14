@@ -10,9 +10,9 @@
  * 3. Project theme-driven context fields into the compile context so
  *    the XML's structural guards can see them:
  *      - `logoUrl` ← `theme.images.logo?.url`
- *      - `socialLinks` ← `getConfiguredSocialLinks(theme.links)` (the
- *        slots still holding a default placeholder URL are skipped);
- *        undefined when no slot is configured
+ *      - `socialLinks` ← `getConfiguredSocialLinks(theme.links)` (slots
+ *        still holding a default placeholder URL are skipped; undefined
+ *        when no slot is configured)
  * 4. Compile, parse to RCML, apply the theme.
  *
  * The only template-specific pieces are the file paths and the two
@@ -50,8 +50,9 @@ export interface EmailTemplateRenderArgs<TCopy, TContext> {
   /**
    * Theme applied to the compiled RCML. Also projected into the
    * compile context: `theme.images.logo?.url` → `logoUrl`, and
-   * `getConfiguredSocialLinks(theme.links)` → `socialLinks` (undefined
-   * when none is configured).
+   * `getConfiguredSocialLinks(theme.links)` → `socialLinks` (slots left
+   * at their default placeholder URL are skipped; undefined when none
+   * is configured).
    */
   readonly theme: EmailTheme
   /**
@@ -106,8 +107,8 @@ export function createEmailTemplate<TCopy, TContext>(
     render({ context, theme, copy: copyOverride, serializer }) {
       const copy = { ...defaultCopy, ...copyOverride }
       const logoUrl = theme.images.logo?.url
-      // Only consumer-supplied links: createEmailTheme seeds every slot with
-      // a placeholder URL.
+      // `createEmailTheme` seeds every slot with a placeholder URL, so only
+      // links the consumer actually supplied should reach the template.
       const themeSocials = getConfiguredSocialLinks(theme.links)
       const socialLinks = themeSocials.length > 0 ? themeSocials : undefined
       const { xml } = compileTemplate<TCopy, unknown>({

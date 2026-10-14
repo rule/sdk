@@ -7,6 +7,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  DEFAULT_LINKS_MAP,
   EmailThemeColorType,
   EmailThemeFontStyleType,
   EmailThemeImageType,
@@ -185,10 +186,10 @@ describe('emailThemeFromBrandStyle — partial input', () => {
     );
 
     // Empty and whitespace-only links are dropped.
-    expect(theme.links.facebook?.url).toBe('https://www.facebook.com/');
-    expect(theme.links.instagram?.url).toBe('https://www.instagram.com/');
+    expect(theme.links.facebook?.url).toBe(DEFAULT_LINKS_MAP.facebook.url);
+    expect(theme.links.instagram?.url).toBe(DEFAULT_LINKS_MAP.instagram.url);
     // javascript: URI is blocked by @braintree/sanitize-url → about:blank → dropped.
-    expect(theme.links.linkedin?.url).toBe('https://www.linkedin.com/');
+    expect(theme.links.linkedin?.url).toBe(DEFAULT_LINKS_MAP.linkedin.url);
     // A string without a protocol is passed through as-is by sanitize-url.
     expect(theme.links.x?.url).toBe('not-a-url');
 
@@ -343,6 +344,128 @@ describe('resolveBrandTheme', () => {
   });
 });
 
+describe('emailThemeFromBrandStyle + applyTheme — brand style without links', () => {
+  // The Rule editor compares the template's rc-social with the brand style's
+  // links by exact string; a brand style without links resolves to the
+  // editor's own defaults. If rc-head carries different placeholders the
+  // editor shows the brand style as "Custom".
+  it('writes the editor default hrefs into rc-head for every social slot', () => {
+    const theme = emailThemeFromBrandStyle(fullBrandStyle({ links: [] }));
+    const doc = applyTheme(
+      {
+        tagName: 'rcml',
+        id: 'doc',
+        children: [
+          {
+            tagName: 'rc-head',
+            id: 'h',
+            children: [
+              { tagName: 'rc-brand-style', id: 'b', attributes: { id: 0 } },
+              { tagName: 'rc-attributes', id: 'a', children: [] },
+            ],
+          },
+          { tagName: 'rc-body', id: 'bd', children: [] },
+        ],
+      } as never,
+      theme
+    );
+
+    const head = doc.children[0] as { children: Array<{ tagName: string; children?: unknown[] }> };
+    const attributes = head.children.find((c) => c.tagName === 'rc-attributes');
+    const social = (attributes?.children ?? []).find(
+      (c) => (c as { tagName: string }).tagName === 'rc-social'
+    ) as { children: Array<{ attributes: { name: string; href: string } }> } | undefined;
+    const hrefByName = Object.fromEntries(
+      (social?.children ?? []).map((el) => [el.attributes.name, el.attributes.href])
+    );
+
+    expect(hrefByName).toEqual({
+      facebook: 'https://facebook.com',
+      instagram: 'https://www.instagram.com',
+      linkedin: 'https://www.linkedin.com',
+      tiktok: 'https://www.tiktok.com',
+      x: 'https://www.x.com',
+      web: 'https://www.website.com',
+    });
+  });
+});
+
+describe('emailThemeFromBrandStyle — brand style links are kept as given', () => {
+  // `sanitizeUrl` normalises a URL (appends a slash to a bare origin,
+  // lowercases the host, ...). The Rule editor compares a template's social
+  // hrefs with the brand style's own links by exact string, so that alone
+  // makes it show the brand style as "Custom".
+  const linkOf = (type: 'facebook' | 'website', link: string) => ({
+    id: 30, brandStyleId: 99999, type, link, createdAt: NOW, updatedAt: NOW,
+  });
+  const themeFor = (link: string) =>
+    emailThemeFromBrandStyle(fullBrandStyle({ links: [linkOf('facebook', link)] }));
+
+  it('leaves a bare origin without an appended slash', () => {
+    expect(themeFor('https://acme.example').links.facebook?.url).toBe('https://acme.example');
+  });
+
+  it('trims surrounding whitespace around a bare origin', () => {
+    expect(themeFor('  https://acme.example  ').links.facebook?.url).toBe('https://acme.example');
+  });
+
+  it('keeps a slash the brand style has and any path', () => {
+    expect(themeFor('https://acme.example/').links.facebook?.url).toBe('https://acme.example/');
+    expect(themeFor('https://acme.example/brand').links.facebook?.url).toBe('https://acme.example/brand');
+  });
+
+  it('keeps host case, query, fragment and non-ASCII hosts as given', () => {
+    // sanitizeUrl would normalise each of these; the editor stores the link as typed.
+    for (const link of [
+      'https://Acme.Example',
+      'https://acme.example?ref=1',
+      'https://acme.example#x',
+      'https://ÅÄÖ.se',
+    ]) {
+      expect(themeFor(link).links.facebook?.url).toBe(link);
+    }
+  });
+
+  it('still drops blank and unsafe links', () => {
+    expect(themeFor('javascript:alert(1)').links.facebook?.url).toBe(DEFAULT_LINKS_MAP.facebook.url);
+    expect(themeFor('   ').links.facebook?.url).toBe(DEFAULT_LINKS_MAP.facebook.url);
+  });
+
+  it('writes the brand style hrefs into rc-head unchanged (facebook and website)', () => {
+    const theme = emailThemeFromBrandStyle(
+      fullBrandStyle({
+        links: [
+          linkOf('facebook', 'https://acme.example'),
+          linkOf('website', 'https://acme.example'),
+        ],
+      })
+    );
+    const doc = applyTheme(
+      {
+        tagName: 'rcml',
+        id: 'doc',
+        children: [
+          {
+            tagName: 'rc-head',
+            id: 'h',
+            children: [
+              { tagName: 'rc-brand-style', id: 'b', attributes: { id: 0 } },
+              { tagName: 'rc-attributes', id: 'a', children: [] },
+            ],
+          },
+          { tagName: 'rc-body', id: 'bd', children: [] },
+        ],
+      } as never,
+      theme
+    );
+    const hrefs = [...JSON.stringify(doc).matchAll(/"name":"(facebook|web)","href":"([^"]*)"/g)].map(
+      (m) => `${m[1]}=${m[2]}`
+    );
+
+    expect(hrefs).toEqual(['facebook=https://acme.example', 'web=https://acme.example']);
+  });
+});
+
 describe('emailThemeFromBrandStyle + applyTheme — end-to-end', () => {
   it('produces a document whose head reflects the brand style', () => {
     const theme = emailThemeFromBrandStyle(fullBrandStyle());
@@ -380,5 +503,37 @@ describe('emailThemeFromBrandStyle + applyTheme — end-to-end', () => {
     expect(serialised).toContain("'Merriweather'"); // title font
     expect(serialised).toContain("'Open Sans'"); // body font
     expect(serialised).toContain('https://fonts.example/merriweather.css');
+  });
+
+  it('writes the API "website" link as name="web" in the resulting RCML', () => {
+    const theme = emailThemeFromBrandStyle(
+      fullBrandStyle({
+        links: [
+          { id: 34, brandStyleId: 99999, type: 'website', link: 'https://acme.example/', createdAt: NOW, updatedAt: NOW },
+        ],
+      }),
+    );
+    const doc = applyTheme(
+      {
+        tagName: 'rcml',
+        id: 'doc',
+        children: [
+          {
+            tagName: 'rc-head',
+            id: 'h',
+            children: [
+              { tagName: 'rc-brand-style', id: 'b', attributes: { id: 0 } },
+              { tagName: 'rc-attributes', id: 'a', children: [] },
+            ],
+          },
+          { tagName: 'rc-body', id: 'bd', children: [] },
+        ],
+      } as never,
+      theme,
+    );
+    const serialised = JSON.stringify(doc);
+
+    expect(serialised).toContain('"name":"web","href":"https://acme.example/"');
+    expect(serialised).not.toContain('"name":"website"');
   });
 });

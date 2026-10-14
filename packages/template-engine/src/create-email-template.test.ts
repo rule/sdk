@@ -99,18 +99,53 @@ describe('createEmailTemplate', () => {
     expect(json).toContain('instagram')
   })
 
-  it('skips social slots still holding the default placeholder URL', () => {
-    // createEmailTheme seeds all six slots with placeholder URLs; none was
-    // supplied by the consumer, so no social section should render.
-    // (applyTheme still writes the slot defaults into rc-head's
-    // rc-attributes; only the rendered body matters here.)
-    const doc = JSON.parse(
-      render({ ...createEmailTheme({ brandStyleId: 1 }), images: {} }),
-    ) as { children: unknown[] }
-    const body = JSON.stringify(doc.children[1])
+  describe('placeholder social slots', () => {
+    // `createEmailTheme` seeds every slot with a placeholder URL. Those were
+    // not supplied by the consumer and must not reach the rendered body.
+    // (`applyTheme` still writes the slot defaults into rc-head's
+    // rc-attributes; only the rendered body is checked here.)
+    const bodyOf = (theme: EmailTheme): string => {
+      const doc = JSON.parse(render(theme)) as { children: unknown[] }
 
-    expect(body).not.toContain('rc-social')
-    expect(body).not.toContain(DEFAULT_LINKS_MAP.web.url)
+      return JSON.stringify(doc.children[1])
+    }
+
+    it('renders no social section for a default-seeded theme', () => {
+      const body = bodyOf({ ...createEmailTheme({ brandStyleId: 1 }), images: {} })
+
+      expect(body).not.toContain('rc-social')
+
+      for (const { url } of Object.values(DEFAULT_LINKS_MAP)) {
+        expect(body).not.toContain(url)
+      }
+    })
+
+    it('renders only the supplied links, not the placeholders around them', () => {
+      const body = bodyOf({
+        ...createEmailTheme({
+          brandStyleId: 1,
+          links: [{ type: 'facebook', url: 'https://facebook.com/acme' }],
+        }),
+        images: {},
+      })
+
+      expect(body).toContain('https://facebook.com/acme')
+      expect(body).not.toContain(DEFAULT_LINKS_MAP.instagram.url)
+      expect(body).not.toContain(DEFAULT_LINKS_MAP.linkedin.url)
+    })
+
+    it('treats placeholders written by earlier SDK versions as not configured', () => {
+      const body = bodyOf({
+        ...createEmailTheme({ brandStyleId: 1 }),
+        images: {},
+        links: {
+          facebook: { type: 'facebook', url: 'https://www.facebook.com/' },
+          instagram: { type: 'instagram', url: 'https://www.instagram.com/' },
+        },
+      })
+
+      expect(body).not.toContain('rc-social')
+    })
   })
 
   it('renders the web slot with name="web"', () => {
