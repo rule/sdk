@@ -1,0 +1,42 @@
+{
+  "private": true,
+  "name": "@rule/vendor-norce",
+  "version": "0.4.0-beta.1",
+  "description": "Norce preset for the Rule.io SDK — Norce Commerce field and tag schemas for e-commerce order flows.",
+  "type": "module",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "import": "./src/index.js"
+    }
+  },
+  "files": [
+    "src",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "keywords": [
+    "rule.io",
+    "norce",
+    "e-commerce",
+    "preset",
+    "sdk"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rule/sdk.git",
+    "directory": "packages/vendor-norce"
+  },
+  "dependencies": {
+    "@rule/vendor": "*"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
