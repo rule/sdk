@@ -146,7 +146,7 @@ describe('createShippingUpdateTemplate — cart + financial', () => {
             // order, which can differ from OrderShipped.Number if the customer
             // ordered again before this one shipped.
             source: customField('Order', 'Products', 200014),
-            itemName: loopValue('name'),
+            itemName: loopValue('title'),
             itemQuantity: loopValue('quantity'),
           },
         },
@@ -156,7 +156,7 @@ describe('createShippingUpdateTemplate — cart + financial', () => {
     const json = docToString(doc)
 
     expect(json).toContain('rc-loop')
-    expect(json).toContain('[LoopValue:name]')
+    expect(json).toContain('[LoopValue:title]')
     expect(json).toContain('[LoopValue:quantity]')
   })
 

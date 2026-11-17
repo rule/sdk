@@ -118,7 +118,7 @@ const FIELD_DESCRIPTIONS: Record<ShopifyFieldNames, string> = {
   trackingNumber: 'Tracking numbers (JSON array)',
 
   // Line item sub-fields
-  itemName: 'Line item product name (JSON key)',
+  itemName: 'Line item product title (JSON key)',
   itemQuantity: 'Line item quantity (JSON key)',
   itemPrice: 'Line item price (JSON key)',
   itemSku: 'Line item SKU (JSON key)',

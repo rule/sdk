@@ -110,8 +110,10 @@ export const SHOPIFY_FIELDS = {
   trackingCompany: 'OrderShipped.TrackingCompany',
   trackingNumber: 'OrderShipped.TrackingNumber',
 
-  // Line item sub-fields (JSON keys within the Order.Products / Cart.Products loop)
-  itemName: 'name',
+  // Line item sub-fields (JSON keys within the Order.Products / Cart.Products
+  // loop). Verified against a live Cart.Products payload: the product name
+  // key is `title` (there is no `name`).
+  itemName: 'title',
   itemQuantity: 'quantity',
   itemPrice: 'price',
   itemSku: 'sku',

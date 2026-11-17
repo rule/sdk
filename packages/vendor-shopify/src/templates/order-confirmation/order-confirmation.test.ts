@@ -127,7 +127,7 @@ describe('createOrderConfirmationTemplate — cart', () => {
         cart: {
           products: {
             source: customField('Order', 'Products', 200014),
-            itemName: loopValue('name'),
+            itemName: loopValue('title'),
             itemSku: loopValue('sku'),
             itemQuantity: loopValue('quantity'),
             itemPrice: loopValue('price'),
@@ -140,7 +140,7 @@ describe('createOrderConfirmationTemplate — cart', () => {
 
     expect(json).toContain('rc-loop')
     expect(json).toContain('Items Ordered')
-    expect(json).toContain('[LoopValue:name]')
+    expect(json).toContain('[LoopValue:title]')
     expect(json).toContain('[LoopValue:sku]')
     expect(json).toContain('[LoopValue:quantity]')
     expect(json).toContain('[LoopValue:price]')
@@ -152,7 +152,7 @@ describe('createOrderConfirmationTemplate — cart', () => {
         cart: {
           products: {
             source: customField('Order', 'Products', 200014),
-            itemName: loopValue('name'),
+            itemName: loopValue('title'),
             // itemSku / itemQuantity / itemPrice / itemTotal all omitted
           },
         },
@@ -161,7 +161,7 @@ describe('createOrderConfirmationTemplate — cart', () => {
     })
     const json = docToString(doc)
 
-    expect(json).toContain('[LoopValue:name]')
+    expect(json).toContain('[LoopValue:title]')
     expect(json).not.toContain('[LoopValue:sku]')
     expect(json).not.toContain('[LoopValue:quantity]')
     expect(json).not.toContain('[LoopValue:price]')

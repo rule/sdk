@@ -26,7 +26,7 @@ const date = customField('Order', 'Date', 3);
 const total = customField('Order', 'TotalPrice', 4);
 const products = {
   source: customField('Order', 'Products', 5),
-  itemName: loopValue('name'),
+  itemName: loopValue('title'),
   itemSku: loopValue('sku'),
   itemQuantity: loopValue('quantity'),
   itemPrice: loopValue('price'),

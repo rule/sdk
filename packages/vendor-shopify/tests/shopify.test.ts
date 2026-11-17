@@ -210,6 +210,17 @@ describe('SHOPIFY_FIELDS', () => {
   });
 });
 
+describe('SHOPIFY_FIELDS line-item keys', () => {
+  // Keys inside the synced Cart.Products / Order.Products JSON, taken from a
+  // live checkouts/update payload. `name` does not exist there.
+  it('match the JSON keys of a synced line item', () => {
+    expect(SHOPIFY_FIELDS.itemName).toBe('title');
+    expect(SHOPIFY_FIELDS.itemSku).toBe('sku');
+    expect(SHOPIFY_FIELDS.itemQuantity).toBe('quantity');
+    expect(SHOPIFY_FIELDS.itemPrice).toBe('price');
+  });
+});
+
 describe('SHOPIFY_TAGS', () => {
   it('all values are non-empty strings', () => {
     for (const value of Object.values(SHOPIFY_TAGS)) {

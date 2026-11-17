@@ -36,7 +36,7 @@ function fullContext(overrides: Partial<AbandonedCartTemplateContext> = {}): Aba
       url: '[CustomField:200015]',
       products: {
         source: customField('Cart', 'Products', 200021),
-        itemName: loopValue('name'),
+        itemName: loopValue('title'),
         itemSku: loopValue('sku'),
         itemQuantity: loopValue('quantity'),
         itemPrice: loopValue('price'),
@@ -62,7 +62,7 @@ describe('createAbandonedCartTemplate', () => {
     expect(json).toContain('Your Cart')
     expect(json).toContain('[CustomField:200001]')
     expect(json).toContain('"loop-value":"200021"')
-    expect(json).toContain('[LoopValue:name]')
+    expect(json).toContain('[LoopValue:title]')
     expect(json).toContain('[LoopValue:sku]')
     expect(json).toContain('[LoopValue:quantity]')
     expect(json).toContain('[LoopValue:price]')
@@ -146,7 +146,7 @@ describe('createAbandonedCartTemplate', () => {
           url: '[CustomField:200015]',
           products: {
             source: customField('Cart', 'Products', 200021),
-            itemName: loopValue('name'),
+            itemName: loopValue('title'),
             // itemSku / itemQuantity / itemPrice all omitted → rows don't render
           },
         },
@@ -155,7 +155,7 @@ describe('createAbandonedCartTemplate', () => {
     })
     const json = docToString(doc)
 
-    expect(json).toContain('[LoopValue:name]')
+    expect(json).toContain('[LoopValue:title]')
     expect(json).not.toContain('[LoopValue:sku]')
     expect(json).not.toContain('[LoopValue:quantity]')
     expect(json).not.toContain('[LoopValue:price]')
