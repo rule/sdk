@@ -28,7 +28,7 @@ import type { VendorTagSchema } from '@rule/vendor';
 export const NORCE_TAGS = {
   /** Norce status `Created`. */
   orderPlaced: 'OrderPlaced',
-  /** Norce status `Confirmed`. */
+  /** Norce status `Confirmed`. Triggers the order-confirmation email. */
   orderProcessing: 'OrderProcessing',
   /** Norce status `Delivered`. */
   orderShipped: 'OrderShipped',

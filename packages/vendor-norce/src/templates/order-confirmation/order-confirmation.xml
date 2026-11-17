@@ -1,0 +1,170 @@
+<rcml>
+  <rc-head>
+    <rc-preview><?copy preheader?></rc-preview>
+  </rc-head>
+  <rc-body>
+    <!-- Logo -->
+    <?if logoUrl?>
+      <rc-section>
+        <rc-column padding="0 20px">
+          <rc-logo rc-class="rcml-logo-style rc-initial-logo" width="96px" padding="20px 0"/>
+        </rc-column>
+      </rc-section>
+    <?endif?>
+
+    <!-- Greeting + intro -->
+    <rc-section padding="20px 0">
+      <rc-column padding="0 20px">
+        <rc-heading rc-class="rcml-h1-style"><?copy greetingHeading firstName=recipient.firstName?></rc-heading>
+        <rc-text rc-class="rcml-p-style"><?copy intro?></rc-text>
+      </rc-column>
+    </rc-section>
+
+    <!-- Hero heading: "{prefix} {orderRef} {suffix}" when supplied -->
+    <?if heroHeading?>
+      <rc-section padding="10px 0">
+        <rc-column padding="0 20px">
+          <rc-heading rc-class="rcml-h1-style"><?copy heroHeading prefix=heroHeading.prefix suffix=heroHeading.suffix orderRef=order.ref?></rc-heading>
+        </rc-column>
+      </rc-section>
+    <?endif?>
+
+    <!-- Two-column order meta row (orderRef + orderDate) when orderDate present -->
+    <?if order.date?>
+      <rc-section padding="10px 0">
+        <rc-column width="50%">
+          <rc-text rc-class="rcml-p-style"><?copy orderRefRow orderRef=order.ref?></rc-text>
+        </rc-column>
+        <rc-column width="50%">
+          <rc-text rc-class="rcml-p-style"><?copy orderDateRow orderDate=order.date?></rc-text>
+        </rc-column>
+      </rc-section>
+    <?endif?>
+
+    <!-- Details box: heading + optional rows -->
+    <rc-section padding="20px 0">
+      <rc-column padding="0 20px">
+        <rc-heading rc-class="rcml-h2-style"><?copy detailsHeading?></rc-heading>
+        <?if !order.date?>
+          <rc-text rc-class="rcml-p-style"><?copy orderRefRow orderRef=order.ref?></rc-text>
+        <?endif?>
+        <?if order.paymentMethod?>
+          <rc-text rc-class="rcml-p-style"><?copy paymentRow paymentMethod=order.paymentMethod?></rc-text>
+        <?endif?>
+        <?if cart.items?>
+          <rc-text rc-class="rcml-p-style"><?copy inlineItemsRow items=cart.items?></rc-text>
+        <?endif?>
+        <?if inlineShippingAddress?>
+          <rc-text rc-class="rcml-p-style"><?copy inlineShippingRow shippingAddress=inlineShippingAddress?></rc-text>
+        <?endif?>
+      </rc-column>
+    </rc-section>
+
+    <!-- Line items loop -->
+    <?if cart.products?>
+      <rc-section padding="0">
+        <rc-column padding="0 20px"><rc-divider padding="10px 0"/></rc-column>
+      </rc-section>
+      <rc-section padding="10px 0">
+        <rc-column padding="0 20px">
+          <rc-heading rc-class="rcml-h2-style"><?copy lineItemsHeading?></rc-heading>
+        </rc-column>
+      </rc-section>
+      <rc-loop loop-type="custom-field" loop-value="@{cart.products.source.id}" loop-max-iterations="20">
+        <rc-section padding="10px 0">
+          <rc-column padding="0 20px">
+            <rc-text rc-class="rcml-p-style"><?copy itemNameLine itemName=cart.products.itemName?></rc-text>
+            <?if cart.products.itemSku?>
+              <rc-text rc-class="rcml-p-style"><?copy itemSkuLine itemSku=cart.products.itemSku?></rc-text>
+            <?endif?>
+            <?if cart.products.itemQuantity?>
+              <rc-text rc-class="rcml-p-style"><?copy itemQtyLine itemQuantity=cart.products.itemQuantity?></rc-text>
+            <?endif?>
+            <?if cart.products.itemPrice?>
+              <rc-text rc-class="rcml-p-style"><?copy itemUnitPriceLine itemPrice=cart.products.itemPrice?></rc-text>
+            <?endif?>
+            <?if cart.products.itemTotal?>
+              <rc-text rc-class="rcml-p-style"><?copy itemSubtotalLine itemTotal=cart.products.itemTotal?></rc-text>
+            <?endif?>
+          </rc-column>
+        </rc-section>
+      </rc-loop>
+    <?endif?>
+
+    <!-- Financial summary (renders when caller provides a financial block) -->
+    <?if financial?>
+      <rc-section padding="0">
+        <rc-column padding="0 20px"><rc-divider padding="10px 0"/></rc-column>
+      </rc-section>
+      <rc-section padding="20px 0">
+        <rc-column padding="0 20px">
+          <?if financial.subtotal?>
+            <rc-text rc-class="rcml-p-style"><?copy subtotalRow subtotal=financial.subtotal?></rc-text>
+          <?endif?>
+          <?if financial.discount?>
+            <rc-text rc-class="rcml-p-style"><?copy discountRow discount=financial.discount?></rc-text>
+          <?endif?>
+          <?if financial.tax?>
+            <rc-text rc-class="rcml-p-style"><?copy taxRow tax=financial.tax?></rc-text>
+          <?endif?>
+          <?if financial.shippingCost?>
+            <rc-text rc-class="rcml-p-style"><?copy shippingCostRow shippingCost=financial.shippingCost?></rc-text>
+          <?endif?>
+          <rc-text rc-class="rcml-p-style"><?copy totalRow total=financial.total?></rc-text>
+        </rc-column>
+      </rc-section>
+    <?endif?>
+
+    <!-- Shipping address block (extended address fields mapped) -->
+    <?if shippingAddress?>
+      <rc-section padding="0">
+        <rc-column padding="0 20px"><rc-divider padding="10px 0"/></rc-column>
+      </rc-section>
+      <rc-section padding="10px 0">
+        <rc-column padding="0 20px">
+          <rc-heading rc-class="rcml-h4-style"><?copy shippingAddressHeading?></rc-heading>
+          <rc-text rc-class="rcml-p-style"><?copy shippingAddressLine line1=shippingAddress.line1?></rc-text>
+          <?if shippingAddress.line2?>
+            <rc-text rc-class="rcml-p-style"><?copy shippingAddress2Line line2=shippingAddress.line2?></rc-text>
+          <?endif?>
+          <?if shippingAddress.zip?>
+            <rc-text rc-class="rcml-p-style"><?copy shippingZipLine zip=shippingAddress.zip?></rc-text>
+          <?endif?>
+          <?if shippingAddress.city?>
+            <rc-text rc-class="rcml-p-style"><?copy shippingCityLine city=shippingAddress.city?></rc-text>
+          <?endif?>
+          <?if shippingAddress.country?>
+            <rc-text rc-class="rcml-p-style"><?copy shippingCountryCodeLine country=shippingAddress.country?></rc-text>
+          <?endif?>
+        </rc-column>
+      </rc-section>
+    <?endif?>
+
+    <!-- CTA -->
+    <rc-section padding="20px 0">
+      <rc-column padding="0 20px">
+        <rc-button href="@{websiteUrl}" align="center" border="none" border-radius="8px" inner-padding="10px 16px" padding="0 0 20px 0" text-align="center" vertical-align="middle" rc-class="rcml-label-style"><?copy ctaButton?></rc-button>
+      </rc-column>
+    </rc-section>
+
+    <!-- Social icons (when theme.links populated) -->
+    <?if socialLinks?>
+      <rc-section padding="10px 0">
+        <rc-column padding="0 20px">
+          <rc-social align="center">
+            <?for let link of socialLinks?>
+              <rc-social-element name="@{link.type}" href="@{link.url}"/>
+            <?endfor?>
+          </rc-social>
+        </rc-column>
+      </rc-section>
+    <?endif?>
+
+    <!-- Footer -->
+    <rc-section padding="20px 0">
+      <rc-column padding="0 20px">
+        <rc-text align="center" padding="0px 0px 10px 0px" font-size="@{footer.fontSize}" color="@{footer.textColor}" rc-class="rcml-p-style"><?copy footerLinks?></rc-text>
+      </rc-column>
+    </rc-section>
+  </rc-body>
+</rcml>
