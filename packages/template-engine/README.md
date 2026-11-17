@@ -172,6 +172,8 @@ Drives the public `render({ context, theme, copy? })` path; no direct imports of
 - **Project theme fields** into the compile context:
   - `theme.images.logo?.url` → `logoUrl` (XML sees it via `<?if logoUrl?>` / `@{logoUrl}`).
   - Non-empty `getConfiguredSocialLinks(theme.links)` (slots left at their default placeholder URL are skipped) → `socialLinks` (XML sees it via `<?if socialLinks?>` / `<?for let link of socialLinks?>`).
+  - `getBrandColors(theme)` → `brand`: the palette by Rule UI name (`primary`, `secondary`, `text`, `background`, `canvas`) plus `muted` and `hairline`, blended from `text` over `background`. XML colours elements the theme defaults don't reach with `@{brand.canvas}` and friends instead of hard-coded hex — for example a canvas-coloured `<rc-section>`, where `rcml-brand-color` is not allowed. The value is fixed at render time: re-theming the saved template in Rule does not update it.
+  - These three keys are reserved: a caller context field named `logoUrl`, `socialLinks` or `brand` is overwritten.
 - **Serialize `TemplateRef` values** at the stringify step via a pluggable `TemplateRefSerializer`. The default emits the RFM `::placeholder{…}` / `::loop-value{…}` strings Rule.io's backend expects; pass `render({ serializer })` to target a different format.
 - **Parse and theme** — `xmlToRcml(xml)` then `applyTheme(doc, theme)`. The theme contributes element-level stylings via `<rc-class>` bindings (`rcml-logo-style`, `rcml-brand-color`, `rcml-h1-style`, etc.) — so elements that declare a theme class pick up its styling without carrying it through context. `rc-class="rcml-brand-color"` (the theme's secondary color) is not supported on `<rc-section>`: the schema rejects it and the email editor does not apply it.
 
