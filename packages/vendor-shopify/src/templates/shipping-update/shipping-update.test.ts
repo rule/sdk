@@ -30,7 +30,8 @@ function baseContext(
       firstName: customField('Subscriber', 'FirstName', 200001),
     },
     order: {
-      ref: customField('Order', 'Number', 200003),
+      // Set by orders/fulfilled, so it names the order that shipped.
+      ref: customField('OrderShipped', 'Number', 200003),
     },
     trackingUrl: 'https://shop.example.com/orders/tracking',
     cart: {},
@@ -98,6 +99,7 @@ describe('createShippingUpdateTemplate — seller', () => {
     const doc = createShippingUpdateTemplate().render({
       context: baseContext({
         seller: {
+          // Not synced by Shopify: the shop's own fields, caller-supplied.
           company: customField('Seller', 'Company', 200040),
           vatNumber: customField('Seller', 'VatNumber', 200041),
         },
@@ -118,8 +120,8 @@ describe('createShippingUpdateTemplate — shipping details', () => {
     const doc = createShippingUpdateTemplate().render({
       context: baseContext({
         shippingDetails: {
-          tracking: customField('Order', 'TrackingNumber', 200050),
-          carrier: customField('Order', 'ShippingCarrier', 200051),
+          tracking: customField('OrderShipped', 'TrackingNumber', 200050),
+          carrier: customField('OrderShipped', 'TrackingCompany', 200051),
         },
       }),
       theme: TEST_THEME,
@@ -139,8 +141,12 @@ describe('createShippingUpdateTemplate — cart + financial', () => {
       context: baseContext({
         cart: {
           products: {
+            // Shopify's fulfillment sync has no line items or totals, so these
+            // come from orders/paid (Order.*). They describe the latest paid
+            // order, which can differ from OrderShipped.Number if the customer
+            // ordered again before this one shipped.
             source: customField('Order', 'Products', 200014),
-            itemName: loopValue('name'),
+            itemName: loopValue('title'),
             itemQuantity: loopValue('quantity'),
           },
         },
@@ -150,7 +156,7 @@ describe('createShippingUpdateTemplate — cart + financial', () => {
     const json = docToString(doc)
 
     expect(json).toContain('rc-loop')
-    expect(json).toContain('[LoopValue:name]')
+    expect(json).toContain('[LoopValue:title]')
     expect(json).toContain('[LoopValue:quantity]')
   })
 
@@ -158,6 +164,7 @@ describe('createShippingUpdateTemplate — cart + financial', () => {
     const doc = createShippingUpdateTemplate().render({
       context: baseContext({
         financial: {
+          // Shopify syncs no subtotal; caller-supplied field.
           subtotal: customField('Order', 'Subtotal', 200030),
           total: customField('Order', 'TotalPrice', 200005),
         },
