@@ -51,6 +51,9 @@ export const SHOPIFY_FIELDS = {
   orderNumber: 'Order.Number',
   orderName: 'Order.Name',
   orderDate: 'Order.Date',
+  // Not in the help article, but sent by the live orders/paid sync.
+  orderId: 'Order.OrderId',
+  orderOrderDate: 'Order.OrderDate',
   currency: 'Order.Currency',
   orderStatus: 'Order.OrderStatus',
   totalPrice: 'Order.TotalPrice',
@@ -111,8 +114,8 @@ export const SHOPIFY_FIELDS = {
   trackingNumber: 'OrderShipped.TrackingNumber',
 
   // Line item sub-fields (JSON keys within the Order.Products / Cart.Products
-  // loop). Verified against a live Cart.Products payload: the product name
-  // key is `title` (there is no `name`).
+  // loop). Verified against live Cart.Products and Order.Products payloads:
+  // `title` is the product name in both; cart items have no `name` key.
   itemName: 'title',
   itemQuantity: 'quantity',
   itemPrice: 'price',

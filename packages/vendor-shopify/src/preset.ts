@@ -59,6 +59,8 @@ const FIELD_DESCRIPTIONS: Record<ShopifyFieldNames, string> = {
   orderNumber: 'Shopify order number (falls back to order ID)',
   orderName: 'Shopify order name (e.g., #1001)',
   orderDate: 'Order date (processed, created or updated)',
+  orderId: 'Shopify order ID (undocumented, seen in live sync)',
+  orderOrderDate: 'Order datetime (undocumented, seen in live sync alongside Order.Date)',
   currency: 'Order currency code (e.g., SEK, EUR)',
   orderStatus: 'Order status ("cancelled", or fulfillment + financial status)',
   totalPrice: 'Order total price incl. tax (same as Order.TotalTaxIncl)',

@@ -173,12 +173,13 @@ describe('SHOPIFY_FIELDS', () => {
     }
   });
 
-  it('has 77 fields (73 integration fields + 4 line-item JSON keys)', () => {
-    expect(Object.keys(SHOPIFY_FIELDS)).toHaveLength(77);
+  it('has 79 fields (75 integration fields + 4 line-item JSON keys)', () => {
+    expect(Object.keys(SHOPIFY_FIELDS)).toHaveLength(79);
   });
 
-  // Source of truth: https://help.rule.io/en/articles/349484-shopify-integration
-  it('matches the documented Shopify integration field names exactly', () => {
+  // Sources: https://help.rule.io/en/articles/349484-shopify-integration plus
+  // fields observed in live Shopify syncs that the article omits.
+  it('matches the documented field names plus those seen in live syncs', () => {
     const documented = [
       'Subscriber.FirstName', 'Subscriber.LastName', 'Subscriber.Number',
       'Subscriber.Address1', 'Subscriber.Address2', 'Subscriber.City',
@@ -204,15 +205,20 @@ describe('SHOPIFY_FIELDS', () => {
       'OrderShipped.FinancialStatus', 'OrderShipped.ShippingLines',
       'OrderShipped.TrackingCompany', 'OrderShipped.TrackingNumber',
     ];
+    // Sent by the live orders/paid sync but missing from the article.
+    const observedUndocumented = ['Order.OrderId', 'Order.OrderDate'];
     const integrationFields = Object.values(SHOPIFY_FIELDS).filter((v) => v.includes('.'));
 
-    expect([...integrationFields].sort()).toEqual([...documented].sort());
+    expect([...integrationFields].sort()).toEqual(
+      [...documented, ...observedUndocumented].sort(),
+    );
   });
 });
 
 describe('SHOPIFY_FIELDS line-item keys', () => {
-  // Keys inside the synced Cart.Products / Order.Products JSON, taken from a
-  // live checkouts/update payload. `name` does not exist there.
+  // Keys inside the synced Cart.Products / Order.Products JSON, taken from live
+  // checkouts/update and orders/paid payloads. Cart items have no `name`; order
+  // items have both (`name` appends the variant, e.g. "Classic Tee Blue - M").
   it('match the JSON keys of a synced line item', () => {
     expect(SHOPIFY_FIELDS.itemName).toBe('title');
     expect(SHOPIFY_FIELDS.itemSku).toBe('sku');
