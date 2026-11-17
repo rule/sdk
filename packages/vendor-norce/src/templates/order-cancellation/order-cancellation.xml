@@ -1,0 +1,99 @@
+<rcml>
+  <rc-head>
+    <rc-preview><?copy preheader?></rc-preview>
+  </rc-head>
+  <rc-body>
+    <!-- Logo -->
+    <?if logoUrl?>
+      <rc-section>
+        <rc-column padding="0 20px">
+          <rc-logo rc-class="rcml-logo-style rc-initial-logo" width="96px" padding="20px 0"/>
+        </rc-column>
+      </rc-section>
+    <?endif?>
+
+    <!-- Hero banner -->
+    <rc-section padding="20px 0">
+      <rc-column padding="0 20px">
+        <rc-heading rc-class="rcml-h1-style"><?copy heading?></rc-heading>
+      </rc-column>
+    </rc-section>
+
+    <!-- Divider -->
+    <rc-section padding="0">
+      <rc-column padding="0 20px"><rc-divider padding="10px 0"/></rc-column>
+    </rc-section>
+
+    <!-- Greeting + message -->
+    <rc-section padding="20px 0">
+      <rc-column padding="0 20px">
+        <rc-text rc-class="rcml-p-style"><?copy greetingLine firstName=recipient.firstName?></rc-text>
+        <rc-text rc-class="rcml-p-style"><?copy message?></rc-text>
+      </rc-column>
+    </rc-section>
+
+    <!-- Order details -->
+    <rc-section padding="20px 0">
+      <rc-column padding="0 20px">
+        <rc-text rc-class="rcml-p-style"><?copy orderRefRow orderRef=order.ref?></rc-text>
+        <?if order.date?>
+          <rc-text rc-class="rcml-p-style"><?copy orderDateRow orderDate=order.date?></rc-text>
+        <?endif?>
+      </rc-column>
+    </rc-section>
+
+    <!-- Optional support callout -->
+    <?if support?>
+      <rc-section padding="0">
+        <rc-column padding="0 20px"><rc-divider padding="10px 0"/></rc-column>
+      </rc-section>
+      <rc-section padding="10px 0">
+        <rc-column padding="0 20px">
+          <rc-text rc-class="rcml-p-style" align="center"><?copy supportText?></rc-text>
+          <?if support.linkHref && support.linkText?>
+            <rc-text rc-class="rcml-p-style" align="center"><?copy supportLink linkText=support.linkText linkHref=support.linkHref?></rc-text>
+          <?endif?>
+        </rc-column>
+      </rc-section>
+    <?endif?>
+
+    <!-- Divider before follow-up -->
+    <rc-section padding="0">
+      <rc-column padding="0 20px"><rc-divider padding="10px 0"/></rc-column>
+    </rc-section>
+
+    <!-- Follow-up -->
+    <rc-section padding="10px 0">
+      <rc-column padding="0 20px">
+        <rc-text rc-class="rcml-p-style"><?copy followUp?></rc-text>
+      </rc-column>
+    </rc-section>
+
+    <!-- CTA -->
+    <rc-section padding="20px 0">
+      <rc-column padding="0 20px">
+        <rc-button href="@{websiteUrl}" align="center" border="none" border-radius="8px" inner-padding="10px 16px" padding="0 0 20px 0" text-align="center" vertical-align="middle" rc-class="rcml-label-style"><?copy ctaButton?></rc-button>
+      </rc-column>
+    </rc-section>
+
+    <!-- Social icons (when theme.links populated) -->
+    <?if socialLinks?>
+      <rc-section padding="10px 0">
+        <rc-column padding="0 20px">
+          <rc-social align="center">
+            <?for let link of socialLinks?>
+              <rc-social-element name="@{link.type}" href="@{link.url}"/>
+            <?endfor?>
+          </rc-social>
+        </rc-column>
+      </rc-section>
+    <?endif?>
+
+    <!-- Footer -->
+    <rc-section padding="20px 0px 20px 0px">
+      <rc-column padding="0 20px">
+        <rc-text align="center" padding="0px 0px 10px 0px" font-size="@{footer.fontSize}" color="@{footer.textColor}" rc-class="rcml-p-style"><?copy footerLinks?></rc-text>
+      </rc-column>
+    </rc-section>
+  </rc-body>
+</rcml>

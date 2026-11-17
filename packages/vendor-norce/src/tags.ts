@@ -36,7 +36,8 @@ export const NORCE_TAGS = {
   orderCompleted: 'OrderCompleted',
   /**
    * Norce statuses `Cancelled` and `Credited` (both set this tag). The
-   * spelling with one L is the integration's own.
+   * spelling with one L is the integration's own. Triggers the
+   * order-cancellation email.
    */
   orderCanceled: 'OrderCanceled',
 } as const satisfies VendorTagSchema;
