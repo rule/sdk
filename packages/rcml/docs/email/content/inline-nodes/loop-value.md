@@ -6,9 +6,9 @@ An inline atom that references a property from the current `rc-loop` iteration i
 
 | Attribute | Default | Constraint | Example | Description |
 |-----------|---------|------------|---------|-------------|
-| `original` | — | string | `"orders.item_name"` | Authoritative source token in `"value.index"` form. Used for re-parsing. |
-| `value` | — | string | `"orders"` | The loop collection name (matches the `loop-value` attribute on the enclosing `rc-loop`). |
-| `index` | — | string | `"item_name"` | The property name on the iteration item to render. |
+| `original` | — | string | `"[LoopValue:title.1]"` | Source token in `[LoopValue:<key>.<index>]` form. This is what Rule renders. |
+| `value` | — | string | `"title"` | The `key`: the property name on the iteration item (a JSON property, or an Open Graph tag name for news-feed loops). |
+| `index` | — | string | `"1"` | The 1-based column slot the value fills, counted across all sections of the loop block. A single-column loop uses `"1"` for every value. |
 
 ## Children
 
@@ -28,14 +28,14 @@ None (inline atom, leaf node).
 {
   "type": "loop-value",
   "attrs": {
-    "original": "orders.item_name",
-    "value": "orders",
-    "index": "item_name"
+    "original": "[LoopValue:title.1]",
+    "value": "title",
+    "index": "1"
   }
 }
 ```
 
-In context — a `paragraph` inside an `rc-loop` that renders each order's item name:
+In context — a `paragraph` inside an `rc-loop` that renders each item's title:
 
 ```json
 {
@@ -45,9 +45,9 @@ In context — a `paragraph` inside an `rc-loop` that renders each order's item 
     {
       "type": "loop-value",
       "attrs": {
-        "original": "orders.item_name",
-        "value": "orders",
-        "index": "item_name"
+        "original": "[LoopValue:title.1]",
+        "value": "title",
+        "index": "1"
       }
     }
   ]
@@ -59,7 +59,7 @@ In context — a `paragraph` inside an `rc-loop` that renders each order's item 
 Loop values are written as leaf directives using `::loop-value{…}`:
 
 ```
-Product: ::loop-value{original="orders.item_name" value="orders" index="item_name"}
+Product: ::loop-value{original="[LoopValue:title.1]" value="title" index="1"}
 ```
 
-The `original` attribute is the canonical identifier — the parser uses it on re-parse to reconstruct `value` and `index`. Always set `original` to `"<value>.<index>"`.
+Always set `original` to `"[LoopValue:<value>.<index>]"`. A token without the `.<index>` suffix (for example `[LoopValue:title]`) is not substituted and appears literally in the sent email. `email.createLoopValue` and `createLoopValueNode` build the correct form.

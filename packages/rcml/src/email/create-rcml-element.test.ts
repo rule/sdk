@@ -75,11 +75,24 @@ describe('inline-node helpers', () => {
     expect(node.attrs['max-length']).toBe('64')
   })
 
-  it('createLoopValueNode produces a canonical loop-value node', () => {
+  it('createLoopValueNode produces an indexed loop-value node, slot 1 by default', () => {
     expect(createLoopValueNode('price')).toEqual({
       type: 'loop-value',
-      attrs: { original: '[LoopValue:price]', value: 'price', index: 'price' },
+      attrs: { original: '[LoopValue:price.1]', value: 'price', index: '1' },
     })
+  })
+
+  it('createLoopValueNode puts an explicit slot index in original and index', () => {
+    expect(createLoopValueNode('price', { index: '3' })).toEqual({
+      type: 'loop-value',
+      attrs: { original: '[LoopValue:price.3]', value: 'price', index: '3' },
+    })
+  })
+
+  it('createLoopValueNode rejects a slot index that is not a positive integer', () => {
+    expect(() => createLoopValueNode('price', { index: 'price' })).toThrow(/positive integer/)
+    expect(() => createLoopValueNode('price', { index: '0' })).toThrow(/positive integer/)
+    expect(() => createLoopValueNode('price', { index: '' })).toThrow(/positive integer/)
   })
 
   it('createInlineContent wraps nodes in a valid doc', () => {

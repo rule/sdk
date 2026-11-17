@@ -31,7 +31,7 @@ Email RFM has no native `**bold**` or `[text](url)` syntax. All text styling, li
 - Styling: `:font[text]{font-weight="bold" color="#FF0000"}`
 - Link: `:link[text]{href="https://example.com"}`
 - Merge tag: `::placeholder{type="Subscriber" value="email" name="Email" original="[Subscriber:email]"}`
-- Loop variable: `::loop-value{original="42.title" value="42" index="title"}`
+- Loop variable: `::loop-value{original="[LoopValue:title.1]" value="title" index="1"}`
 
 The directive syntax is uniform because email content mixes prose with types that Markdown has no native concept for: styled spans, merge tags that insert subscriber data, loop variables that reference feed fields. All of these need typed attributes. `:font[text]{...}`, `::placeholder{...}`, and `::loop-value{...}` follow the same grammar, making the format extensible without introducing new syntax for each new inline type.
 

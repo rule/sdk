@@ -202,17 +202,17 @@ describe('RFM atom strategy', () => {
     const { xml } = compileTemplate({
       template:
         '<?for let item of items?><rc-text><?copy line key=item.key?></rc-text><?endfor?>',
-      copy: { line: '::loop-value{original="[LoopValue:{{key}}]" value="{{key}}" index="{{key}}"}' },
+      copy: { line: '::loop-value{original="[LoopValue:{{key}}.1]" value="{{key}}" index="1"}' },
       context: {
         items: [{ key: 'name' }, { key: 'quantity' }],
       },
     })
 
     expect(xml).toContain(
-      '::loop-value{original="[LoopValue:name]" value="name" index="name"}',
+      '::loop-value{original="[LoopValue:name.1]" value="name" index="1"}',
     )
     expect(xml).toContain(
-      '::loop-value{original="[LoopValue:quantity]" value="quantity" index="quantity"}',
+      '::loop-value{original="[LoopValue:quantity.1]" value="quantity" index="1"}',
     )
   })
 })
@@ -245,7 +245,7 @@ describe('TemplateRef serialization', () => {
     })
 
     expect(xml).toContain(
-      '::loop-value{original="[LoopValue:name]" value="name" index="name"}',
+      '::loop-value{original="[LoopValue:name.1]" value="name" index="1"}',
     )
   })
 

@@ -1318,9 +1318,13 @@ export function createPlaceholderNode(
  * @param jsonKey - The loop variable name (typically a JSON property key
  *   on the iteration item, e.g. `title`, `price`).
  * @param options - Optional overrides:
- *   - `index` — iteration identifier (defaults to `jsonKey`).
- *   - `original` — source-token override (defaults to `[LoopValue:<jsonKey>]`).
+ *   - `index` — 1-based column slot the value fills (defaults to `'1'`,
+ *     the only slot of a single-column loop).
+ *   - `original` — source-token override (defaults to
+ *     `[LoopValue:<jsonKey>.<index>]`).
  * @returns A typed {@link LoopValueNode}.
+ * @throws Error when `index` is not a positive integer string — Rule does
+ *   not render a token with any other slot.
  *
  * @example
  * ```ts
@@ -1338,12 +1342,18 @@ export function createLoopValueNode(
   jsonKey: string,
   options: { index?: string; original?: string } = {},
 ): LoopValueNode {
+  const index = options.index ?? '1'
+
+  if (!/^[1-9]\d*$/.test(index)) {
+    throw new Error(`createLoopValueNode index must be a positive integer (got '${index}' for '${jsonKey}')`)
+  }
+
   return {
     type: 'loop-value',
     attrs: {
-      original: options.original ?? `[LoopValue:${jsonKey}]`,
+      original: options.original ?? `[LoopValue:${jsonKey}.${index}]`,
       value: jsonKey,
-      index: options.index ?? jsonKey,
+      index,
     },
   }
 }

@@ -52,7 +52,7 @@ export function serializeRef(
  * - `CustomFieldRef` →
  *   `::placeholder{type="CustomField" name="<group>.<name>" value="<id>" original="[CustomField:<id>]"}`
  * - `LoopValueRef` →
- *   `::loop-value{original="[LoopValue:<key>]" value="<key>" index="<key>"}`
+ *   `::loop-value{original="[LoopValue:<key>.<index>]" value="<key>" index="<index>"}`
  *
  * `CustomFieldRef.id` is required; an undefined id raises an error so
  * the render fails loudly rather than emitting a malformed atom.
@@ -71,6 +71,6 @@ export const defaultTemplateRefSerializer: TemplateRefSerializer = {
   },
 
   serializeLoopValue(ref: LoopValueRef): string {
-    return `::loop-value{original="[LoopValue:${ref.key}]" value="${ref.key}" index="${ref.key}"}`
+    return `::loop-value{original="[LoopValue:${ref.key}.${String(ref.index)}]" value="${ref.key}" index="${String(ref.index)}"}`
   },
 }

@@ -27,7 +27,7 @@ A ready-made email template spans three packages:
   - `loadCopy<T>(import.meta.url, './foo.json')` → parsed JSON, typed as `T`.
   - `createEmailTemplate<TCopy, TContext>({ baseUrl, templatePath, copyPath })` — bundles the full render pipeline (load + compile + theme projection + `xmlToRcml` + `applyTheme`).
   - Types: `EmailTemplate<TCopy, TContext>`, `EmailTemplateRenderArgs<TCopy, TContext>`.
-  - Typed refs: `customField(group, name, id?)`, `loopValue(key)`; types `CustomFieldRef`, `LoopValueRef`, `TemplateRef`. Serializer surface: `TemplateRefSerializer`, `defaultTemplateRefSerializer`, `serializeRef`, `isTemplateRef`.
+  - Typed refs: `customField(group, name, id?)`, `loopValue(key, index?)`; types `CustomFieldRef`, `LoopValueRef`, `TemplateRef`. Serializer surface: `TemplateRefSerializer`, `defaultTemplateRefSerializer`, `serializeRef`, `isTemplateRef`.
   - Errors: `TemplateCompileError`.
 - **`@rule/rcml`** — RCML element factories, validators, converters, and theme API.
 - **Vendor packages** (e.g. `@rule/vendor-shopify`) — one folder per template, each with four files.

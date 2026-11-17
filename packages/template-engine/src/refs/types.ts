@@ -49,13 +49,26 @@ export class CustomFieldRef extends TemplateRefBase {
  * Reference to a property of the current loop item (e.g. `name`, `sku`,
  * `quantity`). Only meaningful inside a `<?for?>`-driven loop.
  *
+ * `index` is the 1-based column slot the value fills, counted across all
+ * sections of the loop block (see `placeholderSpec.tokens.LoopValue` in
+ * `@rule/rcml`). A single-column loop uses slot `1` for every value.
+ * The constructor throws when `index` is not a positive integer, since
+ * Rule does not render a token with any other slot.
+ *
  * @public
  */
 export class LoopValueRef extends TemplateRefBase {
   readonly kind = 'loop-value' as const
 
-  constructor(readonly key: string) {
+  constructor(
+    readonly key: string,
+    readonly index = 1,
+  ) {
     super()
+
+    if (!Number.isSafeInteger(index) || index < 1) {
+      throw new Error(`LoopValueRef index must be a positive integer (got ${String(index)} for '${key}')`)
+    }
   }
 }
 

@@ -158,8 +158,8 @@ describe('createShippingUpdateTemplate — cart + financial', () => {
     const json = docToString(doc)
 
     expect(json).toContain('rc-loop')
-    expect(json).toContain('[LoopValue:title]')
-    expect(json).toContain('[LoopValue:quantity]')
+    expect(json).toContain('[LoopValue:title.1]')
+    expect(json).toContain('[LoopValue:quantity.1]')
   })
 
   it('renders the financial summary when supplied', () => {

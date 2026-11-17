@@ -49,7 +49,7 @@ export function makeTemplateHelpers(
   }
 
   function loopValue(key: string): string {
-    return `::loop-value{original="[LoopValue:${key}]" value="${key}" index="${key}"}`
+    return `::loop-value{original="[LoopValue:${key}.1]" value="${key}" index="1"}`
   }
 
   return { field, loopValue }
