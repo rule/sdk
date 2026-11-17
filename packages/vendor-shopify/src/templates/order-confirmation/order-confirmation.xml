@@ -73,32 +73,29 @@
     </rc-section>
 
     <?if cart.products?>
+      <!--
+        One section, one column: a LoopValue index counts column slots
+        across the whole loop block, and the caller's refs are index 1.
+        A second column (or section) would shift every ref off its slot.
+      -->
       <rc-loop loop-type="custom-field" loop-value="@{cart.products.source.id}" loop-max-iterations="20">
-        <rc-section background-color="@{brand.background}" padding="0px">
+        <rc-section background-color="@{brand.background}" padding="0px 0px 16px 0px">
           <rc-column padding="0px 28px">
-            <rc-divider border-color="@{brand.hairline}" border-width="1px" padding="0px"/>
+            <rc-divider border-color="@{brand.hairline}" border-width="1px" padding="0px 0px 16px 0px"/>
+            <rc-text rc-class="rcml-p-style" font-size="16px" font-weight="700" line-height="140%" padding="0px"><?copy itemNameLine itemName=cart.products.itemName?></rc-text>
+            <?if cart.products.itemQuantity?>
+              <rc-text rc-class="rcml-p-style" font-size="14px" color="@{brand.muted}" padding="2px 0px 0px 0px"><?copy itemQtyLine itemQuantity=cart.products.itemQuantity?></rc-text>
+            <?endif?>
+            <?if cart.products.itemPrice?>
+              <rc-text rc-class="rcml-p-style" font-size="14px" color="@{brand.muted}" padding="2px 0px 0px 0px"><?copy itemUnitPriceLine itemPrice=cart.products.itemPrice?></rc-text>
+            <?endif?>
+            <?if cart.products.itemSku?>
+              <rc-text rc-class="rcml-p-style" font-size="14px" color="@{brand.muted}" padding="2px 0px 0px 0px"><?copy itemSkuLine itemSku=cart.products.itemSku?></rc-text>
+            <?endif?>
+            <?if cart.products.itemTotal?>
+              <rc-text rc-class="rcml-p-style" align="right" font-size="16px" line-height="140%" padding="4px 0px 0px 0px"><?copy itemSubtotalLine itemTotal=cart.products.itemTotal?></rc-text>
+            <?endif?>
           </rc-column>
-        </rc-section>
-        <rc-section background-color="@{brand.background}" padding="16px 0px">
-          <rc-group>
-            <rc-column width="65%" padding="0px 0px 0px 28px">
-              <rc-text rc-class="rcml-p-style" font-size="16px" font-weight="700" line-height="140%" padding="0px"><?copy itemNameLine itemName=cart.products.itemName?></rc-text>
-              <?if cart.products.itemQuantity?>
-                <rc-text rc-class="rcml-p-style" font-size="14px" color="@{brand.muted}" padding="2px 0px 0px 0px"><?copy itemQtyLine itemQuantity=cart.products.itemQuantity?></rc-text>
-              <?endif?>
-              <?if cart.products.itemPrice?>
-                <rc-text rc-class="rcml-p-style" font-size="14px" color="@{brand.muted}" padding="2px 0px 0px 0px"><?copy itemUnitPriceLine itemPrice=cart.products.itemPrice?></rc-text>
-              <?endif?>
-              <?if cart.products.itemSku?>
-                <rc-text rc-class="rcml-p-style" font-size="14px" color="@{brand.muted}" padding="2px 0px 0px 0px"><?copy itemSkuLine itemSku=cart.products.itemSku?></rc-text>
-              <?endif?>
-            </rc-column>
-            <rc-column width="35%" padding="0px 28px 0px 0px">
-              <?if cart.products.itemTotal?>
-                <rc-text rc-class="rcml-p-style" align="right" font-size="16px" line-height="140%" padding="0px"><?copy itemSubtotalLine itemTotal=cart.products.itemTotal?></rc-text>
-              <?endif?>
-            </rc-column>
-          </rc-group>
         </rc-section>
       </rc-loop>
     <?endif?>

@@ -386,6 +386,28 @@ describe('createOrderConfirmationTemplate — design', () => {
       .toContain('"border-radius":"16px"')
   })
 
+  it('keeps the line-items loop to one column slot so index-1 refs match', () => {
+    const doc = JSON.parse(render({
+      cart: {
+        products: {
+          source: customField('Order', 'Products', 200014),
+          itemName: loopValue('title'),
+          itemQuantity: loopValue('quantity'),
+          itemPrice: loopValue('price'),
+          itemSku: loopValue('sku'),
+          itemTotal: loopValue('total'),
+        },
+      },
+    })) as { children: RcmlNode[] }
+    const columns = (node: RcmlNode): number =>
+      (node.tagName === 'rc-column' ? 1 : 0) + (node.children ?? []).reduce((n, c) => n + columns(c), 0)
+    const loop = doc.children[1].children?.find((n) => n.tagName === 'rc-loop')
+
+    expect(loop).toBeDefined()
+    expect(columns(loop as RcmlNode)).toBe(1)
+    expect(JSON.stringify(loop)).toContain('[LoopValue:total.1]')
+  })
+
   it('labels the unit price when no line total is supplied', () => {
     const body = bodyOf(render({
       cart: {
