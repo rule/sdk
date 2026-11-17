@@ -178,7 +178,6 @@ describe('samforaPreset', () => {
       const automations = samforaPreset.getAutomations(TEST_CONFIG);
 
       expect(automations).toHaveLength(6);
-      expect(JSON.stringify(automations)).not.toContain('Certified by Rule');
     });
 
     it('returns automations with unique IDs', () => {
@@ -246,6 +245,7 @@ describe('samforaPreset', () => {
         }) as unknown as RcmlDocument;
 
         assertValidRCMLDocument(doc);
+        expect(docToString(doc)).not.toContain('Certified by Rule');
       }
     });
 
