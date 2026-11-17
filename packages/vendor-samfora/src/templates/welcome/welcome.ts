@@ -39,7 +39,6 @@ export interface SamforaWelcomeTemplateCopy {
   readonly ctaButton: string
   readonly signOff: string
   readonly footerLinks: string
-  readonly certifiedByRule: string
 }
 
 export type SamforaWelcomeRenderOptions =

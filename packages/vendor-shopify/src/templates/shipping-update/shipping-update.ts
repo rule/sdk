@@ -149,7 +149,6 @@ export interface ShippingUpdateTemplateCopy {
   readonly returnPolicyLink: string
   readonly termsLink: string
   readonly footerLinks: string
-  readonly certifiedByRule: string
 }
 
 /** Arguments to `render` — {@link EmailTemplateRenderArgs} bound to shipping-update. */

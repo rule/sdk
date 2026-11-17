@@ -57,6 +57,8 @@ describe('createAbandonedCartTemplate', () => {
     assertValidRCMLDocument(doc)
     const json = docToString(doc)
 
+    expect(json).not.toContain('Certified by Rule')
+
     expect(json).toContain('Hi ')
     expect(json).toContain('Return to Cart')
     expect(json).toContain('Your Cart')

@@ -7,7 +7,7 @@
  * empty head with brand-style + fonts + social + colour attributes derived
  * from the brand style. The body sections below keep their original hard-coded
  * class names (`rcml-h1-style`, `rcml-p-style`, `rcml-label-style`) and default
- * copy (`Replace this title`, `Click me!`, `Certified by Rule`) so the
+ * copy (`Replace this title`, `Click me!`) so the
  * editor-compatibility contract is unchanged.
  *
  * This module is intentionally **not** re-exported from `index.ts`. It exists
@@ -210,28 +210,6 @@ function buildFooterSection(): RcmlBodyChild {
                     },
                   ],
                 },
-              ],
-            },
-          },
-          {
-            tagName: 'rc-text',
-            id: genId(),
-            attributes: {
-              align: 'center',
-              padding: '10px 0px 0px 0px',
-              'font-family': "'Helvetica', sans-serif",
-              'font-style': 'normal',
-              'line-height': '120%',
-              'letter-spacing': '0em',
-              color: textColor,
-              'font-weight': '400',
-              'text-decoration': 'none',
-              'font-size': fontSize,
-            },
-            content: {
-              type: 'doc',
-              content: [
-                { type: 'paragraph', content: [{ type: 'text', text: 'Certified by Rule' }] },
               ],
             },
           },

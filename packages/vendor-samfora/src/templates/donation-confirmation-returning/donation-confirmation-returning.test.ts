@@ -45,6 +45,8 @@ describe('createDonationConfirmationReturningTemplate', () => {
     assertValidRCMLDocument(doc)
     const json = docToString(doc)
 
+    expect(json).not.toContain('Certified by Rule')
+
     expect(json).toContain('Ännu en gåva som gör skillnad')
     expect(json).toContain('Tack för ditt fortsatta stöd')
     expect(json).toContain('vi kan fortsätta vårt arbete')

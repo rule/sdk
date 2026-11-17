@@ -44,6 +44,8 @@ describe('createAnnualTaxSummaryTemplate', () => {
     assertValidRCMLDocument(doc)
     const json = docToString(doc)
 
+    expect(json).not.toContain('Certified by Rule')
+
     expect(json).toContain('gåvosammanställning')
     expect(json).toContain('Sammanställning')
     expect(json).toContain('gåvoskatteavdrag')

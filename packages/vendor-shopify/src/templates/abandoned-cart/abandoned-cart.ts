@@ -124,8 +124,6 @@ export interface AbandonedCartTemplateCopy {
    * Override this entry to change labels, separator, or styling.
    */
   readonly footerLinks: string
-  /** Fixed "Certified by Rule" footer attribution. */
-  readonly certifiedByRule: string
 }
 
 /** Arguments to `render` — {@link EmailTemplateRenderArgs} bound to abandoned-cart. */

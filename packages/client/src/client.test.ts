@@ -303,7 +303,7 @@ describe('createAutomationEmail orchestration', () => {
     expect(rcml).toContain('rcml-h1-style');
     expect(rcml).toContain('Replace this title');
     expect(rcml).toContain('Click me!');
-    expect(rcml).toContain('Certified by Rule');
+    expect(rcml).not.toContain('Certified by Rule');
   });
 
   it('throws RuleApiError when the brand style is not found', async () => {
@@ -587,7 +587,7 @@ describe('createCampaignEmail orchestration', () => {
 
     expect(rcml).toContain('rc-brand-style');
     expect(rcml).toContain('Replace this title');
-    expect(rcml).toContain('Certified by Rule');
+    expect(rcml).not.toContain('Certified by Rule');
   });
 
   it('uses the provided template directly when no brandStyleId is set', async () => {

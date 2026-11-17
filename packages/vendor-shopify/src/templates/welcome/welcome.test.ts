@@ -44,6 +44,8 @@ describe('createWelcomeTemplate — baseline', () => {
     assertValidRCMLDocument(doc)
     const json = docToString(doc)
 
+    expect(json).not.toContain('Certified by Rule')
+
     expect(json).toContain('Welcome!')
     expect(json).toContain("Thanks for subscribing")
     expect(json).toContain('Learn More')

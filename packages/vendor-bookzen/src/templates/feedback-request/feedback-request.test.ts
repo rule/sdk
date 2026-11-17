@@ -39,6 +39,8 @@ describe('createFeedbackRequestTemplate', () => {
     assertValidRCMLDocument(doc)
     const json = docToString(doc)
 
+    expect(json).not.toContain('Certified by Rule')
+
     expect(json).toContain('Leave Feedback')
     expect(json).toContain('[CustomField:200001]')
     expect(json).toContain('https://hotel.example.com/feedback')

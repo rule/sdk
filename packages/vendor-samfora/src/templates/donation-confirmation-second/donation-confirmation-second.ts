@@ -49,7 +49,6 @@ export interface DonationConfirmationSecondTemplateCopy {
   readonly ctaButton: string
   readonly signOff: string
   readonly footerLinks: string
-  readonly certifiedByRule: string
 }
 
 export type DonationConfirmationSecondRenderOptions =

@@ -42,7 +42,6 @@ export interface ReservationRequestTemplateCopy {
   readonly dateRangeRow: string
   readonly guestsRow: string
   readonly footerLinks: string
-  readonly certifiedByRule: string
 }
 
 export type ReservationRequestRenderOptions =

@@ -52,6 +52,8 @@ describe('createOrderCancellationTemplate', () => {
     assertValidRCMLDocument(doc)
     const json = docToString(doc)
 
+    expect(json).not.toContain('Certified by Rule')
+
     expect(json).toContain('Order Cancelled')
     expect(json).toContain('Visit Our Store')
     expect(json).toContain('[CustomField:200001]')

@@ -245,6 +245,7 @@ describe('samforaPreset', () => {
         }) as unknown as RcmlDocument;
 
         assertValidRCMLDocument(doc);
+        expect(docToString(doc)).not.toContain('Certified by Rule');
       }
     });
 

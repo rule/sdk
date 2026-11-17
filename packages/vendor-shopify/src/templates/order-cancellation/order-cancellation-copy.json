@@ -9,6 +9,5 @@
   "supportLink": ":link[{{linkText}}]{href=\"{{linkHref}}\" target=\"_blank\"}",
   "followUp": "If this cancellation was unexpected, please reach out to us.",
   "ctaButton": "Visit Our Store",
-  "footerLinks": ":link[:font[View in Browser]{text-decoration=\"underline\"}]{href=\"[Link:WebBrowser]\" target=\"_blank\" no-tracked=\"true\"} | :link[:font[Unsubscribe]{text-decoration=\"underline\"}]{href=\"[Link:Unsubscribe]\" target=\"_blank\" no-tracked=\"true\"}",
-  "certifiedByRule": "Certified by Rule"
+  "footerLinks": ":link[:font[View in Browser]{text-decoration=\"underline\"}]{href=\"[Link:WebBrowser]\" target=\"_blank\" no-tracked=\"true\"} | :link[:font[Unsubscribe]{text-decoration=\"underline\"}]{href=\"[Link:Unsubscribe]\" target=\"_blank\" no-tracked=\"true\"}"
 }

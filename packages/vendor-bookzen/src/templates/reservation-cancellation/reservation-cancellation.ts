@@ -35,7 +35,6 @@ export interface ReservationCancellationTemplateCopy {
   readonly followUp: string
   readonly ctaButton: string
   readonly footerLinks: string
-  readonly certifiedByRule: string
 }
 
 export type ReservationCancellationRenderOptions =
