@@ -14,6 +14,7 @@ Nx monorepo for the Rule.io TypeScript SDK. Detailed usage docs live in [`packag
 | [`@rule/vendor-shopify`](packages/vendor-shopify) | Shopify preset — e-commerce automation flows | Under development |
 | [`@rule/vendor-bookzen`](packages/vendor-bookzen) | Bookzen preset — hospitality automation flows | Under development |
 | [`@rule/vendor-samfora`](packages/vendor-samfora) | Samfora preset — Swedish donation flows | Under development |
+| [`@rule/vendor-norce`](packages/vendor-norce) | Norce preset — e-commerce order fields and tags | Under development |
 
 ---
 
@@ -68,6 +69,7 @@ client          ← rcml
 
 vendor          ← rcml
 vendor-bookzen  ← client, rcml, template-engine, vendor
+vendor-norce    ← vendor
 vendor-samfora  ← rcml, template-engine, vendor
 vendor-shopify  ← rcml, template-engine, vendor
 
@@ -242,6 +244,7 @@ packages/
 ├── vendor-shopify/
 ├── vendor-bookzen/
 ├── vendor-samfora/
+├── vendor-norce/
 └── sdk/                    # meta-package
 apps/
 └── docs/                   # VitePress documentation site
