@@ -50,6 +50,8 @@ describe('createOrderConfirmationTemplate — baseline', () => {
     assertValidRCMLDocument(doc)
     const json = docToString(doc)
 
+    expect(json).not.toContain('Certified by Rule')
+
     expect(json).toContain('Thank you for your order')
     expect(json).toContain('Order Summary')
     expect(json).toContain('View Order')

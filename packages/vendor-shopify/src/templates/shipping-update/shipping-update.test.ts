@@ -49,6 +49,8 @@ describe('createShippingUpdateTemplate — baseline', () => {
     assertValidRCMLDocument(doc)
     const json = docToString(doc)
 
+    expect(json).not.toContain('Certified by Rule')
+
     expect(json).toContain('Shipping Confirmation & Receipt')
     expect(json).toContain('View Order')
     expect(json).toContain('[CustomField:200001]')

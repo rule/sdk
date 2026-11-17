@@ -50,7 +50,6 @@ export interface ReservationReminderTemplateCopy {
   readonly practicalInfoBody: string
   readonly ctaButton: string
   readonly footerLinks: string
-  readonly certifiedByRule: string
 }
 
 export type ReservationReminderRenderOptions =

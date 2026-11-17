@@ -3,6 +3,5 @@
   "greetingHeading": "Hi {{firstName}},",
   "message": "We hope you had a wonderful experience. We'd love to hear your feedback!",
   "ctaButton": "Leave Feedback",
-  "footerLinks": ":link[:font[View in Browser]{text-decoration=\"underline\"}]{href=\"[Link:WebBrowser]\" target=\"_blank\" no-tracked=\"true\"} | :link[:font[Unsubscribe]{text-decoration=\"underline\"}]{href=\"[Link:Unsubscribe]\" target=\"_blank\" no-tracked=\"true\"}",
-  "certifiedByRule": "Certified by Rule"
+  "footerLinks": ":link[:font[View in Browser]{text-decoration=\"underline\"}]{href=\"[Link:WebBrowser]\" target=\"_blank\" no-tracked=\"true\"} | :link[:font[Unsubscribe]{text-decoration=\"underline\"}]{href=\"[Link:Unsubscribe]\" target=\"_blank\" no-tracked=\"true\"}"
 }

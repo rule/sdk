@@ -40,6 +40,8 @@ describe('createSamforaWelcomeTemplate', () => {
     assertValidRCMLDocument(doc)
     const json = docToString(doc)
 
+    expect(json).not.toContain('Certified by Rule')
+
     expect(json).toContain('Välkommen till Samfora')
     expect(json).toContain('Så här kommer du igång')
     expect(json).toContain('[CustomField:200001]')

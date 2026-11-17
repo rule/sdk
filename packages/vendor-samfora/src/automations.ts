@@ -356,28 +356,6 @@ function footerSection(config: FooterConfig): RcmlSection {
               ],
             },
           },
-          {
-            tagName: 'rc-text',
-            id: genId(),
-            attributes: {
-              align: 'center',
-              padding: '10px 0px 0px 0px',
-              'font-family': "'Helvetica', sans-serif",
-              'font-style': 'normal',
-              'line-height': '120%',
-              'letter-spacing': '0em',
-              color: textColor,
-              'font-weight': '400',
-              'text-decoration': 'none',
-              'font-size': fontSize,
-            },
-            content: {
-              type: 'doc',
-              content: [
-                { type: 'paragraph', content: [{ type: 'text', text: 'Certified by Rule' }] },
-              ],
-            },
-          },
         ],
       },
     ],

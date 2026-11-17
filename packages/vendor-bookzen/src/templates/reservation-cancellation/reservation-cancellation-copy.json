@@ -6,6 +6,5 @@
   "referenceRow": "Reference: {{bookingRef}}",
   "followUp": "If you have any questions, please don't hesitate to contact us.",
   "ctaButton": "Book Again",
-  "footerLinks": ":link[:font[View in Browser]{text-decoration=\"underline\"}]{href=\"[Link:WebBrowser]\" target=\"_blank\" no-tracked=\"true\"} | :link[:font[Unsubscribe]{text-decoration=\"underline\"}]{href=\"[Link:Unsubscribe]\" target=\"_blank\" no-tracked=\"true\"}",
-  "certifiedByRule": "Certified by Rule"
+  "footerLinks": ":link[:font[View in Browser]{text-decoration=\"underline\"}]{href=\"[Link:WebBrowser]\" target=\"_blank\" no-tracked=\"true\"} | :link[:font[Unsubscribe]{text-decoration=\"underline\"}]{href=\"[Link:Unsubscribe]\" target=\"_blank\" no-tracked=\"true\"}"
 }
