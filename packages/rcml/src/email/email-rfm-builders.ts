@@ -37,16 +37,24 @@ export function createCustomField(opts: {
 /**
  * Build a `::loop-value{…}` directive string.
  *
- * `original=` follows the canonical `[LoopValue:<key>]` form. `index=`
- * defaults to `key` when omitted — matches every existing usage.
+ * `original=` follows the `[LoopValue:<key>.<index>]` form Rule renders.
+ * `index=` is the 1-based column slot and defaults to `'1'`, the only slot
+ * of a single-column loop.
+ *
+ * @throws Error when `index` is not a positive integer string — Rule does
+ *   not render a token with any other slot.
  */
 export function createLoopValue(opts: {
   key: string
   index?: string
 }): string {
-  const index = opts.index ?? opts.key;
+  const index = opts.index ?? '1';
 
-  return `::loop-value{original="[LoopValue:${opts.key}]" value="${opts.key}" index="${index}"}`;
+  if (!/^[1-9]\d*$/.test(index)) {
+    throw new Error(`createLoopValue index must be a positive integer (got '${index}' for '${opts.key}')`);
+  }
+
+  return `::loop-value{original="[LoopValue:${opts.key}.${index}]" value="${opts.key}" index="${index}"}`;
 }
 
 /**

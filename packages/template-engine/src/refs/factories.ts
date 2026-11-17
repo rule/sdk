@@ -31,7 +31,11 @@ export function customField(
  *
  * @param key - Property key inside the current loop item
  *   (e.g. `name`, `sku`, `quantity`).
+ * @param index - 1-based column slot the value fills (default `1`, the
+ *   only slot of a single-column loop).
+ * @throws Error when `index` is not a positive integer — Rule does not
+ *   render a token with any other slot.
  */
-export function loopValue(key: string): LoopValueRef {
-  return new LoopValueRef(key)
+export function loopValue(key: string, index = 1): LoopValueRef {
+  return new LoopValueRef(key, index)
 }

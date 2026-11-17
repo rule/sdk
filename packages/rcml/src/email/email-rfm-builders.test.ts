@@ -32,16 +32,22 @@ describe('createCustomField', () => {
 })
 
 describe('createLoopValue', () => {
-  it('reuses the key for value and index when no index supplied', () => {
+  it('defaults to column slot 1 when no index supplied', () => {
     expect(createLoopValue({ key: 'name' })).toBe(
-      '::loop-value{original="[LoopValue:name]" value="name" index="name"}',
+      '::loop-value{original="[LoopValue:name.1]" value="name" index="1"}',
     )
   })
 
-  it('respects a distinct index override', () => {
-    expect(createLoopValue({ key: 'content.1', index: 'row-1' })).toBe(
-      '::loop-value{original="[LoopValue:content.1]" value="content.1" index="row-1"}',
+  it('puts an explicit slot index in both original and index', () => {
+    expect(createLoopValue({ key: 'content', index: '2' })).toBe(
+      '::loop-value{original="[LoopValue:content.2]" value="content" index="2"}',
     )
+  })
+
+  it('rejects a slot index that is not a positive integer', () => {
+    expect(() => createLoopValue({ key: 'name', index: 'name' })).toThrow(/positive integer/)
+    expect(() => createLoopValue({ key: 'name', index: '0' })).toThrow(/positive integer/)
+    expect(() => createLoopValue({ key: 'name', index: '' })).toThrow(/positive integer/)
   })
 })
 

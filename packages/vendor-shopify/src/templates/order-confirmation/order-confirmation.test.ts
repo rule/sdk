@@ -140,10 +140,10 @@ describe('createOrderConfirmationTemplate — cart', () => {
 
     expect(json).toContain('rc-loop')
     expect(json).toContain('Items Ordered')
-    expect(json).toContain('[LoopValue:name]')
-    expect(json).toContain('[LoopValue:sku]')
-    expect(json).toContain('[LoopValue:quantity]')
-    expect(json).toContain('[LoopValue:unitPrice]')
+    expect(json).toContain('[LoopValue:name.1]')
+    expect(json).toContain('[LoopValue:sku.1]')
+    expect(json).toContain('[LoopValue:quantity.1]')
+    expect(json).toContain('[LoopValue:unitPrice.1]')
   })
 
   it('omits line-item rows whose refs are absent from cart.products', () => {
@@ -161,10 +161,10 @@ describe('createOrderConfirmationTemplate — cart', () => {
     })
     const json = docToString(doc)
 
-    expect(json).toContain('[LoopValue:name]')
-    expect(json).not.toContain('[LoopValue:sku]')
-    expect(json).not.toContain('[LoopValue:quantity]')
-    expect(json).not.toContain('[LoopValue:unitPrice]')
+    expect(json).toContain('[LoopValue:name.1]')
+    expect(json).not.toContain('[LoopValue:sku.1]')
+    expect(json).not.toContain('[LoopValue:quantity.1]')
+    expect(json).not.toContain('[LoopValue:unitPrice.1]')
   })
 })
 

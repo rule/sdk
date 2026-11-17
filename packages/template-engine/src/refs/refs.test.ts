@@ -6,6 +6,7 @@ import {
   isTemplateRef,
   serializeRef,
 } from './serializer.js'
+import { LoopValueRef } from './types.js'
 
 describe('factories', () => {
   it('customField without id', () => {
@@ -26,7 +27,16 @@ describe('factories', () => {
   })
 
   it('loopValue', () => {
-    expect(loopValue('name')).toEqual({ kind: 'loop-value', key: 'name' })
+    expect(loopValue('name')).toEqual({ kind: 'loop-value', key: 'name', index: 1 })
+    expect(loopValue('title', 3)).toEqual({ kind: 'loop-value', key: 'title', index: 3 })
+  })
+
+  it('loopValue rejects a slot index that is not a positive integer', () => {
+    expect(() => loopValue('title', 0)).toThrow(/positive integer/)
+    expect(() => loopValue('title', -1)).toThrow(/positive integer/)
+    expect(() => loopValue('title', 1.5)).toThrow(/positive integer/)
+    expect(() => loopValue('title', 1e21)).toThrow(/positive integer/)
+    expect(() => new LoopValueRef('title', 0)).toThrow(/positive integer/)
   })
 })
 
@@ -92,12 +102,18 @@ describe('defaultTemplateRefSerializer — custom-field', () => {
 })
 
 describe('defaultTemplateRefSerializer — loop-value', () => {
-  it('produces the canonical loop-value directive with index == key', () => {
+  it('produces the indexed loop-value directive, slot 1 by default', () => {
     expect(defaultTemplateRefSerializer.serializeLoopValue(loopValue('name'))).toBe(
-      '::loop-value{original="[LoopValue:name]" value="name" index="name"}',
+      '::loop-value{original="[LoopValue:name.1]" value="name" index="1"}',
     )
     expect(defaultTemplateRefSerializer.serializeLoopValue(loopValue('sku'))).toBe(
-      '::loop-value{original="[LoopValue:sku]" value="sku" index="sku"}',
+      '::loop-value{original="[LoopValue:sku.1]" value="sku" index="1"}',
+    )
+  })
+
+  it('puts an explicit slot index in both original and index', () => {
+    expect(defaultTemplateRefSerializer.serializeLoopValue(loopValue('price', 2))).toBe(
+      '::loop-value{original="[LoopValue:price.2]" value="price" index="2"}',
     )
   })
 })
@@ -109,7 +125,7 @@ describe('serializeRef dispatch', () => {
     ).toContain('[CustomField:1]')
     expect(
       serializeRef(loopValue('k'), defaultTemplateRefSerializer),
-    ).toContain('[LoopValue:k]')
+    ).toContain('[LoopValue:k.1]')
   })
 
   it('honours a custom serializer', () => {

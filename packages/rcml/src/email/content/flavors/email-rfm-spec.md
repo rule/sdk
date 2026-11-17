@@ -193,14 +193,14 @@ Inline atoms render as non-editable chips inside the editor. They are expressed 
 ### `::loop-value` — Loop Variable
 
 ```
-::loop-value{original="orders.item_name" value="orders" index="item_name"}
+::loop-value{original="[LoopValue:title.1]" value="title" index="1"}
 ```
 
 | Attribute | Values | Description |
 |-----------|--------|-------------|
-| `original` | `"value.index"` string | Authoritative on re-parse |
-| `value` | Collection name | Loop source |
-| `index` | Property name | Field on the iteration item |
+| `original` | `[LoopValue:<value>.<index>]` token | The token Rule renders. Without the `.<index>` suffix it is not substituted. |
+| `value` | Property name | Field on the iteration item (e.g. `title`, `price`) |
+| `index` | Positive integer string | 1-based column slot, counted across all sections of the loop block (`"1"` in a single-column loop) |
 
 ---
 
