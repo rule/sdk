@@ -173,8 +173,40 @@ describe('SHOPIFY_FIELDS', () => {
     }
   });
 
-  it('has 31 fields', () => {
-    expect(Object.keys(SHOPIFY_FIELDS)).toHaveLength(31);
+  it('has 77 fields (73 integration fields + 4 line-item JSON keys)', () => {
+    expect(Object.keys(SHOPIFY_FIELDS)).toHaveLength(77);
+  });
+
+  // Source of truth: https://help.rule.io/en/articles/349484-shopify-integration
+  it('matches the documented Shopify integration field names exactly', () => {
+    const documented = [
+      'Subscriber.FirstName', 'Subscriber.LastName', 'Subscriber.Number',
+      'Subscriber.Address1', 'Subscriber.Address2', 'Subscriber.City',
+      'Subscriber.Zipcode', 'Subscriber.Country', 'Subscriber.Source',
+      'Cart.CartUrl', 'Cart.Names', 'Cart.SKUs', 'Cart.Models', 'Cart.Manufacturers',
+      'Cart.ProductTypes', 'Cart.ProductCategories', 'Cart.ProductCollections',
+      'Cart.ProductTags', 'Cart.Products',
+      'Order.Number', 'Order.Name', 'Order.Currency', 'Order.Date',
+      'Order.BillingFirstname', 'Order.BillingLastname', 'Order.BillingStreet',
+      'Order.BillingCity', 'Order.BillingZipcode', 'Order.BillingState',
+      'Order.BillingCountry', 'Order.BillingCompany', 'Order.BillingTele',
+      'Order.Firstname', 'Order.Lastname', 'Order.Street', 'Order.Street2',
+      'Order.Zipcode', 'Order.City', 'Order.Country',
+      'Order.ShippingAddress1', 'Order.ShippingAddress2', 'Order.ShippingCity',
+      'Order.ShippingZip', 'Order.ShippingCountryCode',
+      'Order.TotalTaxIncl', 'Order.TotalTaxExcl', 'Order.TaxAmmount', 'Order.Shipping',
+      'Order.TotalPrice', 'Order.TotalTax', 'Order.Discount', 'Order.PaymentMethod',
+      'Order.DeliveryMethod', 'Order.Gateway', 'Order.OrderStatus', 'Order.ProductCount',
+      'Order.TotalWeight', 'Order.Names', 'Order.Manufacturers', 'Order.Brands',
+      'Order.SKUs', 'Order.ProductTags', 'Order.ProductTypes', 'Order.ProductCategories',
+      'Order.Categories', 'Order.ProductCollections', 'Order.Products',
+      'OrderShipped.Number', 'OrderShipped.ShippingProcessedAt',
+      'OrderShipped.FinancialStatus', 'OrderShipped.ShippingLines',
+      'OrderShipped.TrackingCompany', 'OrderShipped.TrackingNumber',
+    ];
+    const integrationFields = Object.values(SHOPIFY_FIELDS).filter((v) => v.includes('.'));
+
+    expect([...integrationFields].sort()).toEqual([...documented].sort());
   });
 });
 

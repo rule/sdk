@@ -31,8 +31,10 @@ function fullContext(
       firstName: customField('Subscriber', 'FirstName', 200001),
     },
     order: {
-      ref: customField('Order', 'OrderRef', 200010),
-      date: customField('Order', 'OrderDate', 200012),
+      ref: customField('Order', 'Number', 200010),
+      // Shopify syncs no cancellation event or date (Order.Date is the
+      // payment date); caller-supplied field.
+      date: customField('Order', 'CancelledAt', 200012),
     },
     websiteUrl: 'https://shop.example.com',
     footer: { fontSize: '10px', textColor: '#666666' },
@@ -61,7 +63,7 @@ describe('createOrderCancellationTemplate', () => {
   it('omits the cancellation-date row when `order.date` is absent', () => {
     const doc = createOrderCancellationTemplate().render({
       context: fullContext({
-        order: { ref: customField('Order', 'OrderRef', 200010) },
+        order: { ref: customField('Order', 'Number', 200010) },
       }),
       theme: TEST_THEME,
     })

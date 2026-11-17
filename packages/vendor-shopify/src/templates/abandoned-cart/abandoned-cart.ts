@@ -56,6 +56,10 @@ export interface AbandonedCartTemplateContext {
     firstName: CustomFieldRef
   }
   cart: {
+    /**
+     * CTA link. For Shopify, pass the per-recipient checkout link as a
+     * token: `[CustomField:<id of Cart.CartUrl>]`.
+     */
     url: string
     totalPrice?: CustomFieldRef
     products?: {

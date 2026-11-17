@@ -130,7 +130,7 @@ describe('createOrderConfirmationTemplate — cart', () => {
             itemName: loopValue('name'),
             itemSku: loopValue('sku'),
             itemQuantity: loopValue('quantity'),
-            itemPrice: loopValue('unitPrice'),
+            itemPrice: loopValue('price'),
           },
         },
       }),
@@ -143,7 +143,7 @@ describe('createOrderConfirmationTemplate — cart', () => {
     expect(json).toContain('[LoopValue:name]')
     expect(json).toContain('[LoopValue:sku]')
     expect(json).toContain('[LoopValue:quantity]')
-    expect(json).toContain('[LoopValue:unitPrice]')
+    expect(json).toContain('[LoopValue:price]')
   })
 
   it('omits line-item rows whose refs are absent from cart.products', () => {
@@ -164,7 +164,7 @@ describe('createOrderConfirmationTemplate — cart', () => {
     expect(json).toContain('[LoopValue:name]')
     expect(json).not.toContain('[LoopValue:sku]')
     expect(json).not.toContain('[LoopValue:quantity]')
-    expect(json).not.toContain('[LoopValue:unitPrice]')
+    expect(json).not.toContain('[LoopValue:price]')
   })
 })
 
@@ -187,10 +187,11 @@ describe('createOrderConfirmationTemplate — financial', () => {
     const doc = createOrderConfirmationTemplate().render({
       context: baseContext({
         financial: {
+          // Shopify syncs no subtotal; caller-supplied field.
           subtotal: customField('Order', 'Subtotal', 200030),
-          discount: customField('Order', 'DiscountAmount', 200032),
-          tax: customField('Order', 'TaxAmount', 200031),
-          shippingCost: customField('Order', 'ShippingCost', 200033),
+          discount: customField('Order', 'Discount', 200032),
+          tax: customField('Order', 'TaxAmmount', 200031),
+          shippingCost: customField('Order', 'Shipping', 200033),
           total: customField('Order', 'TotalPrice', 200005),
         },
       }),

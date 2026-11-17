@@ -24,6 +24,11 @@ export const SHOPIFY_TAGS = {
   cartInProgress: 'CartInProgress',
   orderCompleted: 'OrderCompleted',
   orderShipped: 'OrderShipped',
+  /**
+   * Not set by the Shopify app (it syncs no cancellation event). Apply it
+   * yourself, e.g. from a Shopify Flow or `orders/cancelled` webhook,
+   * before using the order-cancellation template.
+   */
   orderCancelled: 'OrderCancelled',
   newsletter: 'Newsletter',
 } as const satisfies VendorTagSchema;
