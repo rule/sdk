@@ -32,14 +32,14 @@ function fullContext(overrides: Partial<AbandonedCartTemplateContext> = {}): Aba
       firstName: customField('Subscriber', 'FirstName', 200001),
     },
     cart: {
-      url: 'https://shop.example.com/cart',
-      totalPrice: customField('Order', 'TotalPrice', 200005),
+      // Per-recipient checkout link: Shopify writes it to Cart.CartUrl.
+      url: '[CustomField:200015]',
       products: {
-        source: customField('Order', 'Products', 200014),
-        itemName: loopValue('name'),
+        source: customField('Cart', 'Products', 200021),
+        itemName: loopValue('title'),
         itemSku: loopValue('sku'),
         itemQuantity: loopValue('quantity'),
-        itemPrice: loopValue('unitPrice'),
+        itemPrice: loopValue('price'),
       },
     },
     footer: { fontSize: '10px', textColor: '#666666' },
@@ -57,19 +57,40 @@ describe('createAbandonedCartTemplate', () => {
     assertValidRCMLDocument(doc)
     const json = docToString(doc)
 
+    expect(json).not.toContain('Certified by Rule')
+
     expect(json).toContain('Hi ')
     expect(json).toContain('Return to Cart')
     expect(json).toContain('Your Cart')
-    expect(json).toContain('Total: ')
     expect(json).toContain('[CustomField:200001]')
-    expect(json).toContain('[CustomField:200005]')
-    expect(json).toContain('[LoopValue:name.1]')
+    expect(json).toContain('"loop-value":"200021"')
+    expect(json).toContain('[LoopValue:title.1]')
     expect(json).toContain('[LoopValue:sku.1]')
     expect(json).toContain('[LoopValue:quantity.1]')
-    expect(json).toContain('[LoopValue:unitPrice.1]')
+    expect(json).toContain('[LoopValue:price.1]')
     expect(json).toContain('[Link:WebBrowser]')
     expect(json).toContain('[Link:Unsubscribe]')
-    expect(json).toContain('https://shop.example.com/cart')
+    expect(json).toContain('"href":"[CustomField:200015]"')
+  })
+
+  it('renders the total row when the caller supplies cart.totalPrice', () => {
+    // Shopify's checkouts/update sync writes no cart total, so this slot
+    // only renders when the caller syncs its own total field.
+    const doc = createAbandonedCartTemplate().render({
+      context: fullContext({
+        cart: {
+          url: '[CustomField:200015]',
+          totalPrice: customField('Cart', 'Total', 200099),
+        },
+      }),
+      theme: TEST_THEME,
+    })
+
+    assertValidRCMLDocument(doc)
+    const json = docToString(doc)
+
+    expect(json).toContain('Total: ')
+    expect(json).toContain('[CustomField:200099]')
   })
 
   it('applies a partial copy override without touching other entries', () => {
@@ -109,7 +130,7 @@ describe('createAbandonedCartTemplate', () => {
         // Structural omission replaces the old has* flags: no products +
         // no totalPrice means those sections don't render. TEST_THEME
         // carries no social links → no social section.
-        cart: { url: 'https://shop.example.com/cart' },
+        cart: { url: '[CustomField:200015]' },
       }),
       theme: TEST_THEME,
     })
@@ -124,10 +145,10 @@ describe('createAbandonedCartTemplate', () => {
     const doc = createAbandonedCartTemplate().render({
       context: fullContext({
         cart: {
-          url: 'https://shop.example.com/cart',
+          url: '[CustomField:200015]',
           products: {
-            source: customField('Order', 'Products', 200014),
-            itemName: loopValue('name'),
+            source: customField('Cart', 'Products', 200021),
+            itemName: loopValue('title'),
             // itemSku / itemQuantity / itemPrice all omitted → rows don't render
           },
         },
@@ -136,10 +157,10 @@ describe('createAbandonedCartTemplate', () => {
     })
     const json = docToString(doc)
 
-    expect(json).toContain('[LoopValue:name.1]')
+    expect(json).toContain('[LoopValue:title.1]')
     expect(json).not.toContain('[LoopValue:sku.1]')
     expect(json).not.toContain('[LoopValue:quantity.1]')
-    expect(json).not.toContain('[LoopValue:unitPrice.1]')
+    expect(json).not.toContain('[LoopValue:price.1]')
   })
 
   it('propagates footer fontSize/textColor to rc-text attributes', () => {

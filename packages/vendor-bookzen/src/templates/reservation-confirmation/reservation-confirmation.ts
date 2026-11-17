@@ -62,7 +62,6 @@ export interface ReservationConfirmationTemplateCopy {
   readonly totalPriceRow: string
   readonly ctaButton: string
   readonly footerLinks: string
-  readonly certifiedByRule: string
 }
 
 export type ReservationConfirmationRenderOptions =

@@ -50,6 +50,8 @@ describe('createOrderConfirmationTemplate — baseline', () => {
     assertValidRCMLDocument(doc)
     const json = docToString(doc)
 
+    expect(json).not.toContain('Certified by Rule')
+
     expect(json).toContain('Thank you for your order')
     expect(json).toContain('Order Summary')
     expect(json).toContain('View Order')
@@ -127,10 +129,10 @@ describe('createOrderConfirmationTemplate — cart', () => {
         cart: {
           products: {
             source: customField('Order', 'Products', 200014),
-            itemName: loopValue('name'),
+            itemName: loopValue('title'),
             itemSku: loopValue('sku'),
             itemQuantity: loopValue('quantity'),
-            itemPrice: loopValue('unitPrice'),
+            itemPrice: loopValue('price'),
           },
         },
       }),
@@ -140,10 +142,10 @@ describe('createOrderConfirmationTemplate — cart', () => {
 
     expect(json).toContain('rc-loop')
     expect(json).toContain('Items Ordered')
-    expect(json).toContain('[LoopValue:name.1]')
+    expect(json).toContain('[LoopValue:title.1]')
     expect(json).toContain('[LoopValue:sku.1]')
     expect(json).toContain('[LoopValue:quantity.1]')
-    expect(json).toContain('[LoopValue:unitPrice.1]')
+    expect(json).toContain('[LoopValue:price.1]')
   })
 
   it('omits line-item rows whose refs are absent from cart.products', () => {
@@ -152,7 +154,7 @@ describe('createOrderConfirmationTemplate — cart', () => {
         cart: {
           products: {
             source: customField('Order', 'Products', 200014),
-            itemName: loopValue('name'),
+            itemName: loopValue('title'),
             // itemSku / itemQuantity / itemPrice / itemTotal all omitted
           },
         },
@@ -161,10 +163,10 @@ describe('createOrderConfirmationTemplate — cart', () => {
     })
     const json = docToString(doc)
 
-    expect(json).toContain('[LoopValue:name.1]')
+    expect(json).toContain('[LoopValue:title.1]')
     expect(json).not.toContain('[LoopValue:sku.1]')
     expect(json).not.toContain('[LoopValue:quantity.1]')
-    expect(json).not.toContain('[LoopValue:unitPrice.1]')
+    expect(json).not.toContain('[LoopValue:price.1]')
   })
 })
 
@@ -187,10 +189,11 @@ describe('createOrderConfirmationTemplate — financial', () => {
     const doc = createOrderConfirmationTemplate().render({
       context: baseContext({
         financial: {
+          // Shopify syncs no subtotal; caller-supplied field.
           subtotal: customField('Order', 'Subtotal', 200030),
-          discount: customField('Order', 'DiscountAmount', 200032),
-          tax: customField('Order', 'TaxAmount', 200031),
-          shippingCost: customField('Order', 'ShippingCost', 200033),
+          discount: customField('Order', 'Discount', 200032),
+          tax: customField('Order', 'TaxAmmount', 200031),
+          shippingCost: customField('Order', 'Shipping', 200033),
           total: customField('Order', 'TotalPrice', 200005),
         },
       }),

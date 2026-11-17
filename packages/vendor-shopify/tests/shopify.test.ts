@@ -173,8 +173,57 @@ describe('SHOPIFY_FIELDS', () => {
     }
   });
 
-  it('has 31 fields', () => {
-    expect(Object.keys(SHOPIFY_FIELDS)).toHaveLength(31);
+  it('has 79 fields (75 integration fields + 4 line-item JSON keys)', () => {
+    expect(Object.keys(SHOPIFY_FIELDS)).toHaveLength(79);
+  });
+
+  // Sources: https://help.rule.io/en/articles/349484-shopify-integration plus
+  // fields observed in live Shopify syncs that the article omits.
+  it('matches the documented field names plus those seen in live syncs', () => {
+    const documented = [
+      'Subscriber.FirstName', 'Subscriber.LastName', 'Subscriber.Number',
+      'Subscriber.Address1', 'Subscriber.Address2', 'Subscriber.City',
+      'Subscriber.Zipcode', 'Subscriber.Country', 'Subscriber.Source',
+      'Cart.CartUrl', 'Cart.Names', 'Cart.SKUs', 'Cart.Models', 'Cart.Manufacturers',
+      'Cart.ProductTypes', 'Cart.ProductCategories', 'Cart.ProductCollections',
+      'Cart.ProductTags', 'Cart.Products',
+      'Order.Number', 'Order.Name', 'Order.Currency', 'Order.Date',
+      'Order.BillingFirstname', 'Order.BillingLastname', 'Order.BillingStreet',
+      'Order.BillingCity', 'Order.BillingZipcode', 'Order.BillingState',
+      'Order.BillingCountry', 'Order.BillingCompany', 'Order.BillingTele',
+      'Order.Firstname', 'Order.Lastname', 'Order.Street', 'Order.Street2',
+      'Order.Zipcode', 'Order.City', 'Order.Country',
+      'Order.ShippingAddress1', 'Order.ShippingAddress2', 'Order.ShippingCity',
+      'Order.ShippingZip', 'Order.ShippingCountryCode',
+      'Order.TotalTaxIncl', 'Order.TotalTaxExcl', 'Order.TaxAmmount', 'Order.Shipping',
+      'Order.TotalPrice', 'Order.TotalTax', 'Order.Discount', 'Order.PaymentMethod',
+      'Order.DeliveryMethod', 'Order.Gateway', 'Order.OrderStatus', 'Order.ProductCount',
+      'Order.TotalWeight', 'Order.Names', 'Order.Manufacturers', 'Order.Brands',
+      'Order.SKUs', 'Order.ProductTags', 'Order.ProductTypes', 'Order.ProductCategories',
+      'Order.Categories', 'Order.ProductCollections', 'Order.Products',
+      'OrderShipped.Number', 'OrderShipped.ShippingProcessedAt',
+      'OrderShipped.FinancialStatus', 'OrderShipped.ShippingLines',
+      'OrderShipped.TrackingCompany', 'OrderShipped.TrackingNumber',
+    ];
+    // Sent by the live orders/paid sync but missing from the article.
+    const observedUndocumented = ['Order.OrderId', 'Order.OrderDate'];
+    const integrationFields = Object.values(SHOPIFY_FIELDS).filter((v) => v.includes('.'));
+
+    expect([...integrationFields].sort()).toEqual(
+      [...documented, ...observedUndocumented].sort(),
+    );
+  });
+});
+
+describe('SHOPIFY_FIELDS line-item keys', () => {
+  // Keys inside the synced Cart.Products / Order.Products JSON, taken from live
+  // checkouts/update and orders/paid payloads. Cart items have no `name`; order
+  // items have both (`name` appends the variant, e.g. "Classic Tee Blue - M").
+  it('match the JSON keys of a synced line item', () => {
+    expect(SHOPIFY_FIELDS.itemName).toBe('title');
+    expect(SHOPIFY_FIELDS.itemSku).toBe('sku');
+    expect(SHOPIFY_FIELDS.itemQuantity).toBe('quantity');
+    expect(SHOPIFY_FIELDS.itemPrice).toBe('price');
   });
 });
 

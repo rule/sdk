@@ -30,7 +30,6 @@ export interface FeedbackRequestTemplateCopy {
   readonly message: string
   readonly ctaButton: string
   readonly footerLinks: string
-  readonly certifiedByRule: string
 }
 
 export type FeedbackRequestRenderOptions =

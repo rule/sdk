@@ -135,7 +135,6 @@ export interface OrderConfirmationTemplateCopy {
   readonly shippingCountryCodeLine: string
   readonly ctaButton: string
   readonly footerLinks: string
-  readonly certifiedByRule: string
 }
 
 /** Arguments to `render` — {@link EmailTemplateRenderArgs} bound to order-confirmation. */

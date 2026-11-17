@@ -45,6 +45,8 @@ describe('createReservationReminderTemplate', () => {
     assertValidRCMLDocument(doc)
     const json = docToString(doc)
 
+    expect(json).not.toContain('Certified by Rule')
+
     expect(json).toContain('Your Stay')
     expect(json).toContain('View Details')
     expect(json).toContain('[CustomField:200103]')

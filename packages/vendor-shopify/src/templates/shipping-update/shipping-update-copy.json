@@ -30,6 +30,5 @@
   "legalText": "This email serves as your official receipt for this transaction.",
   "returnPolicyLink": ":link[{{linkText}}]{href=\"{{linkHref}}\" target=\"_blank\"}",
   "termsLink": ":link[{{linkText}}]{href=\"{{linkHref}}\" target=\"_blank\"}",
-  "footerLinks": ":link[:font[View in Browser]{text-decoration=\"underline\"}]{href=\"[Link:WebBrowser]\" target=\"_blank\" no-tracked=\"true\"} | :link[:font[Unsubscribe]{text-decoration=\"underline\"}]{href=\"[Link:Unsubscribe]\" target=\"_blank\" no-tracked=\"true\"}",
-  "certifiedByRule": "Certified by Rule"
+  "footerLinks": ":link[:font[View in Browser]{text-decoration=\"underline\"}]{href=\"[Link:WebBrowser]\" target=\"_blank\" no-tracked=\"true\"} | :link[:font[Unsubscribe]{text-decoration=\"underline\"}]{href=\"[Link:Unsubscribe]\" target=\"_blank\" no-tracked=\"true\"}"
 }

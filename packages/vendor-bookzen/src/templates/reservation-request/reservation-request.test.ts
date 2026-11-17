@@ -44,6 +44,8 @@ describe('createReservationRequestTemplate', () => {
     assertValidRCMLDocument(doc)
     const json = docToString(doc)
 
+    expect(json).not.toContain('Certified by Rule')
+
     expect(json).toContain('Request Details')
     expect(json).toContain('[CustomField:200001]')
     expect(json).toContain('[CustomField:200100]')

@@ -109,8 +109,6 @@ export interface OrderCancellationTemplateCopy {
    * come from `rc-text` attributes on the host element.
    */
   readonly footerLinks: string
-  /** Fixed "Certified by Rule" footer attribution. */
-  readonly certifiedByRule: string
 }
 
 /** Arguments to `render` — {@link EmailTemplateRenderArgs} bound to order-cancellation. */
