@@ -71,7 +71,6 @@ describe('createNorceShippingUpdateTemplate — baseline', () => {
     expect(json).not.toContain('VAT')
     expect(json).not.toContain('Tracking')
     expect(json).not.toContain('Subtotal')
-    expect(json).not.toContain('This email serves as your official receipt')
   })
 })
 
@@ -186,7 +185,7 @@ describe('createNorceShippingUpdateTemplate — legal', () => {
     const doc = createNorceShippingUpdateTemplate().render({
       context: baseContext({
         legal: {
-          text: 'This email serves as your official receipt for this transaction.',
+          text: 'Custom legal wording from the shop.',
           returnPolicy: {
             linkText: 'Return policy',
             linkHref: 'https://shop.example.com/returns',
@@ -201,7 +200,7 @@ describe('createNorceShippingUpdateTemplate — legal', () => {
     })
     const json = docToString(doc)
 
-    expect(json).toContain('This email serves as your official receipt')
+    expect(json).toContain('Custom legal wording from the shop.')
     expect(json).toContain('Return policy')
     expect(json).toContain('Terms')
     expect(json).toContain('https://shop.example.com/returns')

@@ -161,7 +161,7 @@
       <rc-section padding="10px 0">
         <rc-column padding="0 20px">
           <?if legal.text?>
-            <rc-text rc-class="rcml-p-style" align="center"><?copy legalText?></rc-text>
+            <rc-text rc-class="rcml-p-style" align="center"><?copy legalText text=legal.text?></rc-text>
           <?endif?>
           <?if legal.returnPolicy?>
             <rc-text rc-class="rcml-p-style" align="center"><?copy returnPolicyLink linkText=legal.returnPolicy.linkText linkHref=legal.returnPolicy.linkHref?></rc-text>
