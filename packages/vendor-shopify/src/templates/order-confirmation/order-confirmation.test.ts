@@ -7,6 +7,8 @@
  * RFM placeholder strings automatically.
  */
 
+import { readFileSync } from 'node:fs'
+
 import { describe, expect, it } from 'vitest'
 
 import { customField, loopValue } from '@rule/template-engine'
@@ -20,6 +22,7 @@ import {
 import {
   createOrderConfirmationTemplate,
   type OrderConfirmationTemplateContext,
+  type OrderConfirmationTemplateCopy,
 } from './order-confirmation.js'
 
 /** Baseline context: minimal required fields only. */
@@ -52,9 +55,8 @@ describe('createOrderConfirmationTemplate — baseline', () => {
 
     expect(json).not.toContain('Certified by Rule')
 
-    expect(json).toContain('Thank you for your order')
-    expect(json).toContain('Order Summary')
-    expect(json).toContain('View Order')
+    expect(json).toContain("We've received your order")
+    expect(json).toContain('View your order')
     expect(json).toContain('[CustomField:200001]')
     expect(json).toContain('[CustomField:200003]')
   })
@@ -67,14 +69,14 @@ describe('createOrderConfirmationTemplate — baseline', () => {
     const json = docToString(doc)
 
     expect(json).not.toContain('rc-loop')
-    expect(json).not.toContain('Items Ordered')
-    expect(json).not.toContain('Shipping to')
+    expect(json).not.toContain('Payment')
+    expect(json).not.toContain('Delivering to')
     expect(json).not.toContain('Order date')
   })
 })
 
 describe('createOrderConfirmationTemplate — order meta', () => {
-  it('renders a two-column orderRef/orderDate meta row when date supplied', () => {
+  it('renders the order-date block when date supplied', () => {
     const doc = createOrderConfirmationTemplate().render({
       context: baseContext({
         order: {
@@ -141,7 +143,6 @@ describe('createOrderConfirmationTemplate — cart', () => {
     const json = docToString(doc)
 
     expect(json).toContain('rc-loop')
-    expect(json).toContain('Items Ordered')
     expect(json).toContain('[LoopValue:title.1]')
     expect(json).toContain('[LoopValue:sku.1]')
     expect(json).toContain('[LoopValue:quantity.1]')
@@ -222,7 +223,7 @@ describe('createOrderConfirmationTemplate — shipping address', () => {
     })
     const json = docToString(doc)
 
-    expect(json).toContain('Shipping to')
+    expect(json).toContain('Delivering to')
     expect(json).toContain('[CustomField:200016]')
   })
 
@@ -267,13 +268,14 @@ describe('createOrderConfirmationTemplate — chrome + overrides', () => {
       theme: TEST_THEME,
     })
     const json = docToString(doc)
-    const h1Count = (j: string) => j.split('rcml-h1-style').length
+    const count = (j: string, cls: string) => j.split(cls).length
     const baseline = docToString(createOrderConfirmationTemplate().render({ context: baseContext(), theme: TEST_THEME }))
 
     expect(json).toContain(expected)
     expect(json).not.toContain('undefined')
-    // Only the hero section adds a second h1 heading.
-    expect(h1Count(json)).toBe(h1Count(baseline) + 1)
+    // The hero renders as an h2 so the email keeps a single h1.
+    expect(count(json, 'rcml-h1-style')).toBe(count(baseline, 'rcml-h1-style'))
+    expect(count(json, 'rcml-h2-style')).toBe(count(baseline, 'rcml-h2-style') + 1)
   })
 
   it('applies a partial copy override', () => {
@@ -285,7 +287,7 @@ describe('createOrderConfirmationTemplate — chrome + overrides', () => {
     const json = docToString(doc)
 
     expect(json).toContain('Track shipment')
-    expect(json).not.toContain('View Order')
+    expect(json).not.toContain('View your order')
   })
 
   it('renders the social section from theme.links', () => {
@@ -307,5 +309,117 @@ describe('createOrderConfirmationTemplate — chrome + overrides', () => {
     const json = docToString(doc)
 
     expect(json).toContain('https://example.com/logo.png')
+  })
+})
+
+describe('createOrderConfirmationTemplate — design', () => {
+  interface RcmlNode {
+    tagName: string
+    attributes?: Record<string, string>
+    children?: RcmlNode[]
+  }
+
+  const render = (
+    overrides: Partial<OrderConfirmationTemplateContext> = {},
+    copy: Partial<OrderConfirmationTemplateCopy> = {},
+  ): string =>
+    docToString(createOrderConfirmationTemplate().render({
+      context: baseContext(overrides),
+      theme: TEST_THEME,
+      copy,
+    }))
+  const bodyOf = (json: string): string =>
+    JSON.stringify((JSON.parse(json) as { children: unknown[] }).children[1])
+
+  it('hard-codes no colour in the XML', () => {
+    const xml = readFileSync(new URL('./order-confirmation.xml', import.meta.url), 'utf8')
+
+    expect(xml).not.toMatch(/#[0-9a-f]{3,6}\b/i)
+  })
+
+  it('paints canvas, cards and the active progress step from the theme', () => {
+    // Body only: applyTheme writes the canvas and card hex into rc-head too.
+    const body = bodyOf(render())
+
+    expect(body).toContain('"background-color":"#F3F3F3"')
+    expect(body).toContain('"background-color":"#FFFFFF"')
+    expect(body).toContain('"border-color":"#0066CC"')
+    expect(body).not.toContain('@{brand')
+  })
+
+  it('titles the order card with the detailsHeading copy', () => {
+    const body = bodyOf(render({}, { detailsHeading: 'Order card title' }))
+
+    expect(body).toContain('Order card title')
+  })
+
+  it.each([
+    ['delivery and payment', { inlineShippingAddress: customField('Order', 'ShippingAddress1', 200016), order: { ref: customField('Order', 'Number', 200003), paymentMethod: customField('Order', 'Gateway', 200007) } }, 2],
+    ['payment only', { order: { ref: customField('Order', 'Number', 200003), paymentMethod: customField('Order', 'Gateway', 200007) } }, 1],
+    ['delivery only', { inlineShippingAddress: customField('Order', 'ShippingAddress1', 200016) }, 1],
+  ] as const)('gives the details card one width-less column per side with content (%s)', (_label, overrides, columns) => {
+    const doc = JSON.parse(render(overrides)) as { children: RcmlNode[] }
+    const card = doc.children[1].children?.find((s) => JSON.stringify(s).includes('rcml-h4-style'))
+    const cols = card?.children?.filter((c) => c.tagName === 'rc-column') ?? []
+
+    expect(cols).toHaveLength(columns)
+    expect(cols.every((c) => c.attributes?.width === undefined)).toBe(true)
+  })
+
+  it('renders the three progress steps', () => {
+    const json = render()
+
+    expect(json).toContain('Confirmed')
+    expect(json).toContain('Shipped')
+    expect(json).toContain('Delivered')
+  })
+
+  it('omits the details card when no delivery or payment field is supplied', () => {
+    // Body only: rc-head carries the theme's h4 class definition. The
+    // details card is the only section rounded on all four corners, so
+    // its radius also catches an empty card shell left behind.
+    const body = bodyOf(render())
+
+    expect(body).not.toContain('rcml-h4-style')
+    expect(body).not.toContain('"border-radius":"16px"')
+    expect(bodyOf(render({ order: { ref: customField('Order', 'Number', 200003), date: customField('Order', 'Date', 200004) } })))
+      .toContain('"border-radius":"16px"')
+  })
+
+  it('labels the unit price when no line total is supplied', () => {
+    const body = bodyOf(render({
+      cart: {
+        products: {
+          source: customField('Order', 'Products', 200014),
+          itemName: loopValue('title'),
+          itemPrice: loopValue('price'),
+        },
+      },
+    }))
+
+    expect(body).toContain('Unit price ')
+    expect(body).toContain('[LoopValue:price.1]')
+  })
+
+  it('drops the inline items row when the line-items loop is supplied', () => {
+    const body = bodyOf(render({
+      cart: {
+        items: customField('Order', 'ProductsText', 200015),
+        products: { source: customField('Order', 'Products', 200014), itemName: loopValue('title') },
+      },
+    }))
+
+    expect(body).toContain('rc-loop')
+    expect(body).not.toContain('[CustomField:200015]')
+  })
+
+  it('prefers the multi-line address over the inline one', () => {
+    const json = render({
+      inlineShippingAddress: customField('Order', 'ShippingAddress1', 200016),
+      shippingAddress: { line1: customField('Order', 'ShippingAddress1', 200017) },
+    })
+
+    expect(json).toContain('[CustomField:200017]')
+    expect(json).not.toContain('[CustomField:200016]')
   })
 })

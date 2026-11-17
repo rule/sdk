@@ -22,23 +22,27 @@ import type { CustomFieldRef, LoopValueRef } from '@rule/template-engine'
 /**
  * Typed data context consumed by `order-confirmation.xml`.
  *
- * Presence drives section rendering:
- * - `order.date` absent → single-column orderRef row in the details
- *   box; present → two-column orderRef/orderDate meta row above.
- * - `order.paymentMethod` absent → no payment row.
- * - `cart.items` (custom-field ref) → inline "Items" row in the
- *   details box (fallback when no line-items loop is supplied).
- * - `cart.products` (loop refs) → line-items loop section.
- * - `inlineShippingAddress` → inline "Shipping to" row in the
- *   details box (fallback when no extended address block).
- * - `financial` → financial summary section with subtotal / discount
- *   / tax / shippingCost (all optional) + total (required).
- * - `shippingAddress` → extended multi-line shipping address block.
- * - `heroHeading` → hero heading "{prefix}{orderRef}{suffix}"
- *   between the greeting and the details box.
+ * Layout: cards on the brand canvas — a hero card (greeting, intro,
+ * progress bar), an order card (order number, items, summary), a
+ * full-width button, and a details card (delivery, payment, date).
  *
- * Theme-derived fields (logo, social links) flow from `theme`, not
- * context. All caller-visible labels live in
+ * Presence drives section rendering:
+ * - `order.date` absent → no order-date block in the details card.
+ * - `order.paymentMethod` absent → no payment block.
+ * - `cart.items` (custom-field ref) → inline "Items" row in the
+ *   order card, only when `cart.products` is absent.
+ * - `cart.products` (loop refs) → line-items loop in the order card.
+ * - `inlineShippingAddress` → single-line "Delivering to" block in
+ *   the details card (used only when `shippingAddress` is absent).
+ * - `financial` → summary rows in the order card with subtotal /
+ *   discount / tax / shippingCost (all optional) + total (required).
+ * - `shippingAddress` → multi-line "Delivering to" block.
+ * - None of the four delivery/payment fields → no details card.
+ * - `heroHeading` → h2 "{prefix}{orderRef}{suffix}" under the
+ *   greeting in the hero card.
+ *
+ * Theme-derived fields (logo, social links, brand colours) flow from
+ * `theme`, not context. All caller-visible labels live in
  * the copy defaults — override via `copy: { … }` to customize or
  * localize.
  */
@@ -52,7 +56,7 @@ export interface OrderConfirmationTemplateContext {
     paymentMethod?: CustomFieldRef
   }
   cart: {
-    /** Inline items field — rendered as a single row in the details box. */
+    /** Inline items field — a single "Items" row in the order card, only when `products` is absent. */
     items?: CustomFieldRef
     /** Line-items loop — `source.id` is used as `rc-loop` loop-value. */
     products?: {
@@ -71,7 +75,7 @@ export interface OrderConfirmationTemplateContext {
     shippingCost?: CustomFieldRef
     total: CustomFieldRef
   }
-  /** Inline shipping-address row in the details box. */
+  /** Single-line "Delivering to" block in the details card, used only when `shippingAddress` is absent. */
   inlineShippingAddress?: CustomFieldRef
   /** Extended multi-line shipping address block. */
   shippingAddress?: {
@@ -82,7 +86,7 @@ export interface OrderConfirmationTemplateContext {
     country?: CustomFieldRef
   }
   /**
-   * Hero heading between greeting and details box. Usually in the
+   * Hero h2 under the greeting in the hero card. Usually in the
    * shape "Order #1234 confirmed" — provide `prefix` and/or `suffix`
    * text surrounding the order-ref atom.
    */
@@ -109,14 +113,20 @@ export interface OrderConfirmationTemplateCopy {
   readonly preheader: string
   readonly greetingHeading: string
   readonly intro: string
+  /** Progress bar: the active first step. */
+  readonly stepConfirmed: string
+  /** Progress bar: second step, shown as upcoming. */
+  readonly stepShipped: string
+  /** Progress bar: third step, shown as upcoming. */
+  readonly stepDelivered: string
   readonly heroHeading: string
-  readonly orderRefRow: string
   readonly orderDateRow: string
   readonly detailsHeading: string
   readonly paymentRow: string
   readonly inlineItemsRow: string
   readonly inlineShippingRow: string
-  readonly lineItemsHeading: string
+  /** Value cell beside a label — `{{value}}` is the row's field. */
+  readonly valueCell: string
   readonly itemNameLine: string
   readonly itemSkuLine: string
   readonly itemQtyLine: string
@@ -134,6 +144,8 @@ export interface OrderConfirmationTemplateCopy {
   readonly shippingCityLine: string
   readonly shippingCountryCodeLine: string
   readonly ctaButton: string
+  /** Help line on the canvas, above the footer links. */
+  readonly helpLine: string
   readonly footerLinks: string
 }
 
