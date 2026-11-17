@@ -10,7 +10,11 @@ import { describe, expect, it } from 'vitest';
 import { createEmailTheme, EmailThemeImageType, safeValidateEmailTemplate } from '@rule/rcml';
 import type { EmailTheme, RcmlDocument } from '@rule/rcml';
 import { customField, loopValue } from '@rule/template-engine';
-import { createNorceOrderConfirmationTemplate, createNorceShippingUpdateTemplate } from '../src/index.js';
+import {
+  createNorceOrderCancellationTemplate,
+  createNorceOrderConfirmationTemplate,
+  createNorceShippingUpdateTemplate,
+} from '../src/index.js';
 
 const footer = { fontSize: '10px', textColor: '#666666' };
 const firstName = customField('Subscriber', 'FirstName', 1);
@@ -141,6 +145,18 @@ const renders: Record<string, (theme: EmailTheme) => RcmlDocument> = {
           returnPolicy: { linkText: 'Returns', linkHref: 'https://acme.example/returns' },
           terms: { linkText: 'Terms', linkHref: 'https://acme.example/terms' },
         },
+        footer,
+      },
+    }),
+  'order-cancellation': (theme) =>
+    createNorceOrderCancellationTemplate().render({
+      theme,
+      context: {
+        recipient: { firstName },
+        // Norce syncs no cancellation date; caller-supplied ref.
+        order: { ref: order('OrderNumber', 2), date: order('CancelledAt', 27) },
+        websiteUrl: 'https://acme.example/',
+        support: { linkText: 'Contact us', linkHref: 'https://acme.example/support' },
         footer,
       },
     }),

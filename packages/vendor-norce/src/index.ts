@@ -29,3 +29,12 @@ export type {
   NorceShippingUpdateTemplateContext,
   NorceShippingUpdateTemplateCopy,
 } from './templates/shipping-update/shipping-update.js';
+
+// Order-cancellation template (trigger: NORCE_TAGS.orderCanceled).
+export { createNorceOrderCancellationTemplate } from './templates/order-cancellation/order-cancellation.js';
+export type {
+  NorceOrderCancellationRenderOptions,
+  NorceOrderCancellationTemplate,
+  NorceOrderCancellationTemplateContext,
+  NorceOrderCancellationTemplateCopy,
+} from './templates/order-cancellation/order-cancellation.js';
