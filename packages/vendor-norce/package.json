@@ -2,7 +2,7 @@
   "private": true,
   "name": "@rule/vendor-norce",
   "version": "0.4.0-beta.1",
-  "description": "Norce preset for the Rule.io SDK — Norce Commerce field and tag schemas for e-commerce order flows.",
+  "description": "Norce preset for the Rule.io SDK — Norce Commerce field and tag schemas plus email templates for e-commerce order flows.",
   "type": "module",
   "main": "./src/index.js",
   "types": "./src/index.d.ts",
@@ -31,6 +31,8 @@
     "directory": "packages/vendor-norce"
   },
   "dependencies": {
+    "@rule/rcml": "*",
+    "@rule/template-engine": "*",
     "@rule/vendor": "*"
   },
   "engines": {

@@ -4,11 +4,17 @@
 
 ---
 
-Norce preset for the Rule.io SDK. Ships the custom-field and tag names that the Norce Commerce→Rule.io integration writes, so order emails can be wired to them. No email templates or pre-built automations yet.
+Norce preset for the Rule.io SDK. Ships the custom-field and tag names that the Norce Commerce→Rule.io integration writes, plus email templates to wire to them. No pre-built automations: callers pair each template with its trigger tag.
 
 ```ts
-import { norcePreset, NORCE_FIELDS, NORCE_TAGS } from '@rule/vendor-norce';
+import { norcePreset, NORCE_FIELDS, NORCE_TAGS, createNorceOrderConfirmationTemplate } from '@rule/vendor-norce';
 ```
+
+## Templates
+
+| Template | Factory | Trigger tag |
+|---|---|---|
+| Order confirmation | `createNorceOrderConfirmationTemplate` | `OrderProcessing` (pending team confirmation; `OrderPlaced` is the alternative) |
 
 ## Tags
 

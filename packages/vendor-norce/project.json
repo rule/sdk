@@ -19,6 +19,16 @@
             "input": "./packages/vendor-norce",
             "glob": "*.md",
             "output": "./"
+          },
+          {
+            "input": "./packages/vendor-norce/src/templates",
+            "glob": "**/*.xml",
+            "output": "./src/templates"
+          },
+          {
+            "input": "./packages/vendor-norce/src/templates",
+            "glob": "**/*.json",
+            "output": "./src/templates"
           }
         ]
       }

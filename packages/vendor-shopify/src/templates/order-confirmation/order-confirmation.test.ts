@@ -257,6 +257,25 @@ describe('createOrderConfirmationTemplate — chrome + overrides', () => {
     expect(json).toContain(' confirmed')
   })
 
+  it.each([
+    ['prefix only', { prefix: 'HeroPrefix ' }, 'HeroPrefix '],
+    ['suffix only', { suffix: ' HeroSuffix' }, ' HeroSuffix'],
+    ['neither', {}, '[CustomField:200003]'],
+  ])('renders the hero heading with %s', (_label, heroHeading, expected) => {
+    const doc = createOrderConfirmationTemplate().render({
+      context: baseContext({ heroHeading }),
+      theme: TEST_THEME,
+    })
+    const json = docToString(doc)
+    const h1Count = (j: string) => j.split('rcml-h1-style').length
+    const baseline = docToString(createOrderConfirmationTemplate().render({ context: baseContext(), theme: TEST_THEME }))
+
+    expect(json).toContain(expected)
+    expect(json).not.toContain('undefined')
+    // Only the hero section adds a second h1 heading.
+    expect(h1Count(json)).toBe(h1Count(baseline) + 1)
+  })
+
   it('applies a partial copy override', () => {
     const doc = createOrderConfirmationTemplate().render({
       context: baseContext(),
