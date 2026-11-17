@@ -1,0 +1,196 @@
+<rcml>
+  <rc-head>
+    <rc-preview><?copy preheader?></rc-preview>
+  </rc-head>
+  <rc-body>
+    <!-- Logo -->
+    <?if logoUrl?>
+      <rc-section>
+        <rc-column padding="0 20px">
+          <rc-logo rc-class="rcml-logo-style rc-initial-logo" width="96px" padding="20px 0"/>
+        </rc-column>
+      </rc-section>
+    <?endif?>
+
+    <!-- Heading + greeting -->
+    <rc-section padding="20px 0">
+      <rc-column padding="0 20px">
+        <rc-heading rc-class="rcml-h1-style"><?copy heading?></rc-heading>
+        <rc-text rc-class="rcml-p-style"><?copy greetingLine firstName=recipient.firstName?></rc-text>
+      </rc-column>
+    </rc-section>
+
+    <!-- Status tracker (3-step; rendered when status.steps supplied) -->
+    <?if status?>
+      <rc-section padding="10px 0">
+        <?for let step of status.steps?>
+          <rc-column width="@{step.width}" background-color="@{step.bg}" padding="14px 8px" vertical-align="middle">
+            <rc-text align="center" rc-class="rcml-p-style"><?copy statusStepLabel label=step.label fg=step.fg?></rc-text>
+          </rc-column>
+        <?endfor?>
+      </rc-section>
+      <rc-section padding="0">
+        <rc-column padding="0 20px"><rc-divider padding="10px 0"/></rc-column>
+      </rc-section>
+    <?endif?>
+
+    <!-- Seller info (company, VAT) -->
+    <?if seller?>
+      <rc-section padding="10px 0">
+        <rc-column padding="0 20px">
+          <?if seller.company?>
+            <rc-text rc-class="rcml-p-style"><?copy companyRow company=seller.company?></rc-text>
+          <?endif?>
+          <?if seller.vatNumber?>
+            <rc-text rc-class="rcml-p-style"><?copy vatRow vatNumber=seller.vatNumber?></rc-text>
+          <?endif?>
+        </rc-column>
+      </rc-section>
+    <?endif?>
+
+    <!-- Order details -->
+    <rc-section padding="20px 0">
+      <rc-column padding="0 20px">
+        <rc-text rc-class="rcml-p-style"><?copy orderRefRow orderRef=order.ref?></rc-text>
+        <?if order.date?>
+          <rc-text rc-class="rcml-p-style"><?copy orderDateRow orderDate=order.date?></rc-text>
+        <?endif?>
+        <?if order.paymentMethod?>
+          <rc-text rc-class="rcml-p-style"><?copy paymentRow paymentMethod=order.paymentMethod?></rc-text>
+        <?endif?>
+        <?if order.customerEmail?>
+          <rc-text rc-class="rcml-p-style"><?copy customerEmailRow customerEmail=order.customerEmail?></rc-text>
+        <?endif?>
+      </rc-column>
+    </rc-section>
+
+    <!-- Shipping details (address, carrier, tracking, estimated delivery) -->
+    <?if shippingDetails?>
+      <rc-section padding="20px 0">
+        <rc-column padding="0 20px">
+          <?if shippingDetails.address?>
+            <rc-text rc-class="rcml-p-style"><?copy shippingAddressRow address=shippingDetails.address?></rc-text>
+          <?endif?>
+          <?if shippingDetails.carrier?>
+            <rc-text rc-class="rcml-p-style"><?copy carrierRow carrier=shippingDetails.carrier?></rc-text>
+          <?endif?>
+          <?if shippingDetails.tracking?>
+            <rc-text rc-class="rcml-p-style"><?copy trackingRow tracking=shippingDetails.tracking?></rc-text>
+          <?endif?>
+          <?if shippingDetails.estimatedDelivery?>
+            <rc-text rc-class="rcml-p-style"><?copy estimatedDeliveryRow estimatedDelivery=shippingDetails.estimatedDelivery?></rc-text>
+          <?endif?>
+        </rc-column>
+      </rc-section>
+    <?endif?>
+
+    <!-- CTA -->
+    <rc-section padding="20px 0">
+      <rc-column padding="0 20px">
+        <rc-button href="@{trackingUrl}" align="center" border="none" border-radius="8px" inner-padding="10px 16px" padding="0 0 20px 0" text-align="center" vertical-align="middle" rc-class="rcml-label-style"><?copy ctaButton?></rc-button>
+      </rc-column>
+    </rc-section>
+
+    <!-- Line items loop -->
+    <?if cart.products?>
+      <rc-section padding="10px 0">
+        <rc-column padding="0 20px">
+          <rc-heading rc-class="rcml-h2-style"><?copy lineItemsHeading?></rc-heading>
+        </rc-column>
+      </rc-section>
+      <rc-loop loop-type="custom-field" loop-value="@{cart.products.source.id}" loop-max-iterations="20">
+        <rc-section padding="10px 0">
+          <rc-column padding="0 20px">
+            <rc-text rc-class="rcml-p-style"><?copy itemNameLine itemName=cart.products.itemName?></rc-text>
+            <?if cart.products.itemSku?>
+              <rc-text rc-class="rcml-p-style"><?copy itemSkuLine itemSku=cart.products.itemSku?></rc-text>
+            <?endif?>
+            <?if cart.products.itemQuantity?>
+              <rc-text rc-class="rcml-p-style"><?copy itemQtyLine itemQuantity=cart.products.itemQuantity?></rc-text>
+            <?endif?>
+            <?if cart.products.itemPrice?>
+              <rc-text rc-class="rcml-p-style"><?copy itemUnitPriceLine itemPrice=cart.products.itemPrice?></rc-text>
+            <?endif?>
+            <?if cart.products.itemTotal?>
+              <rc-text rc-class="rcml-p-style"><?copy itemLineTotalLine itemTotal=cart.products.itemTotal?></rc-text>
+            <?endif?>
+          </rc-column>
+        </rc-section>
+      </rc-loop>
+    <?endif?>
+
+    <!-- Financial summary -->
+    <?if financial?>
+      <rc-section padding="20px 0">
+        <rc-column padding="0 20px">
+          <?if financial.subtotal?>
+            <rc-text rc-class="rcml-p-style"><?copy subtotalRow subtotal=financial.subtotal?></rc-text>
+          <?endif?>
+          <?if financial.discount?>
+            <rc-text rc-class="rcml-p-style"><?copy discountRow discount=financial.discount?></rc-text>
+          <?endif?>
+          <?if financial.tax?>
+            <rc-text rc-class="rcml-p-style"><?copy taxRow tax=financial.tax?></rc-text>
+          <?endif?>
+          <?if financial.shippingCost?>
+            <rc-text rc-class="rcml-p-style"><?copy shippingCostRow shippingCost=financial.shippingCost?></rc-text>
+          <?endif?>
+          <?if financial.total?>
+            <rc-text rc-class="rcml-p-style"><?copy totalRow total=financial.total?></rc-text>
+          <?endif?>
+        </rc-column>
+      </rc-section>
+    <?endif?>
+
+    <!-- Buyer details -->
+    <?if buyer?>
+      <rc-section padding="10px 0">
+        <rc-column padding="0 20px">
+          <?if buyer.fullName?>
+            <rc-text rc-class="rcml-p-style"><?copy customerFullNameLine fullName=buyer.fullName?></rc-text>
+          <?endif?>
+          <?if buyer.billingAddress?>
+            <rc-text rc-class="rcml-p-style"><?copy billingAddressRow billingAddress=buyer.billingAddress?></rc-text>
+          <?endif?>
+        </rc-column>
+      </rc-section>
+    <?endif?>
+
+    <!-- Legal section: legalText + optional returnPolicy + optional terms -->
+    <?if legal?>
+      <rc-section padding="10px 0">
+        <rc-column padding="0 20px">
+          <?if legal.text?>
+            <rc-text rc-class="rcml-p-style" align="center"><?copy legalText text=legal.text?></rc-text>
+          <?endif?>
+          <?if legal.returnPolicy?>
+            <rc-text rc-class="rcml-p-style" align="center"><?copy returnPolicyLink linkText=legal.returnPolicy.linkText linkHref=legal.returnPolicy.linkHref?></rc-text>
+          <?endif?>
+          <?if legal.terms?>
+            <rc-text rc-class="rcml-p-style" align="center"><?copy termsLink linkText=legal.terms.linkText linkHref=legal.terms.linkHref?></rc-text>
+          <?endif?>
+        </rc-column>
+      </rc-section>
+    <?endif?>
+
+    <!-- Social icons (when theme.links populated) -->
+    <?if socialLinks?>
+      <rc-section padding="10px 0">
+        <rc-column padding="0 20px">
+          <rc-social align="center">
+            <?for let link of socialLinks?>
+              <rc-social-element name="@{link.type}" href="@{link.url}"/>
+            <?endfor?>
+          </rc-social>
+        </rc-column>
+      </rc-section>
+    <?endif?>
+
+    <!-- Footer -->
+    <rc-section padding="20px 0">
+      <rc-column padding="0 20px">
+        <rc-text align="center" padding="0px 0px 10px 0px" font-size="@{footer.fontSize}" color="@{footer.textColor}" rc-class="rcml-p-style"><?copy footerLinks?></rc-text>
+      </rc-column>
+    </rc-section>
+  </rc-body>
+</rcml>

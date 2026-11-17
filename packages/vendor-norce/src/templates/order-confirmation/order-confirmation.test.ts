@@ -192,8 +192,9 @@ describe('createNorceOrderConfirmationTemplate — financial', () => {
     const doc = createNorceOrderConfirmationTemplate().render({
       context: baseContext({
         financial: {
-          // Norce syncs none of these; caller-supplied fields.
-          subtotal: customField('Order', 'Subtotal', 200030),
+          // Subtotal is the synced ex-VAT total; Norce syncs no discount, tax
+          // or shipping cost, so those are caller-supplied fields.
+          subtotal: customField('Order', 'OrderTotalExVat', 200030),
           discount: customField('Order', 'Discount', 200032),
           tax: customField('Order', 'Tax', 200031),
           shippingCost: customField('Order', 'Shipping', 200033),
