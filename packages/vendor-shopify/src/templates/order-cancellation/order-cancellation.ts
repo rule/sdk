@@ -30,8 +30,8 @@ import type { CustomFieldRef } from '@rule/template-engine'
  *
  * - `order.date` absent → no cancellation-date row.
  * - `support` absent → no support callout.
- * - `support.linkHref` absent → support paragraph renders without a
- *   link beside it.
+ * - `support.linkHref` or `support.linkText` absent → support paragraph
+ *   renders without a link beside it.
  *
  * The logo section and the social-links section are driven by the
  * theme (`theme.images.logo` / `theme.links`). The hero banner and
@@ -54,7 +54,7 @@ export interface OrderCancellationTemplateContext {
   websiteUrl: string
   /**
    * Optional support callout. Presence drives section rendering;
-   * `linkHref` additionally drives whether the link row renders
+   * `linkHref` plus `linkText` additionally drive whether the link row renders
    * alongside the `supportText` paragraph. Callers are responsible
    * for sanitizing `linkHref` (URL or `mailto:…`).
    */

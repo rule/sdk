@@ -94,11 +94,11 @@ describe('createOrderCancellationTemplate', () => {
     const json = docToString(doc)
 
     expect(json).toContain('Have questions')
-    // No linkHref → the support-link atom does not appear.
+    // No linkHref/linkText → the support-link atom does not appear.
     expect(json).not.toContain('mailto:')
   })
 
-  it('renders the support link when `support.linkHref` is supplied', () => {
+  it('renders the support link when `support.linkHref` and `support.linkText` are supplied', () => {
     const doc = createOrderCancellationTemplate().render({
       context: fullContext({
         support: { linkText: 'Contact us', linkHref: 'mailto:help@example.com' },
@@ -110,6 +110,17 @@ describe('createOrderCancellationTemplate', () => {
     expect(json).toContain('Have questions')
     expect(json).toContain('Contact us')
     expect(json).toContain('mailto:help@example.com')
+  })
+
+  it('omits the support link when `support.linkText` is absent', () => {
+    const doc = createOrderCancellationTemplate().render({
+      context: fullContext({ support: { linkHref: 'mailto:help@example.com' } }),
+      theme: TEST_THEME,
+    })
+    const json = docToString(doc)
+
+    expect(json).toContain('Have questions')
+    expect(json).not.toContain('mailto:help@example.com')
   })
 
   it('applies a partial copy override without touching other entries', () => {

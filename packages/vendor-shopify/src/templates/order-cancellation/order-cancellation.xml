@@ -50,7 +50,7 @@
       <rc-section padding="10px 0">
         <rc-column padding="0 20px">
           <rc-text rc-class="rcml-p-style" align="center"><?copy supportText?></rc-text>
-          <?if support.linkHref?>
+          <?if support.linkHref && support.linkText?>
             <rc-text rc-class="rcml-p-style" align="center"><?copy supportLink linkText=support.linkText linkHref=support.linkHref?></rc-text>
           <?endif?>
         </rc-column>

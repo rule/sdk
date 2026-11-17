@@ -24,7 +24,7 @@
     <?if heroHeading?>
       <rc-section padding="10px 0">
         <rc-column padding="0 20px">
-          <rc-heading rc-class="rcml-h1-style"><?copy heroHeading prefix=heroHeading.prefix suffix=heroHeading.suffix orderRef=order.ref?></rc-heading>
+          <rc-heading rc-class="rcml-h1-style"><?copy heroHeading prefix=heroHeading.prefix || '' suffix=heroHeading.suffix || '' orderRef=order.ref?></rc-heading>
         </rc-column>
       </rc-section>
     <?endif?>
