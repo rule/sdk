@@ -30,7 +30,7 @@ export const NORCE_TAGS = {
   orderPlaced: 'OrderPlaced',
   /** Norce status `Confirmed`. Triggers the order-confirmation email. */
   orderProcessing: 'OrderProcessing',
-  /** Norce status `Delivered`. */
+  /** Norce status `Delivered`. Triggers the shipping-update email. */
   orderShipped: 'OrderShipped',
   /** Norce status `Invoiced`. */
   orderCompleted: 'OrderCompleted',

@@ -15,6 +15,7 @@ import { norcePreset, NORCE_FIELDS, NORCE_TAGS, createNorceOrderConfirmationTemp
 | Template | Factory | Trigger tag |
 |---|---|---|
 | Order confirmation | `createNorceOrderConfirmationTemplate` | `OrderProcessing` (pending team confirmation; `OrderPlaced` is the alternative) |
+| Shipping update | `createNorceShippingUpdateTemplate` | `OrderShipped` (Norce syncs no tracking number; carrier can come from `Order.DeliveryMethod`) |
 
 ## Tags
 

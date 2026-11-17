@@ -20,3 +20,12 @@ export type {
   NorceOrderConfirmationTemplateContext,
   NorceOrderConfirmationTemplateCopy,
 } from './templates/order-confirmation/order-confirmation.js';
+
+// Shipping-update template (trigger: NORCE_TAGS.orderShipped).
+export { createNorceShippingUpdateTemplate } from './templates/shipping-update/shipping-update.js';
+export type {
+  NorceShippingUpdateRenderOptions,
+  NorceShippingUpdateTemplate,
+  NorceShippingUpdateTemplateContext,
+  NorceShippingUpdateTemplateCopy,
+} from './templates/shipping-update/shipping-update.js';

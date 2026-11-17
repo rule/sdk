@@ -10,7 +10,7 @@ import { describe, expect, it } from 'vitest';
 import { createEmailTheme, EmailThemeImageType, safeValidateEmailTemplate } from '@rule/rcml';
 import type { EmailTheme, RcmlDocument } from '@rule/rcml';
 import { customField, loopValue } from '@rule/template-engine';
-import { createNorceOrderConfirmationTemplate } from '../src/index.js';
+import { createNorceOrderConfirmationTemplate, createNorceShippingUpdateTemplate } from '../src/index.js';
 
 const footer = { fontSize: '10px', textColor: '#666666' };
 const firstName = customField('Subscriber', 'FirstName', 1);
@@ -85,6 +85,62 @@ const renders: Record<string, (theme: EmailTheme) => RcmlDocument> = {
         cart: { items: order('ProductNames', 12) },
         inlineShippingAddress: subscriber('Address', 8),
         websiteUrl: 'https://acme.example/',
+        footer,
+      },
+    }),
+  // Caller-supplied refs (not synced by Norce) so every branch renders:
+  // Subscriber.Email, Subscriber.FullName, Order.SellerCompany,
+  // Order.VatNumber, Order.TrackingNumber, Order.EstimatedDelivery,
+  // Order.Discount, Order.Tax, Order.Shipping. The rest are Norce fields.
+  'shipping-update': (theme) =>
+    createNorceShippingUpdateTemplate().render({
+      theme,
+      context: {
+        recipient: { firstName },
+        order: {
+          ref: order('OrderNumber', 2),
+          date: order('OrderDate', 3),
+          paymentMethod: order('PaymentMethod', 4),
+          customerEmail: subscriber('Email', 20),
+        },
+        trackingUrl: 'https://acme.example/track',
+        status: {
+          steps: [
+            { label: 'Ordered', bg: '#05CC87', fg: '#ffffff', width: '33%' },
+            { label: 'Shipped', bg: '#05CC87', fg: '#ffffff', width: '33%' },
+            { label: 'Delivered', bg: '#eeeeee', fg: '#333333', width: '34%' },
+          ],
+        },
+        seller: { company: order('SellerCompany', 21), vatNumber: order('VatNumber', 22) },
+        shippingDetails: {
+          address: subscriber('Address', 8),
+          carrier: order('DeliveryMethod', 23),
+          tracking: order('TrackingNumber', 24),
+          estimatedDelivery: order('EstimatedDelivery', 25),
+        },
+        cart: {
+          products: {
+            source: order('Products', 5),
+            itemName: loopValue('Name'),
+            itemSku: loopValue('PartNo'),
+            itemQuantity: loopValue('QtyOrdered'),
+            itemPrice: loopValue('UnitPrice'),
+            itemTotal: loopValue('RowAmount'),
+          },
+        },
+        financial: {
+          subtotal: order('OrderTotalExVat', 6),
+          discount: order('Discount', 13),
+          tax: order('Tax', 14),
+          shippingCost: order('Shipping', 15),
+          total: order('OrderTotalIncVat', 7),
+        },
+        buyer: { fullName: subscriber('FullName', 26), billingAddress: subscriber('Address', 8) },
+        legal: {
+          text: 'Terms apply.',
+          returnPolicy: { linkText: 'Returns', linkHref: 'https://acme.example/returns' },
+          terms: { linkText: 'Terms', linkHref: 'https://acme.example/terms' },
+        },
         footer,
       },
     }),
