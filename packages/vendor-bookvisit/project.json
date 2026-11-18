@@ -1,0 +1,32 @@
+{
+  "name": "vendor-bookvisit",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/vendor-bookvisit/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": [
+        "{options.outputPath}"
+      ],
+      "options": {
+        "outputPath": "dist/packages/vendor-bookvisit",
+        "main": "packages/vendor-bookvisit/src/index.ts",
+        "tsConfig": "packages/vendor-bookvisit/tsconfig.lib.json",
+        "assets": [
+          {
+            "input": "./packages/vendor-bookvisit",
+            "glob": "*.md",
+            "output": "./"
+          }
+        ]
+      }
+    },
+    "nx-release-publish": {
+      "options": {
+        "packageRoot": "dist/{projectRoot}"
+      }
+    }
+  }
+}

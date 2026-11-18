@@ -97,12 +97,12 @@ jobs:
 
       - name: Verify build outputs for every package
         run: |
-          for pkg in rcml client template-engine vendor vendor-shopify vendor-bookzen vendor-samfora vendor-norce sdk; do
+          for pkg in rcml client template-engine vendor vendor-shopify vendor-bookzen vendor-samfora vendor-norce vendor-bookvisit sdk; do
             test -f "dist/packages/$pkg/src/index.js"   || { echo "Missing dist/packages/$pkg/src/index.js"; exit 1; }
             test -f "dist/packages/$pkg/src/index.d.ts" || { echo "Missing dist/packages/$pkg/src/index.d.ts"; exit 1; }
             test -f "dist/packages/$pkg/package.json"   || { echo "Missing dist/packages/$pkg/package.json"; exit 1; }
           done
-          echo "All build outputs present for 8 packages."
+          echo "All build outputs present for 9 packages."
 
   docs:
     name: Docs Quality

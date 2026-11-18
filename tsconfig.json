@@ -27,6 +27,7 @@
       "@rule/vendor-bookzen": ["./packages/vendor-bookzen/src/index.ts"],
       "@rule/vendor-samfora": ["./packages/vendor-samfora/src/index.ts"],
       "@rule/vendor-norce": ["./packages/vendor-norce/src/index.ts"],
+      "@rule/vendor-bookvisit": ["./packages/vendor-bookvisit/src/index.ts"],
       "@rule/vendor": ["./packages/vendor/src/index.ts"]
     }
   },
