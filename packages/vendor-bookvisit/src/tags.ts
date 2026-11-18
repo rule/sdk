@@ -21,7 +21,7 @@ export const BOOKVISIT_TAGS = {
    * Lifecycle tags — one per booking status. `subscribers.sync()` adds them as
    * markers without firing automations; send the booking email with
    * `client.subscribers.resetTagAutomation()` (see `lifecycleTag` on the
-   * converter result).
+   * converter result) — which also unblocks a blocked subscriber.
    */
   bookingConfirmed: 'booking-confirmed',
   bookingChanged: 'booking-changed',

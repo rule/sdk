@@ -40,7 +40,8 @@ export interface BookVisitConversionSuccess {
    * is `Unknown` or missing. `subscribers.sync()` adds tags without firing
    * automations, so pass this to `client.subscribers.resetTagAutomation()` to
    * send the booking email — not `triggerTagAutomation()`, which does nothing
-   * for a returning guest who already completed that automation.
+   * for a returning guest who already completed that automation. Any
+   * tag-automation call unblocks a blocked subscriber; gate it on your policy.
    */
   lifecycleTag?: BookVisitLifecycleTag;
 }
@@ -214,7 +215,8 @@ function conversionFailure(
  *   change (e.g. keyed on `bookingGuidId` + status), not on every poll. It
  *   also cancels messages still queued from that tag's previous pass (an
  *   earlier booking's reminder); use `forceTagAutomation()` instead when
- *   overlapping bookings must keep theirs.
+ *   overlapping bookings must keep theirs. Any tag-automation call also
+ *   unblocks a blocked subscriber, so gate it on the caller's own policy.
  *
  * @example
  * ```typescript
@@ -224,7 +226,8 @@ function conversionFailure(
  * } else {
  *   await client.subscribers.sync(result.payload);
  *   // isNewStatusForBooking: the caller's own dedupe (bookingGuidId + status).
- *   if (result.lifecycleTag && isNewStatusForBooking(booking)) {
+ *   // mayAutomate: the caller's policy check — automation calls unblock blocked subscribers.
+ *   if (result.lifecycleTag && isNewStatusForBooking(booking) && (await mayAutomate(result.email))) {
  *     await client.subscribers.resetTagAutomation({ email: result.email }, result.lifecycleTag);
  *   }
  * }

@@ -15,13 +15,15 @@ if (result.ok) {
   // sync() fires no tag automations — send the booking email explicitly,
   // once per booking status change (resetTagAutomation re-fires on every call).
   // isNewStatusForBooking is your own dedupe, e.g. keyed on bookingGuidId + status.
-  if (result.lifecycleTag && isNewStatusForBooking(booking)) {
+  // mayAutomate is your own policy check: any tag-automation call unblocks a
+  // blocked subscriber, so skip guests who must stay blocked.
+  if (result.lifecycleTag && isNewStatusForBooking(booking) && (await mayAutomate(result.email))) {
     await client.subscribers.resetTagAutomation({ email: result.email }, result.lifecycleTag);
   }
 }
 ```
 
-- Lifecycle tags from `bookingStatus`: `booking-confirmed` (New), `booking-changed`, `booking-cancelled`, `booking-no-show`; `Unknown` or a missing status gets none. They are markers only: `subscribers.sync()` adds tags without firing automations, so the caller fires the one returned as `lifecycleTag`. Use `resetTagAutomation()`, not `triggerTagAutomation()`: a returning guest already holds the tag, and `triggerTagAutomation()` does nothing once that automation has completed. `resetTagAutomation()` also cancels messages still queued from that tag's previous pass (an earlier booking's reminder); use `forceTagAutomation()` instead when overlapping bookings must keep theirs.
+- Lifecycle tags from `bookingStatus`: `booking-confirmed` (New), `booking-changed`, `booking-cancelled`, `booking-no-show`; `Unknown` or a missing status gets none. They are markers only: `subscribers.sync()` adds tags without firing automations, so the caller fires the one returned as `lifecycleTag`. Use `resetTagAutomation()`, not `triggerTagAutomation()`: a returning guest already holds the tag, and `triggerTagAutomation()` does nothing once that automation has completed. `resetTagAutomation()` also cancels messages still queued from that tag's previous pass (an earlier booking's reminder); use `forceTagAutomation()` instead when overlapping bookings must keep theirs. Every tag-automation call (`trigger`, `force` or `reset`) also unblocks a blocked subscriber, regardless of `marketing-consent` — check your own policy before calling it.
 - `ota` when `pointOfSale` is `OTA` or the booking has an external reservation ID, otherwise `direct`. `conference` for conference bookings.
 - `marketing-consent` only for direct bookings with `allowEmailAdvertising: true` and a non-relay email. BookVisit's flag only covers its own booking flow, so it is never trusted for OTA bookings.
 - OTA relay addresses (e.g. `@guest.booking.com`) are synced, since booking emails reach the guest, and flagged with `isOtaRelayEmail`.
