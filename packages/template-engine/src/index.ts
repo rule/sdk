@@ -38,3 +38,4 @@ export {
   type EmailTemplateRenderArgs,
   type CreateEmailTemplateOptions,
 } from './create-email-template.js'
+export { getBrandColors, type BrandColors } from './brand-colors.js'

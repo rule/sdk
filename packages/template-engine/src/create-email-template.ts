@@ -13,6 +13,8 @@
  *      - `socialLinks` ← `getConfiguredSocialLinks(theme.links)` (slots
  *        still holding a default placeholder URL are skipped; undefined
  *        when no slot is configured)
+ *      - `brand` ← {@link getBrandColors}`(theme)` (the brand palette by
+ *        Rule UI name, plus derived `muted` / `hairline`)
  * 4. Compile, parse to RCML, apply the theme.
  *
  * The only template-specific pieces are the file paths and the two
@@ -34,6 +36,7 @@
 import type { EmailTheme, RcmlDocument } from '@rule/rcml'
 import { applyTheme, getConfiguredSocialLinks, xmlToRcml } from '@rule/rcml'
 
+import { getBrandColors } from './brand-colors.js'
 import { compileTemplate } from './compile.js'
 import { loadCopy } from './load-copy.js'
 import { loadTemplate } from './load-template.js'
@@ -45,14 +48,18 @@ import type { TemplateRefSerializer } from './refs/types.js'
  * @public
  */
 export interface EmailTemplateRenderArgs<TCopy, TContext> {
-  /** Caller-supplied typed context (refs + optional sub-objects). */
+  /**
+   * Caller-supplied typed context (refs + optional sub-objects).
+   * `logoUrl`, `socialLinks` and `brand` are reserved: the theme
+   * projection overwrites a context field with any of those names.
+   */
   readonly context: TContext
   /**
    * Theme applied to the compiled RCML. Also projected into the
    * compile context: `theme.images.logo?.url` → `logoUrl`, and
    * `getConfiguredSocialLinks(theme.links)` → `socialLinks` (slots left
    * at their default placeholder URL are skipped; undefined when none
-   * is configured).
+   * is configured), and {@link getBrandColors}`(theme)` → `brand`.
    */
   readonly theme: EmailTheme
   /**
@@ -114,7 +121,7 @@ export function createEmailTemplate<TCopy, TContext>(
       const { xml } = compileTemplate<TCopy, unknown>({
         template,
         copy,
-        context: { ...(context as object), logoUrl, socialLinks },
+        context: { ...(context as object), logoUrl, socialLinks, brand: getBrandColors(theme) },
         ...(serializer !== undefined ? { serializer } : {}),
       })
 

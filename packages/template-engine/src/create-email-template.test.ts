@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { customField } from './refs/factories.js'
 import type { TemplateRefSerializer } from './refs/types.js'
 import { createEmailTemplate } from './create-email-template.js'
-import { createEmailTheme, DEFAULT_LINKS_MAP, EmailThemeImageType } from '@rule/rcml'
+import { createEmailTheme, DEFAULT_LINKS_MAP, EmailThemeColorType, EmailThemeImageType } from '@rule/rcml'
 import type { EmailTheme } from '@rule/rcml'
 
 interface FixtureCopy {
@@ -160,6 +160,20 @@ describe('createEmailTemplate', () => {
     expect(json).toContain('"name":"web"')
     expect(json).not.toContain('"name":"website"')
     expect(json).toContain('https://acme.example/')
+  })
+
+  it('projects the theme palette into the context as brand.*', () => {
+    const theme = createEmailTheme({
+      brandStyleId: 1,
+      colors: [{ type: EmailThemeColorType.Background, hex: '#123456' }],
+    })
+    // Body only: applyTheme also writes the canvas hex onto rc-body in
+    // rc-head, which would satisfy a whole-document match on its own.
+    const doc = JSON.parse(render(theme)) as { children: unknown[] }
+    const body = JSON.stringify(doc.children[1])
+
+    expect(body).toContain('"background-color":"#123456"')
+    expect(body).not.toContain('@{brand')
   })
 
   it('honours a caller-supplied TemplateRef serializer', () => {

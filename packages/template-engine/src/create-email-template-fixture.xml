@@ -3,7 +3,7 @@
     <rc-attributes/>
   </rc-head>
   <rc-body>
-    <rc-section>
+    <rc-section background-color="@{brand.canvas}">
       <rc-column>
         <rc-heading rc-class="rcml-h1-style"><?copy greeting name=name?></rc-heading>
       </rc-column>
