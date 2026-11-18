@@ -236,16 +236,18 @@ describe('convertBookVisitBooking', () => {
   });
 
   it.each([
-    ['Changed', ['booking-changed', 'direct', 'marketing-consent']],
-    ['Cancelled', ['booking-cancelled', 'direct', 'marketing-consent']],
-    ['NoShow', ['booking-no-show', 'direct', 'marketing-consent']],
-    ['Unknown', ['direct', 'marketing-consent']],
-  ] as const)('status %s maps to tags %j', (status, expected) => {
+    ['New', 'booking-confirmed', ['booking-confirmed', 'direct', 'marketing-consent']],
+    ['Changed', 'booking-changed', ['booking-changed', 'direct', 'marketing-consent']],
+    ['Cancelled', 'booking-cancelled', ['booking-cancelled', 'direct', 'marketing-consent']],
+    ['NoShow', 'booking-no-show', ['booking-no-show', 'direct', 'marketing-consent']],
+    ['Unknown', undefined, ['direct', 'marketing-consent']],
+  ] as const)('status %s → lifecycleTag %s, tags %j', (status, lifecycleTag, expected) => {
     const booking = directBooking();
 
     booking.bookingData = { ...booking.bookingData, bookingStatus: status };
     const result = convertOk(booking);
 
+    expect(result.lifecycleTag).toBe(lifecycleTag);
     expect(result.payload.tags).toEqual(expected);
     expect(result.payload.historicalCustomFieldData?.Booking).toMatchObject({ Status: status });
   });
@@ -323,6 +325,11 @@ describe('convertBookVisitBooking', () => {
     '<anna@example.com>',
     'mailto:anna@example.com',
     'anna@example.com\u200B',
+    '.anna@example.com',
+    'anna..svensson@example.com',
+    'anna.@example.com',
+    'anna@exa;mple.com',
+    'anna@-example.com',
   ])(
     'malformed email %j returns an invalid-email error',
     (email) => {
@@ -369,6 +376,68 @@ describe('convertBookVisitBooking', () => {
       ok: false,
       error: { code: 'missing-email', message: 'BookVisit booking (unknown) has no customer email' },
     });
+  });
+
+  it.each([
+    'anna.svensson+hotel@example.co.uk',
+    "o'brien@mail.example.se",
+    'x.1@eu.guest.booking.com',
+    'åsa@åre.se',
+    'anna@bücher.de',
+    'Anna@Example.SE',
+    'a\u030Asa@a\u030Are.se',
+    'anna@example.xn--p1ai',
+  ])('valid email %j is accepted', (email) => {
+    const booking = directBooking();
+
+    booking.bookingCustomer = { ...booking.bookingCustomer, email };
+    const result = convertOk(booking);
+
+    expect(result.email).toBe(email);
+    expect(result.payload.subscriber.email).toBe(email);
+  });
+
+  it.each([
+    'anna@example.com/x',
+    'anna@exa mple.com',
+    'anna@[127.0.0.1]',
+    'anna@example.com:80',
+    'a@1.2.3.4',
+    'a@0x7f.1',
+    'a@127.1',
+    'a@example\uFF0Ecom',
+    'a@example\u3002com',
+    'a@exa%6Dple.com',
+    'a@a.com\u0000',
+    'a@\u2460.com',
+    'a@1.2.3.4.\uFE0F\uFE0F',
+    'a@127.0.0.1.\u034F\u034F',
+    'a@exam\uFE0Fple.com',
+    'a\uFE0F@example.com',
+    'a@exam\uFF11ple.com',
+    'a@\uFF11.\uFF12.\uFF13.com',
+    'a@exam\u{1D7CF}ple.com',
+    'a@b.xn--abc-',
+    'a@b.xn---',
+  ])(
+    'email %j with an IP, normalisable or control character domain is rejected',
+    (email) => {
+      const booking = directBooking();
+
+      booking.bookingCustomer = { ...booking.bookingCustomer, email };
+
+      expect(convertBookVisitBooking(booking)).toMatchObject({ ok: false, error: { code: 'invalid-email' } });
+    }
+  );
+
+  it('a booking with no status gets no lifecycle tag', () => {
+    const booking = directBooking();
+
+    booking.bookingData = { ...booking.bookingData, bookingStatus: undefined };
+    const result = convertOk(booking);
+
+    expect(result.lifecycleTag).toBeUndefined();
+    expect(result.payload.tags).toEqual(['direct', 'marketing-consent']);
   });
 });
 

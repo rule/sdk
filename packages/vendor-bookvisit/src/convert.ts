@@ -15,6 +15,7 @@ import type {
 } from './bookvisit-types.js';
 import { BOOKVISIT_BOOKING_FIELD_SCHEMA, BOOKVISIT_SUBSCRIBER_FIELD_SCHEMA } from './fields.js';
 import { BOOKVISIT_TAGS } from './tags.js';
+import type { BookVisitLifecycleTag } from './tags.js';
 
 /**
  * Email domains OTAs use for relay addresses. Mail to them reaches the guest
@@ -28,10 +29,20 @@ export interface BookVisitConversionSuccess {
   ok: true;
   /** Input for `client.subscribers.sync()`. */
   payload: SubscriberSyncPayload;
+  /** The validated, trimmed customer email (also `payload.subscriber.email`). */
+  email: string;
   /** `pointOfSale` is `OTA` or the booking has an external reservation ID. */
   isOta: boolean;
   /** The email is an OTA relay address (see {@link OTA_RELAY_EMAIL_DOMAINS}). Still synced. */
   isOtaRelayEmail: boolean;
+  /**
+   * The lifecycle tag for this booking's status; absent when `bookingStatus`
+   * is `Unknown` or missing. `subscribers.sync()` adds tags without firing
+   * automations, so pass this to `client.subscribers.resetTagAutomation()` to
+   * send the booking email — not `triggerTagAutomation()`, which does nothing
+   * for a returning guest who already completed that automation.
+   */
+  lifecycleTag?: BookVisitLifecycleTag;
 }
 
 /** Failed conversion — nothing should be synced. */
@@ -47,7 +58,7 @@ export interface BookVisitConversionFailure {
 
 export type BookVisitConversionResult = BookVisitConversionSuccess | BookVisitConversionFailure;
 
-const LIFECYCLE_TAGS: Record<BookVisitBookingStatus, string | undefined> = {
+const LIFECYCLE_TAGS: Record<BookVisitBookingStatus, BookVisitLifecycleTag | undefined> = {
   New: BOOKVISIT_TAGS.bookingConfirmed,
   Changed: BOOKVISIT_TAGS.bookingChanged,
   Cancelled: BOOKVISIT_TAGS.bookingCancelled,
@@ -131,10 +142,38 @@ function toE164(phoneNumber: string | null | undefined, countryCode: string | nu
 }
 
 /**
- * Shape check: one `@`, dot-separated non-empty domain labels, and no
- * whitespace, zero-width characters, commas, colons, quotes or angle brackets.
+ * Local part: the WHATWG `<input type="email">` set plus Unicode letters,
+ * combining marks and decimal digits (`åsa`, composed or decomposed).
  */
-const EMAIL_SHAPE = /^[^\s\u200B-\u200D\uFEFF@,:<>"]+@[^\s\u200B-\u200D\uFEFF@.,:<>"]+(\.[^\s\u200B-\u200D\uFEFF@.,:<>"]+)+$/;
+const EMAIL_LOCAL = /^[\p{L}\p{M}\p{Nd}.!#$%&'*+/=?^_`{|}~-]+$/u;
+
+/**
+ * Domain: dot-separated labels of Unicode letters, marks and decimal digits
+ * with inner hyphens (so `åre.se` passes as written), ending in an alphabetic
+ * or `xn--` top-level label — which rules out IPv4 forms like `1.2.3.4`.
+ * Nothing is normalised: fullwidth dots, percent-encoding, control and
+ * zero-width characters fail instead of being silently mapped.
+ */
+const EMAIL_DOMAIN =
+  /^(?:[\p{L}\p{M}\p{Nd}](?:[\p{L}\p{M}\p{Nd}-]{0,61}[\p{L}\p{M}\p{Nd}])?\.)+(?:[\p{L}\p{M}]{2,63}|xn--[a-z0-9](?:[a-z0-9-]{0,57}[a-z0-9])?)$/iu;
+
+/**
+ * Shape check; the local part may not start or end with a dot or contain two
+ * in a row. Invisible default-ignorable characters (variation selectors,
+ * joiners) and compatibility characters (fullwidth or mathematical digits,
+ * circled digits) are rejected — `NFC === NFKC` keeps decomposed `åsa` valid.
+ */
+function isValidEmail(email: string): boolean {
+  const at = email.lastIndexOf('@');
+  const local = email.slice(0, at);
+
+  if (/\p{Default_Ignorable_Code_Point}/u.test(email)) return false;
+  if (email.normalize('NFC') !== email.normalize('NFKC')) return false;
+  if (at < 1 || !EMAIL_LOCAL.test(local)) return false;
+  if (local.startsWith('.') || local.endsWith('.') || local.includes('..')) return false;
+
+  return EMAIL_DOMAIN.test(email.slice(at + 1));
+}
 
 function conversionFailure(
   code: BookVisitConversionFailure['error']['code'],
@@ -168,12 +207,27 @@ function conversionFailure(
  * - The phone is included only when it converts unambiguously to E.164.
  * - `tags` lists the tags this booking earns; `subscribers.sync()` only adds
  *   tags, so removing stale ones from earlier bookings is up to the caller.
+ * - `subscribers.sync()` fires no tag automations. To send the booking email,
+ *   call `resetTagAutomation()` with `lifecycleTag` after a successful sync —
+ *   it re-fires for returning guests, where `triggerTagAutomation()` would do
+ *   nothing. It re-fires on every call, so run it once per booking status
+ *   change (e.g. keyed on `bookingGuidId` + status), not on every poll. It
+ *   also cancels messages still queued from that tag's previous pass (an
+ *   earlier booking's reminder); use `forceTagAutomation()` instead when
+ *   overlapping bookings must keep theirs.
  *
  * @example
  * ```typescript
  * const result = convertBookVisitBooking(booking);
- * if (result.ok) await client.subscribers.sync(result.payload);
- * else logger.warn(result.error.message);
+ * if (!result.ok) {
+ *   logger.warn(result.error.message);
+ * } else {
+ *   await client.subscribers.sync(result.payload);
+ *   // isNewStatusForBooking: the caller's own dedupe (bookingGuidId + status).
+ *   if (result.lifecycleTag && isNewStatusForBooking(booking)) {
+ *     await client.subscribers.resetTagAutomation({ email: result.email }, result.lifecycleTag);
+ *   }
+ * }
  * ```
  */
 export function convertBookVisitBooking(booking: BookVisitBooking): BookVisitConversionResult {
@@ -183,7 +237,7 @@ export function convertBookVisitBooking(booking: BookVisitBooking): BookVisitCon
   const email = customer.email?.trim();
 
   if (!email) return conversionFailure('missing-email', 'has no customer email', data);
-  if (!EMAIL_SHAPE.test(email)) return conversionFailure('invalid-email', 'has an invalid customer email', data);
+  if (!isValidEmail(email)) return conversionFailure('invalid-email', 'has an invalid customer email', data);
 
   const isOta = data.pointOfSale === 'OTA' || !!external.externalReservationId;
   const relayEmail = isOtaRelayEmail(email);
@@ -223,8 +277,10 @@ export function convertBookVisitBooking(booking: BookVisitBooking): BookVisitCon
 
   return {
     ok: true,
+    email,
     isOta,
     isOtaRelayEmail: relayEmail,
+    ...(lifecycleTag ? { lifecycleTag } : {}),
     payload: {
       subscriber: { email, ...(phoneNumber ? { phoneNumber } : {}) },
       ...(Object.keys(subscriberFields).length > 0

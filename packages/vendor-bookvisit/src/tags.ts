@@ -17,7 +17,12 @@ import type { VendorTagSchema } from '@rule/vendor';
  * ```
  */
 export const BOOKVISIT_TAGS = {
-  /** Lifecycle tags — one per booking status, each triggers a distinct automation */
+  /**
+   * Lifecycle tags — one per booking status. `subscribers.sync()` adds them as
+   * markers without firing automations; send the booking email with
+   * `client.subscribers.resetTagAutomation()` (see `lifecycleTag` on the
+   * converter result).
+   */
   bookingConfirmed: 'booking-confirmed',
   bookingChanged: 'booking-changed',
   bookingCancelled: 'booking-cancelled',
@@ -39,3 +44,8 @@ export type BookVisitTagSchema = typeof BOOKVISIT_TAGS;
 
 /** Union of logical BookVisit tag name keys. */
 export type BookVisitTagNames = keyof BookVisitTagSchema;
+
+/** The four lifecycle tag values, one per booking status. */
+export type BookVisitLifecycleTag = BookVisitTagSchema[
+  'bookingConfirmed' | 'bookingChanged' | 'bookingCancelled' | 'bookingNoShow'
+];

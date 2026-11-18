@@ -17,7 +17,7 @@ export type {
   BookVisitBookingFieldName,
 } from './fields.js';
 export { BOOKVISIT_TAGS } from './tags.js';
-export type { BookVisitTagNames, BookVisitTagSchema } from './tags.js';
+export type { BookVisitLifecycleTag, BookVisitTagNames, BookVisitTagSchema } from './tags.js';
 export type {
   BookVisitBooking,
   BookVisitBookingCustomer,
