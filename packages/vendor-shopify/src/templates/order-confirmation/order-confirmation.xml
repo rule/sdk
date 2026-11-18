@@ -3,168 +3,267 @@
     <rc-preview><?copy preheader?></rc-preview>
   </rc-head>
   <rc-body>
-    <!-- Logo -->
+    <!--
+      Cards on the brand canvas. Every colour comes from the brand style:
+      cards use @{brand.background}, gaps @{brand.canvas}, secondary text
+      @{brand.muted}, dividers @{brand.hairline}, the active progress step
+      @{brand.primary}. Zero padding is written "0px" because Rule drops
+      a bare "0" on save.
+    -->
+
+    <!-- Logo on the canvas -->
     <?if logoUrl?>
-      <rc-section>
-        <rc-column padding="0 20px">
-          <rc-logo rc-class="rcml-logo-style rc-initial-logo" width="96px" padding="20px 0"/>
+      <rc-section background-color="@{brand.canvas}" padding="36px 0px 24px 0px">
+        <rc-column padding="0px">
+          <rc-logo rc-class="rcml-logo-style rc-initial-logo" width="88px" padding="0px"/>
+        </rc-column>
+      </rc-section>
+    <?endif?>
+    <?if !logoUrl?>
+      <rc-section background-color="@{brand.canvas}" padding="24px 0px 0px 0px">
+        <rc-column padding="0px">
+          <rc-spacer height="12px" padding="0px"/>
         </rc-column>
       </rc-section>
     <?endif?>
 
-    <!-- Greeting + intro -->
-    <rc-section padding="20px 0">
-      <rc-column padding="0 20px">
-        <rc-heading rc-class="rcml-h1-style"><?copy greetingHeading firstName=recipient.firstName?></rc-heading>
-        <rc-text rc-class="rcml-p-style"><?copy intro?></rc-text>
+    <!-- Hero card: headline, one-line promise, progress -->
+    <rc-section background-color="@{brand.background}" border-radius="16px 16px 0px 0px" padding="36px 0px 4px 0px">
+      <rc-column padding="0px 28px">
+        <rc-heading rc-class="rcml-h1-style" font-size="32px" line-height="115%" letter-spacing="-0.02em" padding="0px 0px 14px 0px"><?copy greetingHeading firstName=recipient.firstName?></rc-heading>
+        <?if heroHeading?>
+          <rc-heading rc-class="rcml-h2-style" font-size="20px" line-height="130%" letter-spacing="-0.01em" padding="0px 0px 10px 0px"><?copy heroHeading prefix=heroHeading.prefix || '' suffix=heroHeading.suffix || '' orderRef=order.ref?></rc-heading>
+        <?endif?>
+        <rc-text rc-class="rcml-p-style" font-size="17px" line-height="150%" color="@{brand.muted}" padding="0px 0px 28px 0px"><?copy intro?></rc-text>
+      </rc-column>
+    </rc-section>
+    <rc-section background-color="@{brand.background}" border-radius="0px 0px 16px 16px" padding="0px 22px 32px 22px">
+      <rc-group>
+        <rc-column width="33.33%" padding="0px 6px">
+          <rc-divider border-color="@{brand.primary}" border-width="3px" padding="0px 0px 10px 0px"/>
+          <rc-text rc-class="rcml-p-style" font-size="13px" font-weight="700" padding="0px"><?copy stepConfirmed?></rc-text>
+        </rc-column>
+        <rc-column width="33.33%" padding="0px 6px">
+          <rc-divider border-color="@{brand.hairline}" border-width="3px" padding="0px 0px 10px 0px"/>
+          <rc-text rc-class="rcml-p-style" font-size="13px" color="@{brand.muted}" padding="0px"><?copy stepShipped?></rc-text>
+        </rc-column>
+        <rc-column width="33.33%" padding="0px 6px">
+          <rc-divider border-color="@{brand.hairline}" border-width="3px" padding="0px 0px 10px 0px"/>
+          <rc-text rc-class="rcml-p-style" font-size="13px" color="@{brand.muted}" padding="0px"><?copy stepDelivered?></rc-text>
+        </rc-column>
+      </rc-group>
+    </rc-section>
+
+    <rc-section background-color="@{brand.canvas}" padding="0px">
+      <rc-column padding="0px">
+        <rc-spacer height="12px" padding="0px"/>
       </rc-column>
     </rc-section>
 
-    <!-- Hero heading: "{prefix} {orderRef} {suffix}" when supplied -->
-    <?if heroHeading?>
-      <rc-section padding="10px 0">
-        <rc-column padding="0 20px">
-          <rc-heading rc-class="rcml-h1-style"><?copy heroHeading prefix=heroHeading.prefix || '' suffix=heroHeading.suffix || '' orderRef=order.ref?></rc-heading>
+    <!-- Order card: header with the order number, items, summary, total -->
+    <rc-section background-color="@{brand.background}" border-radius="16px 16px 0px 0px" padding="28px 0px 8px 0px">
+      <rc-group>
+        <rc-column width="50%" padding="0px 0px 0px 28px">
+          <rc-heading rc-class="rcml-h3-style" font-size="20px" line-height="130%" letter-spacing="-0.01em" padding="0px"><?copy detailsHeading?></rc-heading>
         </rc-column>
-      </rc-section>
-    <?endif?>
-
-    <!-- Two-column order meta row (orderRef + orderDate) when orderDate present -->
-    <?if order.date?>
-      <rc-section padding="10px 0">
-        <rc-column width="50%">
-          <rc-text rc-class="rcml-p-style"><?copy orderRefRow orderRef=order.ref?></rc-text>
+        <rc-column width="50%" padding="0px 28px 0px 0px">
+          <rc-text rc-class="rcml-p-style" align="right" font-size="15px" line-height="180%" color="@{brand.muted}" padding="0px"><?copy valueCell value=order.ref?></rc-text>
         </rc-column>
-        <rc-column width="50%">
-          <rc-text rc-class="rcml-p-style"><?copy orderDateRow orderDate=order.date?></rc-text>
-        </rc-column>
-      </rc-section>
-    <?endif?>
-
-    <!-- Details box: heading + optional rows -->
-    <rc-section padding="20px 0">
-      <rc-column padding="0 20px">
-        <rc-heading rc-class="rcml-h2-style"><?copy detailsHeading?></rc-heading>
-        <?if !order.date?>
-          <rc-text rc-class="rcml-p-style"><?copy orderRefRow orderRef=order.ref?></rc-text>
-        <?endif?>
-        <?if order.paymentMethod?>
-          <rc-text rc-class="rcml-p-style"><?copy paymentRow paymentMethod=order.paymentMethod?></rc-text>
-        <?endif?>
-        <?if cart.items?>
-          <rc-text rc-class="rcml-p-style"><?copy inlineItemsRow items=cart.items?></rc-text>
-        <?endif?>
-        <?if inlineShippingAddress?>
-          <rc-text rc-class="rcml-p-style"><?copy inlineShippingRow shippingAddress=inlineShippingAddress?></rc-text>
-        <?endif?>
-      </rc-column>
+      </rc-group>
     </rc-section>
 
-    <!-- Line items loop -->
     <?if cart.products?>
-      <rc-section padding="0">
-        <rc-column padding="0 20px"><rc-divider padding="10px 0"/></rc-column>
-      </rc-section>
-      <rc-section padding="10px 0">
-        <rc-column padding="0 20px">
-          <rc-heading rc-class="rcml-h2-style"><?copy lineItemsHeading?></rc-heading>
-        </rc-column>
-      </rc-section>
+      <!--
+        One section, one column: a LoopValue index counts column slots
+        across the whole loop block, and the caller's refs are index 1.
+        A second column (or section) would shift every ref off its slot.
+      -->
       <rc-loop loop-type="custom-field" loop-value="@{cart.products.source.id}" loop-max-iterations="20">
-        <rc-section padding="10px 0">
-          <rc-column padding="0 20px">
-            <rc-text rc-class="rcml-p-style"><?copy itemNameLine itemName=cart.products.itemName?></rc-text>
-            <?if cart.products.itemSku?>
-              <rc-text rc-class="rcml-p-style"><?copy itemSkuLine itemSku=cart.products.itemSku?></rc-text>
-            <?endif?>
+        <rc-section background-color="@{brand.background}" padding="0px 0px 16px 0px">
+          <rc-column padding="0px 28px">
+            <rc-divider border-color="@{brand.hairline}" border-width="1px" padding="0px 0px 16px 0px"/>
+            <rc-text rc-class="rcml-p-style" font-size="16px" font-weight="700" line-height="140%" padding="0px"><?copy itemNameLine itemName=cart.products.itemName?></rc-text>
             <?if cart.products.itemQuantity?>
-              <rc-text rc-class="rcml-p-style"><?copy itemQtyLine itemQuantity=cart.products.itemQuantity?></rc-text>
+              <rc-text rc-class="rcml-p-style" font-size="14px" color="@{brand.muted}" padding="2px 0px 0px 0px"><?copy itemQtyLine itemQuantity=cart.products.itemQuantity?></rc-text>
             <?endif?>
             <?if cart.products.itemPrice?>
-              <rc-text rc-class="rcml-p-style"><?copy itemUnitPriceLine itemPrice=cart.products.itemPrice?></rc-text>
+              <rc-text rc-class="rcml-p-style" font-size="14px" color="@{brand.muted}" padding="2px 0px 0px 0px"><?copy itemUnitPriceLine itemPrice=cart.products.itemPrice?></rc-text>
+            <?endif?>
+            <?if cart.products.itemSku?>
+              <rc-text rc-class="rcml-p-style" font-size="14px" color="@{brand.muted}" padding="2px 0px 0px 0px"><?copy itemSkuLine itemSku=cart.products.itemSku?></rc-text>
             <?endif?>
             <?if cart.products.itemTotal?>
-              <rc-text rc-class="rcml-p-style"><?copy itemSubtotalLine itemTotal=cart.products.itemTotal?></rc-text>
+              <rc-text rc-class="rcml-p-style" align="right" font-size="16px" line-height="140%" padding="4px 0px 0px 0px"><?copy itemSubtotalLine itemTotal=cart.products.itemTotal?></rc-text>
             <?endif?>
           </rc-column>
         </rc-section>
       </rc-loop>
     <?endif?>
 
-    <!-- Financial summary (renders when caller provides a financial block) -->
+    <!-- Inline items field, when there is no line-items loop -->
+    <?if cart.items && !cart.products?>
+      <rc-section background-color="@{brand.background}" padding="8px 0px">
+        <rc-group>
+          <rc-column width="40%" padding="0px 0px 0px 28px">
+            <rc-text rc-class="rcml-p-style" font-size="15px" color="@{brand.muted}" padding="4px 0px"><?copy inlineItemsRow?></rc-text>
+          </rc-column>
+          <rc-column width="60%" padding="0px 28px 0px 0px">
+            <rc-text rc-class="rcml-p-style" align="right" font-size="15px" padding="4px 0px"><?copy valueCell value=cart.items?></rc-text>
+          </rc-column>
+        </rc-group>
+      </rc-section>
+    <?endif?>
+
     <?if financial?>
-      <rc-section padding="0">
-        <rc-column padding="0 20px"><rc-divider padding="10px 0"/></rc-column>
+      <rc-section background-color="@{brand.background}" padding="8px 0px 10px 0px">
+        <rc-column padding="0px 28px">
+          <rc-divider border-color="@{brand.hairline}" border-width="1px" padding="0px"/>
+        </rc-column>
       </rc-section>
-      <rc-section padding="20px 0">
-        <rc-column padding="0 20px">
-          <?if financial.subtotal?>
-            <rc-text rc-class="rcml-p-style"><?copy subtotalRow subtotal=financial.subtotal?></rc-text>
-          <?endif?>
-          <?if financial.discount?>
-            <rc-text rc-class="rcml-p-style"><?copy discountRow discount=financial.discount?></rc-text>
-          <?endif?>
-          <?if financial.tax?>
-            <rc-text rc-class="rcml-p-style"><?copy taxRow tax=financial.tax?></rc-text>
-          <?endif?>
-          <?if financial.shippingCost?>
-            <rc-text rc-class="rcml-p-style"><?copy shippingCostRow shippingCost=financial.shippingCost?></rc-text>
-          <?endif?>
-          <rc-text rc-class="rcml-p-style"><?copy totalRow total=financial.total?></rc-text>
+      <?if financial.subtotal?>
+        <rc-section background-color="@{brand.background}" padding="0px">
+          <rc-group>
+            <rc-column width="55%" padding="0px 0px 0px 28px">
+              <rc-text rc-class="rcml-p-style" font-size="15px" color="@{brand.muted}" padding="4px 0px"><?copy subtotalRow?></rc-text>
+            </rc-column>
+            <rc-column width="45%" padding="0px 28px 0px 0px">
+              <rc-text rc-class="rcml-p-style" align="right" font-size="15px" padding="4px 0px"><?copy valueCell value=financial.subtotal?></rc-text>
+            </rc-column>
+          </rc-group>
+        </rc-section>
+      <?endif?>
+      <?if financial.discount?>
+        <rc-section background-color="@{brand.background}" padding="0px">
+          <rc-group>
+            <rc-column width="55%" padding="0px 0px 0px 28px">
+              <rc-text rc-class="rcml-p-style" font-size="15px" color="@{brand.muted}" padding="4px 0px"><?copy discountRow?></rc-text>
+            </rc-column>
+            <rc-column width="45%" padding="0px 28px 0px 0px">
+              <rc-text rc-class="rcml-p-style" align="right" font-size="15px" padding="4px 0px"><?copy valueCell value=financial.discount?></rc-text>
+            </rc-column>
+          </rc-group>
+        </rc-section>
+      <?endif?>
+      <?if financial.shippingCost?>
+        <rc-section background-color="@{brand.background}" padding="0px">
+          <rc-group>
+            <rc-column width="55%" padding="0px 0px 0px 28px">
+              <rc-text rc-class="rcml-p-style" font-size="15px" color="@{brand.muted}" padding="4px 0px"><?copy shippingCostRow?></rc-text>
+            </rc-column>
+            <rc-column width="45%" padding="0px 28px 0px 0px">
+              <rc-text rc-class="rcml-p-style" align="right" font-size="15px" padding="4px 0px"><?copy valueCell value=financial.shippingCost?></rc-text>
+            </rc-column>
+          </rc-group>
+        </rc-section>
+      <?endif?>
+      <?if financial.tax?>
+        <rc-section background-color="@{brand.background}" padding="0px">
+          <rc-group>
+            <rc-column width="55%" padding="0px 0px 0px 28px">
+              <rc-text rc-class="rcml-p-style" font-size="15px" color="@{brand.muted}" padding="4px 0px"><?copy taxRow?></rc-text>
+            </rc-column>
+            <rc-column width="45%" padding="0px 28px 0px 0px">
+              <rc-text rc-class="rcml-p-style" align="right" font-size="15px" padding="4px 0px"><?copy valueCell value=financial.tax?></rc-text>
+            </rc-column>
+          </rc-group>
+        </rc-section>
+      <?endif?>
+      <rc-section background-color="@{brand.background}" padding="12px 0px 14px 0px">
+        <rc-column padding="0px 28px">
+          <rc-divider border-color="@{brand.hairline}" border-width="1px" padding="0px"/>
+        </rc-column>
+      </rc-section>
+      <rc-section background-color="@{brand.background}" border-radius="0px 0px 16px 16px" padding="0px 0px 28px 0px">
+        <rc-group>
+          <rc-column width="50%" padding="0px 0px 0px 28px">
+            <rc-text rc-class="rcml-p-style" font-size="17px" font-weight="700" line-height="140%" padding="0px"><?copy totalRow?></rc-text>
+          </rc-column>
+          <rc-column width="50%" padding="0px 28px 0px 0px">
+            <rc-heading rc-class="rcml-h3-style" align="right" font-size="24px" line-height="120%" letter-spacing="-0.01em" padding="0px"><?copy valueCell value=financial.total?></rc-heading>
+          </rc-column>
+        </rc-group>
+      </rc-section>
+    <?endif?>
+    <?if !financial?>
+      <rc-section background-color="@{brand.background}" border-radius="0px 0px 16px 16px" padding="0px 0px 20px 0px">
+        <rc-column padding="0px">
+          <rc-spacer height="8px" padding="0px"/>
         </rc-column>
       </rc-section>
     <?endif?>
 
-    <!-- Shipping address block (extended address fields mapped) -->
-    <?if shippingAddress?>
-      <rc-section padding="0">
-        <rc-column padding="0 20px"><rc-divider padding="10px 0"/></rc-column>
-      </rc-section>
-      <rc-section padding="10px 0">
-        <rc-column padding="0 20px">
-          <rc-heading rc-class="rcml-h4-style"><?copy shippingAddressHeading?></rc-heading>
-          <rc-text rc-class="rcml-p-style"><?copy shippingAddressLine line1=shippingAddress.line1?></rc-text>
-          <?if shippingAddress.line2?>
-            <rc-text rc-class="rcml-p-style"><?copy shippingAddress2Line line2=shippingAddress.line2?></rc-text>
-          <?endif?>
-          <?if shippingAddress.zip?>
-            <rc-text rc-class="rcml-p-style"><?copy shippingZipLine zip=shippingAddress.zip?></rc-text>
-          <?endif?>
-          <?if shippingAddress.city?>
-            <rc-text rc-class="rcml-p-style"><?copy shippingCityLine city=shippingAddress.city?></rc-text>
-          <?endif?>
-          <?if shippingAddress.country?>
-            <rc-text rc-class="rcml-p-style"><?copy shippingCountryCodeLine country=shippingAddress.country?></rc-text>
-          <?endif?>
-        </rc-column>
-      </rc-section>
-    <?endif?>
-
-    <!-- CTA -->
-    <rc-section padding="20px 0">
-      <rc-column padding="0 20px">
-        <rc-button href="@{websiteUrl}" align="center" border="none" border-radius="8px" inner-padding="10px 16px" padding="0 0 20px 0" text-align="center" vertical-align="middle" rc-class="rcml-label-style"><?copy ctaButton?></rc-button>
+    <!-- Primary action, full width -->
+    <rc-section background-color="@{brand.canvas}" padding="20px 0px">
+      <rc-column padding="0px">
+        <rc-button href="@{websiteUrl}" width="100%" align="center" border="none" border-radius="12px" inner-padding="17px 24px" padding="0px" font-size="16px" font-weight="700" text-align="center" vertical-align="middle" rc-class="rcml-label-style"><?copy ctaButton?></rc-button>
       </rc-column>
     </rc-section>
 
-    <!-- Social icons (when theme.links populated) -->
-    <?if socialLinks?>
-      <rc-section padding="10px 0">
-        <rc-column padding="0 20px">
-          <rc-social align="center">
+    <!--
+      Details card: where it's going, how it was paid. Each column renders
+      only when it has content and carries no width, so one column fills
+      the card and two split it evenly.
+    -->
+    <?if shippingAddress || inlineShippingAddress || order.paymentMethod || order.date?>
+      <rc-section background-color="@{brand.background}" border-radius="16px" padding="28px 0px 12px 0px">
+        <?if shippingAddress || inlineShippingAddress?>
+        <rc-column padding="0px 28px 16px 28px">
+          <?if shippingAddress?>
+            <rc-heading rc-class="rcml-h4-style" padding="0px 0px 8px 0px"><?copy shippingAddressHeading?></rc-heading>
+            <rc-text rc-class="rcml-p-style" font-size="15px" line-height="150%" padding="0px"><?copy shippingAddressLine line1=shippingAddress.line1?></rc-text>
+            <?if shippingAddress.line2?>
+              <rc-text rc-class="rcml-p-style" font-size="15px" line-height="150%" padding="0px"><?copy shippingAddress2Line line2=shippingAddress.line2?></rc-text>
+            <?endif?>
+            <?if shippingAddress.zip?>
+              <rc-text rc-class="rcml-p-style" font-size="15px" line-height="150%" padding="0px"><?copy shippingZipLine zip=shippingAddress.zip?></rc-text>
+            <?endif?>
+            <?if shippingAddress.city?>
+              <rc-text rc-class="rcml-p-style" font-size="15px" line-height="150%" padding="0px"><?copy shippingCityLine city=shippingAddress.city?></rc-text>
+            <?endif?>
+            <?if shippingAddress.country?>
+              <rc-text rc-class="rcml-p-style" font-size="15px" line-height="150%" padding="0px"><?copy shippingCountryCodeLine country=shippingAddress.country?></rc-text>
+            <?endif?>
+          <?endif?>
+          <?if !shippingAddress?>
+            <?if inlineShippingAddress?>
+              <rc-heading rc-class="rcml-h4-style" padding="0px 0px 8px 0px"><?copy inlineShippingRow?></rc-heading>
+              <rc-text rc-class="rcml-p-style" font-size="15px" line-height="150%" padding="0px"><?copy valueCell value=inlineShippingAddress?></rc-text>
+            <?endif?>
+          <?endif?>
+        </rc-column>
+        <?endif?>
+        <?if order.paymentMethod || order.date?>
+        <rc-column padding="0px 28px 16px 28px">
+          <?if order.paymentMethod?>
+            <rc-heading rc-class="rcml-h4-style" padding="0px 0px 8px 0px"><?copy paymentRow?></rc-heading>
+            <rc-text rc-class="rcml-p-style" font-size="15px" line-height="150%" padding="0px"><?copy valueCell value=order.paymentMethod?></rc-text>
+          <?endif?>
+          <?if order.date?>
+            <?if order.paymentMethod?>
+              <rc-spacer height="16px" padding="0px"/>
+            <?endif?>
+            <rc-heading rc-class="rcml-h4-style" padding="0px 0px 8px 0px"><?copy orderDateRow?></rc-heading>
+            <rc-text rc-class="rcml-p-style" font-size="15px" line-height="150%" padding="0px"><?copy valueCell value=order.date?></rc-text>
+          <?endif?>
+        </rc-column>
+        <?endif?>
+      </rc-section>
+    <?endif?>
+
+    <!-- Help line, social, footer on the canvas -->
+    <rc-section background-color="@{brand.canvas}" padding="28px 0px 40px 0px">
+      <rc-column padding="0px 28px">
+        <rc-text rc-class="rcml-p-style" align="center" font-size="14px" line-height="150%" color="@{brand.muted}" padding="0px 0px 18px 0px"><?copy helpLine?></rc-text>
+        <?if socialLinks?>
+          <rc-social align="center" padding="0px 0px 18px 0px">
             <?for let link of socialLinks?>
               <rc-social-element name="@{link.type}" href="@{link.url}"/>
             <?endfor?>
           </rc-social>
-        </rc-column>
-      </rc-section>
-    <?endif?>
-
-    <!-- Footer -->
-    <rc-section padding="20px 0">
-      <rc-column padding="0 20px">
-        <rc-text align="center" padding="0px 0px 10px 0px" font-size="@{footer.fontSize}" color="@{footer.textColor}" rc-class="rcml-p-style"><?copy footerLinks?></rc-text>
+        <?endif?>
+        <rc-text rc-class="rcml-p-style" align="center" font-size="@{footer.fontSize}" color="@{footer.textColor}" padding="0px"><?copy footerLinks?></rc-text>
       </rc-column>
     </rc-section>
+
   </rc-body>
 </rcml>
