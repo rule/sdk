@@ -6,8 +6,8 @@
  * - `@rule/client` — HTTP API wrapper for the Rule.io endpoints
  *
  * Vendor presets (`@rule/vendor-shopify`, `@rule/vendor-bookzen`,
- * `@rule/vendor-samfora`, `@rule/vendor-norce`) are under active development and will be
- * included in a future release.
+ * `@rule/vendor-samfora`, `@rule/vendor-norce`, `@rule/vendor-bookvisit`) are under active
+ * development and will be included in a future release.
  *
  * For smaller install footprints, import from the split packages directly.
  *

@@ -4,6 +4,6 @@
 
 ---
 
-Shared vendor-preset infrastructure for the Rule.io SDK. Provides the `VendorPreset` interface, `VendorPresetError`, and common types (`CustomFieldMap`, `VendorConsumerConfig`, etc.) used by `@rule/vendor-shopify`, `@rule/vendor-bookzen`, `@rule/vendor-samfora`, and `@rule/vendor-norce`.
+Shared vendor-preset infrastructure for the Rule.io SDK. Provides the `VendorPreset` interface, `VendorPresetError`, and common types (`CustomFieldMap`, `VendorConsumerConfig`, etc.) used by `@rule/vendor-shopify`, `@rule/vendor-bookzen`, `@rule/vendor-samfora`, `@rule/vendor-norce`, and `@rule/vendor-bookvisit`.
 
 This is an infrastructure package — it is not intended to be installed directly by SDK consumers. It arrives as a transitive dependency of the vendor preset packages.

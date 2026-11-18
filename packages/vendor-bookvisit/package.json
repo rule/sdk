@@ -1,0 +1,44 @@
+{
+  "private": true,
+  "name": "@rule/vendor-bookvisit",
+  "version": "0.4.0-beta.1",
+  "description": "BookVisit preset for the Rule.io SDK — hotel booking field and tag schemas plus a booking-to-subscriber converter.",
+  "type": "module",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "import": "./src/index.js"
+    }
+  },
+  "files": [
+    "src",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "keywords": [
+    "rule.io",
+    "bookvisit",
+    "hospitality",
+    "hotel",
+    "preset",
+    "sdk"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rule/sdk.git",
+    "directory": "packages/vendor-bookvisit"
+  },
+  "dependencies": {
+    "@rule/client": "*",
+    "@rule/vendor": "*"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
