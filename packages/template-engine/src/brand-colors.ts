@@ -1,8 +1,11 @@
 /**
  * Brand colours projected into every template's compile context as
  * `brand`, so XML can colour elements the theme's default attributes
- * don't reach (a canvas-coloured section, an accent label, a hairline)
- * with `@{brand.canvas}` instead of a hard-coded hex.
+ * don't reach (a divider, a hairline) with `@{brand.hairline}` instead
+ * of a hard-coded hex. Values are fixed at render time and outrank the
+ * rc-head defaults the Rule editor edits, so prefer those defaults:
+ * a canvas-coloured section is `background-color="transparent"`, not
+ * `@{brand.canvas}`.
  *
  * Names follow the Rule brand-style UI, not the `EmailThemeColorType`
  * slot names, because the two disagree on "Background":

@@ -337,14 +337,53 @@ describe('createOrderConfirmationTemplate — design', () => {
     expect(xml).not.toMatch(/#[0-9a-f]{3,6}\b/i)
   })
 
-  it('paints canvas, cards and the active progress step from the theme', () => {
-    // Body only: applyTheme writes the canvas and card hex into rc-head too.
-    const body = bodyOf(render())
+  // The Rule editor's style settings recolour a template through the
+  // rc-head defaults (rc-body = Canvas, rc-section = Background, font
+  // classes = text). An inline colour on a body node outranks those
+  // defaults and freezes that node at render time, so it must not exist.
+  it('leaves section backgrounds and text colours to the editor-linked theme defaults', () => {
+    const body = JSON.parse(bodyOf(render())) as RcmlNode
+    const nodes: RcmlNode[] = []
 
-    expect(body).toContain('"background-color":"#F3F3F3"')
-    expect(body).toContain('"background-color":"#FFFFFF"')
-    expect(body).toContain('"border-color":"#0066CC"')
-    expect(body).not.toContain('@{brand')
+    const walk = (n: RcmlNode): void => {
+      nodes.push(n)
+      n.children?.forEach(walk)
+    }
+
+    walk(body)
+
+    const sectionBgs = nodes
+      .filter((n) => n.tagName === 'rc-section')
+      .map((n) => n.attributes?.['background-color'])
+
+    // Cards inherit the rc-section default; gaps are transparent so the
+    // rc-body canvas shows through.
+    expect(sectionBgs).toContain(undefined)
+    expect(sectionBgs).toContain('transparent')
+    expect(sectionBgs.every((bg) => bg === undefined || bg === 'transparent')).toBe(true)
+
+    const textColors = nodes
+      .filter((n) => n.tagName === 'rc-text' || n.tagName === 'rc-heading')
+      .map((n) => n.attributes?.color)
+      .filter((c) => c !== undefined)
+
+    // Only the caller-supplied footer colour.
+    expect(textColors).toEqual(['#666666'])
+  })
+
+  // The render above only reaches the baseline branches, and @{brand.*}
+  // is resolved to hex before output, so pin every branch at the source.
+  it('puts no brand colour on a section, text or heading in any branch', () => {
+    const xml = readFileSync(new URL('./order-confirmation.xml', import.meta.url), 'utf8')
+    const offenders = [...xml.matchAll(/<rc-(?:section|text|heading)\b[^>]*>/g)]
+      .map((m) => m[0])
+      .filter((tag) => /\b(?:background-)?color="@\{brand\./.test(tag))
+
+    expect(offenders).toEqual([])
+  })
+
+  it('paints the active progress step from the theme primary', () => {
+    expect(bodyOf(render())).toContain('"border-color":"#0066CC"')
   })
 
   it('titles the order card with the detailsHeading copy', () => {
