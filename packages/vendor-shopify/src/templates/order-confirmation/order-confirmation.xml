@@ -1,6 +1,15 @@
 <rcml>
   <rc-head>
     <rc-preview><?copy preheader?></rc-preview>
+    <!--
+      Fallback surfaces for a theme that omits a colour slot: applyTheme
+      overwrites each one the theme supplies and leaves the rest, and they
+      stay head defaults, so the editor's style settings still own them.
+    -->
+    <rc-attributes>
+      <rc-body background-color="@{brand.canvas}"/>
+      <rc-section background-color="@{brand.background}"/>
+    </rc-attributes>
   </rc-head>
   <rc-body>
     <!--

@@ -11,6 +11,7 @@ import { readFileSync } from 'node:fs'
 
 import { describe, expect, it } from 'vitest'
 
+import { DEFAULT_COLORS_MAP, EmailThemeColorType } from '@rule/rcml'
 import { customField, loopValue } from '@rule/template-engine'
 
 import {
@@ -375,11 +376,43 @@ describe('createOrderConfirmationTemplate — design', () => {
   // is resolved to hex before output, so pin every branch at the source.
   it('puts no brand colour on a section, text or heading in any branch', () => {
     const xml = readFileSync(new URL('./order-confirmation.xml', import.meta.url), 'utf8')
-    const offenders = [...xml.matchAll(/<rc-(?:section|text|heading)\b[^>]*>/g)]
+    const bodyStart = xml.indexOf('</rc-head>')
+
+    expect(bodyStart).toBeGreaterThan(0)
+    const offenders = [...xml.slice(bodyStart).matchAll(/<rc-(?:section|text|heading)\b[^>]*>/g)]
       .map((m) => m[0])
       .filter((tag) => /\b(?:background-)?color="@\{brand\./.test(tag))
 
     expect(offenders).toEqual([])
+  })
+
+  // EmailTheme.colors is Partial and applyTheme writes only supplied
+  // slots, so the head must already carry the fallback surfaces.
+  it.each([
+    ['theme with non-default surfaces', {
+      ...TEST_THEME,
+      colors: {
+        ...TEST_THEME.colors,
+        [EmailThemeColorType.Background]: { type: EmailThemeColorType.Background, hex: '#112233' },
+        [EmailThemeColorType.Body]: { type: EmailThemeColorType.Body, hex: '#445566' },
+      },
+    }, { 'rc-body': '#112233', 'rc-section': '#445566' }],
+    ['theme with no colours', { ...TEST_THEME, colors: {} }, { 'rc-body': DEFAULT_COLORS_MAP[EmailThemeColorType.Background].hex, 'rc-section': DEFAULT_COLORS_MAP[EmailThemeColorType.Body].hex }],
+  ] as const)('seeds editor-linked surface defaults in rc-head (%s)', (_label, theme, expected) => {
+    const rendered = createOrderConfirmationTemplate().render({ context: baseContext(), theme })
+
+    assertValidRCMLDocument(rendered)
+    const doc = JSON.parse(docToString(rendered)) as { children: RcmlNode[] }
+    const attrNodes = doc.children[0].children?.filter((c) => c.tagName === 'rc-attributes') ?? []
+
+    // One head defaults node per tag: applyTheme must update the seeds, not add beside them.
+    expect(attrNodes).toHaveLength(1)
+    const attrs = attrNodes[0].children ?? []
+    const bgs = (tag: string): (string | undefined)[] =>
+      attrs.filter((c) => c.tagName === tag).map((c) => c.attributes?.['background-color'])
+
+    expect({ 'rc-body': bgs('rc-body'), 'rc-section': bgs('rc-section') })
+      .toEqual({ 'rc-body': [expected['rc-body']], 'rc-section': [expected['rc-section']] })
   })
 
   it('paints the active progress step from the theme primary', () => {

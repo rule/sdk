@@ -93,8 +93,9 @@ export function blendHex(fg: string, bg: string, alpha: number, fallback: string
  * Read the brand palette off a theme. A colour slot the theme leaves
  * unset falls back to `DEFAULT_COLORS_MAP` (the values
  * `createEmailTheme` seeds); `applyTheme` writes no attribute for such
- * a slot, so the fallback is a sensible colour, not a mirror of the
- * rendered head.
+ * a slot, so the rendered head carries that fallback only where the
+ * template seeds it (e.g. `<rc-section background-color="@{brand.background}"/>`
+ * inside `<rc-attributes>`).
  *
  * When `text` or `background` is not hex (`rgb(…)`, a colour name),
  * `muted` falls back to `text` so secondary copy stays readable, and
