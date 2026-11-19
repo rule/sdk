@@ -1,8 +1,12 @@
 /**
  * Brand colours projected into every template's compile context as
  * `brand`, so XML can colour elements the theme's default attributes
- * don't reach (a canvas-coloured section, an accent label, a hairline)
- * with `@{brand.canvas}` instead of a hard-coded hex.
+ * don't reach (a divider, a hairline) with `@{brand.hairline}` instead
+ * of a hard-coded hex. Values are fixed at render time and outrank the
+ * rc-head defaults the Rule editor edits, so prefer those defaults:
+ * leave a section without `background-color` so it inherits Background.
+ * Rule rejects `transparent`, so no section can show the Canvas and
+ * still follow the editor.
  *
  * Names follow the Rule brand-style UI, not the `EmailThemeColorType`
  * slot names, because the two disagree on "Background":
@@ -90,8 +94,9 @@ export function blendHex(fg: string, bg: string, alpha: number, fallback: string
  * Read the brand palette off a theme. A colour slot the theme leaves
  * unset falls back to `DEFAULT_COLORS_MAP` (the values
  * `createEmailTheme` seeds); `applyTheme` writes no attribute for such
- * a slot, so the fallback is a sensible colour, not a mirror of the
- * rendered head.
+ * a slot, so the rendered head carries that fallback only where the
+ * template seeds it (e.g. `<rc-section background-color="@{brand.background}"/>`
+ * inside `<rc-attributes>`).
  *
  * When `text` or `background` is not hex (`rgb(…)`, a colour name),
  * `muted` falls back to `text` so secondary copy stays readable, and

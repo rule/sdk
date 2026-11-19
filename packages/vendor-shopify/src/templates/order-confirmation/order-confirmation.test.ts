@@ -11,6 +11,7 @@ import { readFileSync } from 'node:fs'
 
 import { describe, expect, it } from 'vitest'
 
+import { DEFAULT_COLORS_MAP, EmailThemeColorType } from '@rule/rcml'
 import { customField, loopValue } from '@rule/template-engine'
 
 import {
@@ -337,14 +338,85 @@ describe('createOrderConfirmationTemplate — design', () => {
     expect(xml).not.toMatch(/#[0-9a-f]{3,6}\b/i)
   })
 
-  it('paints canvas, cards and the active progress step from the theme', () => {
-    // Body only: applyTheme writes the canvas and card hex into rc-head too.
-    const body = bodyOf(render())
+  // The Rule editor's style settings recolour a template through the
+  // rc-head defaults (rc-body = Canvas, rc-section = Background, font
+  // classes = text). An inline colour on a body node outranks those
+  // defaults and freezes that node at render time, so it must not exist.
+  it('leaves section backgrounds and text colours to the editor-linked theme defaults', () => {
+    const body = JSON.parse(bodyOf(render())) as RcmlNode
+    const nodes: RcmlNode[] = []
 
-    expect(body).toContain('"background-color":"#F3F3F3"')
-    expect(body).toContain('"background-color":"#FFFFFF"')
-    expect(body).toContain('"border-color":"#0066CC"')
-    expect(body).not.toContain('@{brand')
+    const walk = (n: RcmlNode): void => {
+      nodes.push(n)
+      n.children?.forEach(walk)
+    }
+
+    walk(body)
+
+    const sectionBgs = nodes
+      .filter((n) => n.tagName === 'rc-section')
+      .map((n) => n.attributes?.['background-color'])
+
+    // Every section inherits the rc-section default. Rule rejects
+    // "transparent", so none may carry a background of its own.
+    expect(sectionBgs.length).toBeGreaterThan(0)
+    expect(sectionBgs.filter((bg) => bg !== undefined)).toEqual([])
+
+    const textColors = nodes
+      .filter((n) => n.tagName === 'rc-text' || n.tagName === 'rc-heading')
+      .map((n) => n.attributes?.color)
+      .filter((c) => c !== undefined)
+
+    // Only the caller-supplied footer colour.
+    expect(textColors).toEqual(['#666666'])
+  })
+
+  // The render above only reaches the baseline branches, and @{brand.*}
+  // is resolved to hex before output, so pin every branch at the source.
+  it('puts no brand colour on a section, text or heading in any branch', () => {
+    const xml = readFileSync(new URL('./order-confirmation.xml', import.meta.url), 'utf8')
+    const bodyStart = xml.indexOf('</rc-head>')
+
+    expect(bodyStart).toBeGreaterThan(0)
+    const tags = [...xml.slice(bodyStart).matchAll(/<rc-(?:section|text|heading)\b[^>]*>/g)].map((m) => m[0])
+
+    expect(tags.filter((tag) => /\b(?:background-)?color="@\{brand\./.test(tag))).toEqual([])
+    // Any section background — "transparent" included, which Rule rejects —
+    // would override the editor-linked rc-section default.
+    expect(tags.filter((tag) => tag.startsWith('<rc-section') && /\bbackground-color=/.test(tag))).toEqual([])
+  })
+
+  // EmailTheme.colors is Partial and applyTheme writes only supplied
+  // slots, so the head must already carry the fallback surfaces.
+  it.each([
+    ['theme with non-default surfaces', {
+      ...TEST_THEME,
+      colors: {
+        ...TEST_THEME.colors,
+        [EmailThemeColorType.Background]: { type: EmailThemeColorType.Background, hex: '#112233' },
+        [EmailThemeColorType.Body]: { type: EmailThemeColorType.Body, hex: '#445566' },
+      },
+    }, { 'rc-body': '#112233', 'rc-section': '#445566' }],
+    ['theme with no colours', { ...TEST_THEME, colors: {} }, { 'rc-body': DEFAULT_COLORS_MAP[EmailThemeColorType.Background].hex, 'rc-section': DEFAULT_COLORS_MAP[EmailThemeColorType.Body].hex }],
+  ] as const)('seeds editor-linked surface defaults in rc-head (%s)', (_label, theme, expected) => {
+    const rendered = createOrderConfirmationTemplate().render({ context: baseContext(), theme })
+
+    assertValidRCMLDocument(rendered)
+    const doc = JSON.parse(docToString(rendered)) as { children: RcmlNode[] }
+    const attrNodes = doc.children[0].children?.filter((c) => c.tagName === 'rc-attributes') ?? []
+
+    // One head defaults node per tag: applyTheme must update the seeds, not add beside them.
+    expect(attrNodes).toHaveLength(1)
+    const attrs = attrNodes[0].children ?? []
+    const bgs = (tag: string): (string | undefined)[] =>
+      attrs.filter((c) => c.tagName === tag).map((c) => c.attributes?.['background-color'])
+
+    expect({ 'rc-body': bgs('rc-body'), 'rc-section': bgs('rc-section') })
+      .toEqual({ 'rc-body': [expected['rc-body']], 'rc-section': [expected['rc-section']] })
+  })
+
+  it('paints the active progress step from the theme primary', () => {
+    expect(bodyOf(render())).toContain('"border-color":"#0066CC"')
   })
 
   it('titles the order card with the detailsHeading copy', () => {
@@ -376,14 +448,15 @@ describe('createOrderConfirmationTemplate — design', () => {
 
   it('omits the details card when no delivery or payment field is supplied', () => {
     // Body only: rc-head carries the theme's h4 class definition. The
-    // details card is the only section rounded on all four corners, so
-    // its radius also catches an empty card shell left behind.
+    // details card is the only section with this padding, so it also
+    // catches an empty card shell left behind.
+    const shell = '"padding":"28px 0px 12px 0px"'
     const body = bodyOf(render())
 
     expect(body).not.toContain('rcml-h4-style')
-    expect(body).not.toContain('"border-radius":"16px"')
+    expect(body).not.toContain(shell)
     expect(bodyOf(render({ order: { ref: customField('Order', 'Number', 200003), date: customField('Order', 'Date', 200004) } })))
-      .toContain('"border-radius":"16px"')
+      .toContain(shell)
   })
 
   it('keeps the line-items loop to one column slot so index-1 refs match', () => {
