@@ -357,11 +357,10 @@ describe('createOrderConfirmationTemplate — design', () => {
       .filter((n) => n.tagName === 'rc-section')
       .map((n) => n.attributes?.['background-color'])
 
-    // Cards inherit the rc-section default; gaps are transparent so the
-    // rc-body canvas shows through.
-    expect(sectionBgs).toContain(undefined)
-    expect(sectionBgs).toContain('transparent')
-    expect(sectionBgs.every((bg) => bg === undefined || bg === 'transparent')).toBe(true)
+    // Every section inherits the rc-section default. Rule rejects
+    // "transparent", so none may carry a background of its own.
+    expect(sectionBgs.length).toBeGreaterThan(0)
+    expect(sectionBgs.filter((bg) => bg !== undefined)).toEqual([])
 
     const textColors = nodes
       .filter((n) => n.tagName === 'rc-text' || n.tagName === 'rc-heading')
@@ -379,11 +378,12 @@ describe('createOrderConfirmationTemplate — design', () => {
     const bodyStart = xml.indexOf('</rc-head>')
 
     expect(bodyStart).toBeGreaterThan(0)
-    const offenders = [...xml.slice(bodyStart).matchAll(/<rc-(?:section|text|heading)\b[^>]*>/g)]
-      .map((m) => m[0])
-      .filter((tag) => /\b(?:background-)?color="@\{brand\./.test(tag))
+    const tags = [...xml.slice(bodyStart).matchAll(/<rc-(?:section|text|heading)\b[^>]*>/g)].map((m) => m[0])
 
-    expect(offenders).toEqual([])
+    expect(tags.filter((tag) => /\b(?:background-)?color="@\{brand\./.test(tag))).toEqual([])
+    // Any section background — "transparent" included, which Rule rejects —
+    // would override the editor-linked rc-section default.
+    expect(tags.filter((tag) => tag.startsWith('<rc-section') && /\bbackground-color=/.test(tag))).toEqual([])
   })
 
   // EmailTheme.colors is Partial and applyTheme writes only supplied
@@ -448,14 +448,15 @@ describe('createOrderConfirmationTemplate — design', () => {
 
   it('omits the details card when no delivery or payment field is supplied', () => {
     // Body only: rc-head carries the theme's h4 class definition. The
-    // details card is the only section rounded on all four corners, so
-    // its radius also catches an empty card shell left behind.
+    // details card is the only section with this padding, so it also
+    // catches an empty card shell left behind.
+    const shell = '"padding":"28px 0px 12px 0px"'
     const body = bodyOf(render())
 
     expect(body).not.toContain('rcml-h4-style')
-    expect(body).not.toContain('"border-radius":"16px"')
+    expect(body).not.toContain(shell)
     expect(bodyOf(render({ order: { ref: customField('Order', 'Number', 200003), date: customField('Order', 'Date', 200004) } })))
-      .toContain('"border-radius":"16px"')
+      .toContain(shell)
   })
 
   it('keeps the line-items loop to one column slot so index-1 refs match', () => {

@@ -13,27 +13,28 @@
   </rc-head>
   <rc-body>
     <!--
-      Cards on the brand canvas. Colours stay linked to the Rule editor's
-      style settings by leaving them to the rc-head defaults: card sections
-      carry no background-color (they inherit rc-section = Background), gap
-      sections are "transparent" so rc-body (Canvas) shows through, and text
-      carries no color (the font classes own it). Never put an inline colour
+      One Background-coloured column on the brand canvas. Colours stay linked
+      to the Rule editor's style settings by leaving them to the rc-head
+      defaults: no section carries a background-color (they all inherit
+      rc-section = Background; Rule rejects "transparent", so a section cannot
+      show the rc-body Canvas through it), and text carries no color (the
+      font classes own it). Never put an inline colour
       on a section or text node: it outranks the head and freezes that node
       at render time. Dividers have no editor slot, so they alone use
       @{brand.hairline} / @{brand.primary}. Zero padding is written "0px"
       because Rule drops a bare "0" on save.
     -->
 
-    <!-- Logo on the canvas -->
+    <!-- Logo -->
     <?if logoUrl?>
-      <rc-section background-color="transparent" padding="36px 0px 24px 0px">
+      <rc-section padding="36px 0px 24px 0px">
         <rc-column padding="0px">
           <rc-logo rc-class="rcml-logo-style rc-initial-logo" width="88px" padding="0px"/>
         </rc-column>
       </rc-section>
     <?endif?>
     <?if !logoUrl?>
-      <rc-section background-color="transparent" padding="24px 0px 0px 0px">
+      <rc-section padding="24px 0px 0px 0px">
         <rc-column padding="0px">
           <rc-spacer height="12px" padding="0px"/>
         </rc-column>
@@ -41,7 +42,7 @@
     <?endif?>
 
     <!-- Hero card: headline, one-line promise, progress -->
-    <rc-section border-radius="16px 16px 0px 0px" padding="36px 0px 4px 0px">
+    <rc-section padding="36px 0px 4px 0px">
       <rc-column padding="0px 28px">
         <rc-heading rc-class="rcml-h1-style" font-size="32px" line-height="115%" letter-spacing="-0.02em" padding="0px 0px 14px 0px"><?copy greetingHeading firstName=recipient.firstName?></rc-heading>
         <?if heroHeading?>
@@ -50,7 +51,7 @@
         <rc-text rc-class="rcml-p-style" font-size="17px" line-height="150%" padding="0px 0px 28px 0px"><?copy intro?></rc-text>
       </rc-column>
     </rc-section>
-    <rc-section border-radius="0px 0px 16px 16px" padding="0px 22px 32px 22px">
+    <rc-section padding="0px 22px 32px 22px">
       <rc-group>
         <rc-column width="33.33%" padding="0px 6px">
           <rc-divider border-color="@{brand.primary}" border-width="3px" padding="0px 0px 10px 0px"/>
@@ -67,14 +68,14 @@
       </rc-group>
     </rc-section>
 
-    <rc-section background-color="transparent" padding="0px">
+    <rc-section padding="0px">
       <rc-column padding="0px">
         <rc-spacer height="12px" padding="0px"/>
       </rc-column>
     </rc-section>
 
     <!-- Order card: header with the order number, items, summary, total -->
-    <rc-section border-radius="16px 16px 0px 0px" padding="28px 0px 8px 0px">
+    <rc-section padding="28px 0px 8px 0px">
       <rc-group>
         <rc-column width="50%" padding="0px 0px 0px 28px">
           <rc-heading rc-class="rcml-h3-style" font-size="20px" line-height="130%" letter-spacing="-0.01em" padding="0px"><?copy detailsHeading?></rc-heading>
@@ -186,7 +187,7 @@
           <rc-divider border-color="@{brand.hairline}" border-width="1px" padding="0px"/>
         </rc-column>
       </rc-section>
-      <rc-section border-radius="0px 0px 16px 16px" padding="0px 0px 28px 0px">
+      <rc-section padding="0px 0px 28px 0px">
         <rc-group>
           <rc-column width="50%" padding="0px 0px 0px 28px">
             <rc-text rc-class="rcml-p-style" font-size="17px" font-weight="700" line-height="140%" padding="0px"><?copy totalRow?></rc-text>
@@ -198,7 +199,7 @@
       </rc-section>
     <?endif?>
     <?if !financial?>
-      <rc-section border-radius="0px 0px 16px 16px" padding="0px 0px 20px 0px">
+      <rc-section padding="0px 0px 20px 0px">
         <rc-column padding="0px">
           <rc-spacer height="8px" padding="0px"/>
         </rc-column>
@@ -206,7 +207,7 @@
     <?endif?>
 
     <!-- Primary action, full width -->
-    <rc-section background-color="transparent" padding="20px 0px">
+    <rc-section padding="20px 0px">
       <rc-column padding="0px">
         <rc-button href="@{websiteUrl}" width="100%" align="center" border="none" border-radius="12px" inner-padding="17px 24px" padding="0px" font-size="16px" font-weight="700" text-align="center" vertical-align="middle" rc-class="rcml-label-style"><?copy ctaButton?></rc-button>
       </rc-column>
@@ -218,7 +219,7 @@
       the card and two split it evenly.
     -->
     <?if shippingAddress || inlineShippingAddress || order.paymentMethod || order.date?>
-      <rc-section border-radius="16px" padding="28px 0px 12px 0px">
+      <rc-section padding="28px 0px 12px 0px">
         <?if shippingAddress || inlineShippingAddress?>
         <rc-column padding="0px 28px 16px 28px">
           <?if shippingAddress?>
@@ -263,8 +264,8 @@
       </rc-section>
     <?endif?>
 
-    <!-- Help line, social, footer on the canvas -->
-    <rc-section background-color="transparent" padding="28px 0px 40px 0px">
+    <!-- Help line, social, footer -->
+    <rc-section padding="28px 0px 40px 0px">
       <rc-column padding="0px 28px">
         <rc-text rc-class="rcml-p-style" align="center" font-size="14px" line-height="150%" padding="0px 0px 18px 0px"><?copy helpLine?></rc-text>
         <?if socialLinks?>

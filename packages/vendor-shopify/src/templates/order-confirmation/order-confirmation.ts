@@ -22,7 +22,7 @@ import type { CustomFieldRef, LoopValueRef } from '@rule/template-engine'
 /**
  * Typed data context consumed by `order-confirmation.xml`.
  *
- * Layout: cards on the brand canvas — a hero card (greeting, intro,
+ * Layout: one column of blocks on the brand canvas — a hero card (greeting, intro,
  * progress bar), an order card (order number, items, summary), a
  * full-width button, and a details card (delivery, payment, date).
  *
@@ -144,7 +144,7 @@ export interface OrderConfirmationTemplateCopy {
   readonly shippingCityLine: string
   readonly shippingCountryCodeLine: string
   readonly ctaButton: string
-  /** Help line on the canvas, above the footer links. */
+  /** Help line above the footer links. */
   readonly helpLine: string
   readonly footerLinks: string
 }

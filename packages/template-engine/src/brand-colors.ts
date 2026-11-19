@@ -4,8 +4,9 @@
  * don't reach (a divider, a hairline) with `@{brand.hairline}` instead
  * of a hard-coded hex. Values are fixed at render time and outrank the
  * rc-head defaults the Rule editor edits, so prefer those defaults:
- * a canvas-coloured section is `background-color="transparent"`, not
- * `@{brand.canvas}`.
+ * leave a section without `background-color` so it inherits Background.
+ * Rule rejects `transparent`, so no section can show the Canvas and
+ * still follow the editor.
  *
  * Names follow the Rule brand-style UI, not the `EmailThemeColorType`
  * slot names, because the two disagree on "Background":
